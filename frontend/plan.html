@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="HELPNET development execution plan for a 5-member CSE team using HTML, CSS, JavaScript, Python, FastAPI, MySQL, JWT, bcrypt/passlib, Docker, GitHub Actions and Render." />
     <title>HELPNET – Development Execution Plan</title>
     <!-- Font & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -163,8 +164,10 @@
         .main {
             margin-left: 280px;
             flex: 1;
+            width: calc(100% - 280px);
             padding: 40px 48px 80px;
-            max-width: 1200px;
+            max-width: none;
+            min-width: 0;
         }
 
         /* ─── HEADER ─── */
@@ -451,6 +454,7 @@
             }
             .main {
                 margin-left: 0;
+                width: 100%;
                 padding: 24px 16px 60px;
             }
             .page-header h1 {
@@ -604,6 +608,34 @@
             }
         }
 
+
+        .section {
+            scroll-margin-top: 24px;
+        }
+
+        .sidebar nav a:focus-visible,
+        .hamburger:focus-visible,
+        .back-top:focus-visible {
+            outline: 3px solid var(--accent-light);
+            outline-offset: 2px;
+        }
+
+        .command-note {
+            margin-top: 10px;
+            color: var(--gray-500);
+            font-size: 13px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
         /* ─── BACK TO TOP ─── */
         .back-top {
             position: fixed;
@@ -651,6 +683,8 @@
         </div>
         <nav>
             <div class="section-label">Getting Started</div>
+            <a href="#scope"><i class="fas fa-compass"></i> Project Scope</a>
+            <a href="#stack"><i class="fas fa-layer-group"></i> Technology Stack</a>
             <a href="#setup" class="active"><i class="fas fa-server"></i> Project Setup</a>
             <a href="#folder"><i class="fas fa-folder-tree"></i> Folder Structure</a>
             <a href="#git"><i class="fas fa-code-branch"></i> Git Workflow</a>
@@ -668,9 +702,12 @@
             <a href="#database"><i class="fas fa-database"></i> Database Plan</a>
             <a href="#api"><i class="fas fa-code"></i> API Plan</a>
             <a href="#frontend"><i class="fas fa-laptop-code"></i> Frontend Plan</a>
+            <a href="#scripts"><i class="fas fa-terminal"></i> Package Scripts</a>
+            <a href="#integration-map"><i class="fas fa-link"></i> API ↔ DB ↔ Frontend</a>
             <a href="#testing"><i class="fas fa-vial"></i> Testing</a>
 
             <div class="section-label">DevOps</div>
+            <a href="#dependencies"><i class="fas fa-box"></i> Dependencies</a>
             <a href="#docker"><i class="fab fa-docker"></i> Docker</a>
             <a href="#github-actions"><i class="fas fa-cogs"></i> GitHub Actions</a>
             <a href="#deployment"><i class="fas fa-rocket"></i> Deployment</a>
@@ -690,11 +727,86 @@
             <div class="badge-group">
                 <span class="badge primary"><i class="fas fa-calendar-alt"></i> 6 Sprints</span>
                 <span class="badge accent"><i class="fas fa-user-friends"></i> 5 Members</span>
-                <span class="badge"><i class="fas fa-layer-group"></i> MERN + PostgreSQL</span>
+                <span class="badge"><i class="fas fa-layer-group"></i> HTML + CSS + JavaScript + FastAPI + MySQL</span>
                 <span class="badge"><i class="fab fa-docker"></i> Docker</span>
                 <span class="badge"><i class="fas fa-cloud"></i> Render</span>
             </div>
         </header>
+
+        <section class="section" id="scope">
+            <h2 class="section-title"><i class="fas fa-compass"></i> HELPNET Project Scope</h2>
+            <div class="card">
+                <h3><i class="fas fa-heart"></i> Core Community Services</h3>
+                <div class="grid-3">
+                    <div>
+                        <h4>Health</h4>
+                        <p>Community health suggestions and access to verified health professionals. Health content must clearly show that it is not a replacement for professional medical advice, and HELPNET must not claim to diagnose users.</p>
+                    </div>
+                    <div>
+                        <h4>Blood Donation</h4>
+                        <p>Find suitable blood donors and connect requesters with available donors based on blood group and location.</p>
+                    </div>
+                    <div>
+                        <h4>Volunteering</h4>
+                        <p>NGOs create events and volunteers can discover, join, attend and receive certificates.</p>
+                    </div>
+                    <div>
+                        <h4>Goods Exchange</h4>
+                        <p>Users can post second-hand goods and show interest in available listings.</p>
+                    </div>
+                    <div>
+                        <h4>Waste Management</h4>
+                        <p>Users submit waste pickup requests. Waste collectors/vangariwalas do not create HELPNET accounts; contact is by phone.</p>
+                    </div>
+                    <div>
+                        <h4>Farmer Marketplace</h4>
+                        <p>Farmers can publish products and users can browse available agricultural products.</p>
+                    </div>
+                </div>
+                <div class="note warning">
+                    <strong>Out of scope:</strong> in-app payments, native mobile applications and real-time chat.
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  TECHNOLOGY STACK                                               -->
+        <!-- ============================================================ -->
+        <section class="section" id="stack">
+            <h2 class="section-title"><i class="fas fa-layer-group"></i> Final Technology Stack</h2>
+            <div class="card">
+                <div class="grid-2">
+                    <div>
+                        <h4>Frontend</h4>
+                        <ul>
+                            <li>HTML, CSS and Vanilla JavaScript</li>
+                            <li><code>fetch()</code> for API calls</li>
+                            <li><code>frontend/pages/</code>, <code>frontend/js/</code>, <code>frontend/js/components/</code></li>
+                            <li><code>frontend/js/api.js</code> for API helpers</li>
+                            <li><code>frontend/js/auth.js</code> for JWT/auth state, logout and role helpers</li>
+                            <li>Nginx for serving the static frontend</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Backend</h4>
+                        <ul>
+                            <li>Python + FastAPI + Uvicorn</li>
+                            <li>SQLAlchemy + PyMySQL</li>
+                            <li>JWT + bcrypt/passlib</li>
+                            <li>FastAPI <code>CORSMiddleware</code></li>
+                        </ul>
+                        <h4>Database &amp; Services</h4>
+                        <ul>
+                            <li>MySQL 8.x</li>
+                            <li>Cloudinary for uploaded files; URLs stored in MySQL</li>
+                            <li>FastAPI-Mail + SMTP for email announcements</li>
+                            <li>ReportLab for volunteer certificate PDFs</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="note warning"><strong>Scope boundary:</strong> The frontend remains plain HTML/CSS/Vanilla JavaScript, the backend remains Python/FastAPI, and communication remains email plus in-app notifications. Waste collectors/Vangariwalas never receive HELPNET accounts.</div>
+            </div>
+        </section>
 
         <!-- ============================================================ -->
         <!--  SETUP                                                         -->
@@ -704,61 +816,115 @@
             <div class="card">
                 <h3><i class="fas fa-terminal"></i> Exact Commands</h3>
                 <p>Start from an empty folder and an empty GitHub repository.</p>
-                <pre><span class="comment"># 1. Create project folder</span>
+                <pre><span class="comment"># Windows PowerShell / VS Code</span>
+<span class="comment"># 1. Create project folder</span>
 mkdir HELPNET
 cd HELPNET
-
-<span class="comment"># 2. Open in VS Code</span>
 code .
 
-<span class="comment"># 3. Initialize Git</span>
+<span class="comment"># 2. Initialize Git</span>
 git init
+git branch -M main
 
-<span class="comment"># 4. Create GitHub repo (via browser) then connect</span>
-git remote add origin https://github.com/your-org/HELPNET.git
+<span class="comment"># 3. Create the GitHub repository, then connect it</span>
+git remote add origin https://github.com/YOUR-USERNAME/HELPNET.git
 
-<span class="comment"># 5. Create main branch and push</span>
-git checkout -b main
+<span class="comment"># 4. Create the required project folders</span>
+New-Item -ItemType Directory -Force -Path `
+  backend, backend/app, backend/app/models, backend/app/schemas, backend/app/routers, `
+  backend/app/services, backend/app/middleware, backend/app/utils, backend/tests, `
+  backend/alembic/versions, frontend, frontend/pages, frontend/css, frontend/js, `
+  frontend/js/components, frontend/js/pages, frontend/assets, database, database/migrations, docs, `
+  .github, .github/workflows
+
+<span class="comment"># 5. Create backend/requirements.txt before installing dependencies</span>
+@"
+fastapi
+uvicorn[standard]
+sqlalchemy
+pymysql
+python-dotenv
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+python-multipart
+alembic
+cloudinary
+fastapi-mail
+reportlab
+pytest
+httpx
+"@ | Set-Content backend/requirements.txt
+
+<span class="comment"># 6. Create the Python + FastAPI backend environment</span>
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+cd ..
+
+<span class="comment"># 7. Create environment templates and local environment files</span>
+New-Item -ItemType File -Force -Path .env, .env.example, backend/.env, backend/.env.example
+
+@"
+MYSQL_ROOT_PASSWORD=
+MYSQL_DATABASE=helpnet
+MYSQL_USER=helpnet
+MYSQL_PASSWORD=
+"@ | Set-Content .env.example
+
+@"
+DATABASE_URL=mysql+pymysql://helpnet:PASSWORD@mysql:3306/helpnet
+JWT_SECRET=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USERNAME=
+SMTP_PASSWORD=
+SMTP_FROM=
+SMTP_TLS=true
+"@ | Set-Content backend/.env.example
+
+<span class="comment"># 8. Create README and root .gitignore</span>
+@"
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+**/.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+**/dist/
+.DS_Store
+Thumbs.db
+.env
+**/.env
+!.env.example
+!**/.env.example
+"@ | Set-Content .gitignore
+
+@"
+# HELPNET – Unified Community Services Platform
+"@ | Set-Content README.md
+
+<span class="comment"># 9. Add the initial scaffold before the first push</span>
 git add .
-git commit -m "chore: initial project structure"
+git commit -m "chore: initial project scaffold"
 git push -u origin main
 
-<span class="comment"># 6. Create develop branch</span>
+<span class="comment"># 10. Create the shared development branch</span>
 git checkout -b develop
 git push -u origin develop
-
-<span class="comment"># 7. Create frontend (React + Tailwind)</span>
-npx create-react-app frontend --template tailwindcss
-cd frontend
-npm install axios react-router-dom
-cd ..
-
-<span class="comment"># 8. Create backend (Node + Express)</span>
-mkdir backend && cd backend
-npm init -y
-npm install express cors dotenv bcrypt jsonwebtoken nodemailer multer cloudinary
-npm install pg sequelize  <span class="comment"># or raw pg</span>
-npm install -D nodemon
-cd ..
-
-<span class="comment"># 9. Create .env files</span>
-touch backend/.env backend/.env.example
-touch frontend/.env
-
-<span class="comment"># 10. Create .gitignore</span>
-echo "node_modules/\n.env\n.DS_Store\nbuild/\ndist/" > .gitignore
-
-<span class="comment"># 11. Create README.md</span>
-echo "# HELPNET – Unified Community Services Platform" > README.md
-
-<span class="comment"># 12. Initial folder structure (see below)</span>
-mkdir -p backend/src/{config,controllers,middleware,models,routes,services,utils}
-mkdir -p frontend/src/{components,pages,layouts,services,hooks,context,utils}
-mkdir -p database docs tests .github/workflows</pre>
-                <p class="mt-2"><i class="fas fa-check-circle" style="color:var(--success);"></i> After these steps, push the initial structure:</p>
-                <pre>git add .
-                    git commit -m "chore: initial project scaffold"
-                    git push origin develop</pre>
+git checkout develop</pre>
+                <div class="note success">
+                    <strong>Setup rule:</strong> Do the initial scaffold once. After that, every developer works from <code>develop</code> and creates a separate <code>feature/*</code> branch.
+                </div>
             </div>
         </section>
 
@@ -772,60 +938,83 @@ mkdir -p database docs tests .github/workflows</pre>
                 <pre style="font-size:13px; line-height:1.8;">
                     HELPNET/
                     ├── frontend/
-                    │   ├── public/
-                    │   ├── src/
-                    │   │   ├── components/       # Reusable UI (Button, Card, Modal, etc.)
-                    │   │   ├── pages/            # Route-level pages (Login, Dashboard, etc.)
-                    │   │   ├── layouts/          # Layout wrappers (AuthLayout, MainLayout)
-                    │   │   ├── services/         # API client &amp; service functions
-                    │   │   ├── hooks/            # Custom React hooks
-                    │   │   ├── context/          # React Context providers (Auth, Theme)
-                    │   │   ├── utils/            # Helpers, validators, formatters
-                    │   │   ├── App.js
-                    │   │   └── index.js
-                    │   ├── package.json
-                    │   └── tailwind.config.js
+                    │   ├── index.html
+                    │   ├── pages/
+                    │   │   ├── register.html
+                    │   │   ├── login.html
+                    │   │   ├── profile.html
+                    │   │   ├── verify-nid.html
+                    │   │   ├── donor-register.html
+                    │   │   ├── blood-request.html
+                    │   │   ├── notifications.html
+                    │   │   ├── events.html
+                    │   │   ├── my-volunteering.html
+                    │   │   ├── goods.html
+                    │   │   ├── waste.html
+                    │   │   ├── farmer.html
+                    │   │   ├── health.html
+                    │   │   ├── health-directory.html
+                    │   │   └── admin.html
+                    │   ├── css/
+                    │   │   └── style.css
+                    │   ├── js/
+                    │   │   ├── app.js
+                    │   │   ├── api.js
+                    │   │   ├── auth.js
+                    │   │   ├── utils.js
+                    │   │   ├── pages/
+                    │   │   └── components/
+                    │   └── assets/
                     │
                     ├── backend/
-                    │   ├── src/
-                    │   │   ├── config/           # DB config, Cloudinary, email, etc.
-                    │   │   ├── controllers/      # Request handlers
-                    │   │   ├── middleware/       # Auth, validation, error handler
-                    │   │   ├── models/           # Sequelize models / raw SQL
-                    │   │   ├── routes/           # Express route definitions
-                    │   │   ├── services/         # Business logic layer
-                    │   │   └── utils/            # Helpers, JWT, bcrypt, validators
+                    │   ├── app/
+                    │   │   ├── main.py
+                    │   │   ├── config.py
+                    │   │   ├── database.py
+                    │   │   ├── models/
+                    │   │   ├── schemas/
+                    │   │   ├── routers/
+                    │   │   ├── services/
+                    │   │   ├── middleware/
+                    │   │   └── utils/
+                    │   ├── tests/
+                    │   ├── alembic.ini
+                    │   ├── alembic/
+                    │   │   ├── env.py
+                    │   │   └── versions/
+                    │   ├── requirements.txt
                     │   ├── .env
-                    │   ├── package.json
-                    │   └── server.js
+                    │   ├── .env.example
+                    │   └── Dockerfile
                     │
                     ├── database/
-                    │   └── migrations/           # SQL migration files (if any)
+                    │   └── migrations/           # project database artifacts only; schema changes use Alembic
                     ├── docs/                     # API docs, ERD, sprint plans
-                    ├── tests/                    # Unit / integration tests
-                    ├── .github/
-                    │   └── workflows/            # GitHub Actions YAML
+                    ├── .github/workflows/        # GitHub Actions YAML
+                    ├── .env                      # Docker Compose database variables only
+                    ├── .env.example              # Docker Compose variable template
                     ├── .gitignore
-                    ├── .env.example
                     ├── README.md
-                    ├── docker-compose.yml
-                    └── package.json              # (optional) root for workspaces</pre>
+                    └── docker-compose.yml</pre>
                 <div class="grid-2 mt-4">
                     <div>
                         <h4>Frontend folders</h4>
                         <ul class="icon-list">
-                            <li><i class="fas fa-folder"></i> <strong>components</strong> – reusable UI pieces</li>
-                            <li><i class="fas fa-folder"></i> <strong>pages</strong> – full page views</li>
-                            <li><i class="fas fa-folder"></i> <strong>services</strong> – API calls (axios instances)</li>
-                            <li><i class="fas fa-folder"></i> <strong>context</strong> – global state (auth, notifications)</li>
+                            <li><i class="fas fa-folder"></i> <strong>js/pages</strong> – page-specific Vanilla JavaScript modules</li>
+                            <li><i class="fas fa-folder"></i> <strong>js/components</strong> – reusable DOM/UI modules</li>
+                            <li><i class="fas fa-folder"></i> <strong>pages</strong> – static HTML page views</li>
+                            <li><i class="fas fa-folder"></i> <strong>js/api.js</strong> – shared API helpers using <code>fetch()</code></li>
+                            <li><i class="fas fa-folder"></i> <strong>js/auth.js</strong> – JWT storage, authentication state, logout and role helpers</li>
+                            <li><i class="fas fa-folder"></i> <strong>js/utils.js</strong> – shared small frontend utilities</li>
                         </ul>
+                        <div class="note info"><strong>Routing:</strong> This is a static HTML application. Navigation uses separate files such as <code>pages/login.html</code>, <code>pages/register.html</code> and <code>pages/profile.html</code>; JavaScript auth guards redirect between these pages. There is no client-side single-page router; navigation uses separate static HTML files.</div>
                     </div>
                     <div>
                         <h4>Backend folders</h4>
                         <ul class="icon-list">
-                            <li><i class="fas fa-folder"></i> <strong>controllers</strong> – request/response logic</li>
+                            <li><i class="fas fa-folder"></i> <strong>routers</strong> – request/response logic</li>
                             <li><i class="fas fa-folder"></i> <strong>models</strong> – database models</li>
-                            <li><i class="fas fa-folder"></i> <strong>routes</strong> – endpoint definitions</li>
+                            <li><i class="fas fa-folder"></i> <strong>schemas</strong> – Pydantic request/response schemas</li>
                             <li><i class="fas fa-folder"></i> <strong>services</strong> – core business logic</li>
                             <li><i class="fas fa-folder"></i> <strong>middleware</strong> – auth, validation, error</li>
                         </ul>
@@ -849,17 +1038,17 @@ mkdir -p database docs tests .github/workflows</pre>
                 <div class="divider"></div>
                 <h4>Before starting work</h4>
                 <pre>git checkout develop
-                    git pull origin develop
-                    git checkout -b feature/your-task-name</pre>
+git pull origin develop
+git checkout -b feature/your-task-name</pre>
 
                 <h4>During work</h4>
                 <pre>git status
-                    git add .
-                    git commit -m "feat(scope): description"</pre>
+git add .
+git commit -m "feat(scope): description"</pre>
 
                 <h4>Push &amp; PR</h4>
-                <pre>git push origin feature/your-task-name</pre>
-                <p>Open a Pull Request from <code>feature/your-task-name</code> → <code>develop</code>. At least one reviewer (another team member) must approve.</p>
+                <pre>git push -u origin feature/your-task-name</pre>
+                <p>Open a Pull Request from <code>feature/your-task-name</code> → <code>develop</code>. At least one reviewer (another team member) must approve. Never push feature work directly to <code>main</code>.</p>
 
                 <div class="note success">
                     <strong>✔ Who reviews?</strong> The team lead or a member who is not working on the same feature. Rotate reviewers to share knowledge.
@@ -870,10 +1059,10 @@ mkdir -p database docs tests .github/workflows</pre>
                 <h3><i class="fas fa-shield-alt"></i> Preventing Conflicts</h3>
                 <ul class="icon-list">
                     <li><i class="fas fa-user"></i> <strong>Ownership:</strong> Assign specific files/features to each member (see team table).</li>
-                    <li><i class="fas fa-file"></i> <strong>Shared files:</strong> <code>routes/index.js</code>, <code>package.json</code> – coordinate via daily stand-up.</li>
+                    <li><i class="fas fa-file"></i> <strong>Shared files:</strong> <code>backend/app/main.py</code>, <code>backend/app/routers/</code> and <code>backend/requirements.txt</code> – coordinate via daily stand-up.</li>
                     <li><i class="fas fa-database"></i> <strong>DB schema:</strong> One person (e.g. Samia) owns all migration files.</li>
-                    <li><i class="fas fa-code"></i> <strong>React components:</strong> Build isolated components; share via <code>components/common/</code>.</li>
-                    <li><i class="fas fa-env"></i> <strong>.env:</strong> Never commit; use <code>.env.example</code> as source of truth.</li>
+                    <li><i class="fas fa-code"></i> <strong>JavaScript components:</strong> Build isolated DOM/UI modules; share via <code>frontend/js/components/</code>.</li>
+                    <li><i class="fas fa-env"></i> <strong>Environment files:</strong> Never commit <code>.env</code>; use root and backend <code>.env.example</code> templates as sources of truth.</li>
                 </ul>
                 <div class="note info">
                     <strong>If two people must edit the same file:</strong> <br />
@@ -903,26 +1092,29 @@ mkdir -p database docs tests .github/workflows</pre>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td>Samia Anjum</td><td>1</td><td>Auth – Register</td><td>BE+FE</td><td>models/User, controllers/auth, pages/Register</td><td>feature/auth-register</td></tr>
-                            <tr><td>Arnob Richard</td><td>1</td><td>Auth – Login &amp; JWT</td><td>BE+FE</td><td>controllers/auth, middleware/auth, pages/Login</td><td>feature/auth-login</td></tr>
-                            <tr><td>Annotoma Mirdha</td><td>1</td><td>Auth – Role &amp; Protected Routes</td><td>FE+BE</td><td>context/Auth, components/ProtectedRoute</td><td>feature/auth-roles</td></tr>
-                            <tr><td>Mokarram Ahmed</td><td>2</td><td>User Profile &amp; Privacy</td><td>BE+FE</td><td>controllers/user, pages/Profile</td><td>feature/user-profile</td></tr>
-                            <tr><td>Shakil Ahmed</td><td>2</td><td>NID Verification &amp; Admin Queue</td><td>BE+FE</td><td>models/Verification, pages/Admin/Verification</td><td>feature/nid-verification</td></tr>
-                            <tr><td>Samia Anjum</td><td>2</td><td>Ratings &amp; Trust Component</td><td>BE+FE</td><td>models/Rating, components/RatingDisplay</td><td>feature/ratings</td></tr>
-                            <tr><td>Arnob Richard</td><td>3</td><td>Blood Donor Registration &amp; Availability</td><td>BE+FE</td><td>models/Donor, pages/DonorRegister</td><td>feature/blood-donor</td></tr>
-                            <tr><td>Annotoma Mirdha</td><td>3</td><td>Blood Request &amp; Matching</td><td>BE+FE</td><td>controllers/blood, pages/BloodRequest</td><td>feature/blood-request</td></tr>
-                            <tr><td>Mokarram Ahmed</td><td>3</td><td>Notifications</td><td>BE+FE</td><td>models/Notification, components/NotificationBell</td><td>feature/notifications</td></tr>
-                            <tr><td>Shakil Ahmed</td><td>4</td><td>Volunteer Events &amp; Signup</td><td>BE+FE</td><td>models/VolunteerEvent, pages/Events</td><td>feature/volunteer-events</td></tr>
-                            <tr><td>Samia Anjum</td><td>4</td><td>Attendance &amp; Certificates</td><td>BE+FE</td><td>controllers/volunteer, pages/MyVolunteering</td><td>feature/volunteer-attendance</td></tr>
-                            <tr><td>Arnob Richard</td><td>5</td><td>Second-Hand Goods</td><td>BE+FE</td><td>models/GoodsListing, pages/Goods</td><td>feature/goods</td></tr>
-                            <tr><td>Annotoma Mirdha</td><td>5</td><td>Waste Management</td><td>BE+FE</td><td>models/WasteRequest, pages/Waste</td><td>feature/waste</td></tr>
-                            <tr><td>Mokarram Ahmed</td><td>5</td><td>Farmer Marketplace</td><td>BE+FE</td><td>models/FarmerProduct, pages/Farmer</td><td>feature/farmer</td></tr>
-                            <tr><td>Shakil Ahmed</td><td>6</td><td>Health Community &amp; Professional Directory</td><td>BE+FE</td><td>models/HealthPost, pages/Health</td><td>feature/health</td></tr>
-                            <tr><td>Samia Anjum</td><td>6</td><td>Admin Content Management</td><td>BE+FE</td><td>controllers/admin, pages/Admin</td><td>feature/admin-content</td></tr>
+                            <tr><td>Samia Anjum</td><td>1</td><td>Auth – Register</td><td>BE+FE</td><td>backend/app/models/user.py, backend/app/routers/auth.py, frontend/js/pages/register.js</td><td>feature/auth-register</td></tr>
+                            <tr><td>Arnob Richard</td><td>1</td><td>Auth – Login &amp; JWT</td><td>BE+FE</td><td>backend/app/routers/auth.py, backend/app/middleware/auth.py, frontend/js/pages/login.js</td><td>feature/auth-login</td></tr>
+                            <tr><td>Annotoma Mirdha</td><td>1</td><td>Auth – Role &amp; Protected Routes</td><td>FE+BE</td><td>frontend/js/auth.js, frontend/js/components/role-guard.js</td><td>feature/auth-roles</td></tr>
+                            <tr><td>Mokarram Ahmed</td><td>2</td><td>User Profile &amp; Privacy</td><td>BE+FE</td><td>backend/app/routers/users.py, frontend/js/pages/profile.js</td><td>feature/user-profile</td></tr>
+                            <tr><td>Shakil Ahmed</td><td>2</td><td>NID Verification &amp; Admin Queue</td><td>BE+FE</td><td>backend/app/models/verification.py, frontend/js/components/verification-queue.js</td><td>feature/nid-verification</td></tr>
+                            <tr><td>Samia Anjum</td><td>2</td><td>Ratings &amp; Trust Component</td><td>BE+FE</td><td>backend/app/models/rating.py, frontend/js/components/rating-display.js</td><td>feature/ratings</td></tr>
+                            <tr><td>Arnob Richard</td><td>3</td><td>Blood Donor Registration &amp; Availability</td><td>BE+FE</td><td>backend/app/models/donor.py, frontend/js/pages/donor-register.js</td><td>feature/blood-donor</td></tr>
+                            <tr><td>Annotoma Mirdha</td><td>3</td><td>Blood Request &amp; Matching</td><td>BE+FE</td><td>backend/app/routers/blood.py, frontend/js/pages/blood-request.js</td><td>feature/blood-request</td></tr>
+                            <tr><td>Mokarram Ahmed</td><td>3</td><td>Notifications</td><td>BE+FE</td><td>backend/app/models/notification.py, frontend/js/components/notification-bell.js</td><td>feature/notifications</td></tr>
+                            <tr><td>Shakil Ahmed</td><td>4</td><td>Volunteer Events &amp; Signup</td><td>BE+FE</td><td>backend/app/models/volunteer_event.py, frontend/js/pages/events-list.js</td><td>feature/volunteer-events</td></tr>
+                            <tr><td>Samia Anjum</td><td>4</td><td>Attendance &amp; Certificates</td><td>BE+FE</td><td>backend/app/routers/volunteer.py, frontend/js/pages/my-volunteering.js</td><td>feature/volunteer-attendance</td></tr>
+                            <tr><td>Arnob Richard</td><td>5</td><td>Second-Hand Goods</td><td>BE+FE</td><td>backend/app/models/goods_listing.py, frontend/js/pages/goods-list.js</td><td>feature/goods</td></tr>
+                            <tr><td>Annotoma Mirdha</td><td>5</td><td>Waste Management</td><td>BE+FE</td><td>backend/app/models/waste_request.py, frontend/js/pages/waste-request.js</td><td>feature/waste</td></tr>
+                            <tr><td>Mokarram Ahmed</td><td>5</td><td>Farmer Marketplace</td><td>BE+FE</td><td>backend/app/models/farmer_product.py, frontend/js/pages/farmer-browse.js</td><td>feature/farmer</td></tr>
+                            <tr><td>Shakil Ahmed</td><td>6</td><td>Health Community &amp; Professional Directory</td><td>BE+FE</td><td>backend/app/models/health_post.py, frontend/js/pages/health-community.js</td><td>feature/health</td></tr>
+                            <tr><td>Samia Anjum</td><td>6</td><td>Admin Content Management</td><td>BE+FE</td><td>backend/app/routers/admin.py, frontend/js/components/admin.js</td><td>feature/admin-content</td></tr>
                         </tbody>
                     </table>
                 </div>
                 <p class="mt-2"><i class="fas fa-info-circle"></i> Full task breakdown with files, dependencies, and outputs is provided in each sprint section below.</p>
+                <div class="note info">
+                    <strong>Implementation standard:</strong> Use MySQL through <code>PyMySQL</code> and SQLAlchemy consistently. Keep the FastAPI entry point at <code>backend/app/main.py</code>.
+                </div>
             </div>
         </section>
 
@@ -944,8 +1136,8 @@ mkdir -p database docs tests .github/workflows</pre>
                         </ul>
                         <h4>Backend</h4>
                         <ul>
-                            <li>Model: <code>models/User.js</code></li>
-                            <li>Controller: <code>controllers/auth.js</code> – register()</li>
+                            <li>Model: <code>backend/app/models/user.py</code></li>
+                            <li>Router: <code>backend/app/routers/auth.py</code> – register()</li>
                             <li>Route: POST <code>/api/auth/register</code></li>
                             <li>bcrypt hashing, validation (phone, password strength)</li>
                         </ul>
@@ -953,14 +1145,14 @@ mkdir -p database docs tests .github/workflows</pre>
                     <div>
                         <h4>Frontend</h4>
                         <ul>
-                            <li>Page: <code>pages/Register.jsx</code></li>
+                            <li>Page: <code>frontend/js/pages/register.js</code></li>
                             <li>Form with phone, password, full_name, role</li>
                             <li>Client validation (phone format, password length)</li>
-                            <li>API service: <code>services/auth.js</code></li>
+                            <li>API service: <code>frontend/js/api.js</code></li>
                         </ul>
                         <h4>Testing</h4>
                         <ul>
-                            <li>✔ Valid registration → 201</li>
+                            <li>✔ Valid registration → 201 Created</li>
                             <li>✔ Duplicate phone → 409</li>
                             <li>✔ Weak password → 400</li>
                             <li>✔ Missing fields → 400</li>
@@ -980,24 +1172,25 @@ mkdir -p database docs tests .github/workflows</pre>
                         <ul><li>Same <code>users</code> table (check password_hash)</li></ul>
                         <h4>Backend</h4>
                         <ul>
-                            <li>Controller: <code>login()</code> – verify password, issue JWT</li>
+                            <li>Router: <code>login()</code> – verify password, issue JWT</li>
                             <li>Route: POST <code>/api/auth/login</code></li>
-                            <li>Middleware: <code>middleware/auth.js</code> (verify token)</li>
+                            <li>Middleware: <code>backend/app/middleware/auth.py</code> (verify token)</li>
                         </ul>
                     </div>
                     <div>
                         <h4>Frontend</h4>
                         <ul>
-                            <li>Page: <code>pages/Login.jsx</code></li>
-                            <li>Store token in localStorage or context</li>
+                            <li>Page: <code>frontend/js/pages/login.js</code></li>
+                            <li>Store the JWT in <code>localStorage</code> through <code>frontend/js/auth.js</code></li>
                             <li>Redirect to dashboard after login</li>
                         </ul>
                         <h4>Testing</h4>
                         <ul>
                             <li>✔ Correct credentials → 200 + token</li>
                             <li>✔ Wrong password → 401</li>
-                            <li>✔ Non-existent user → 404</li>
+                            <li>✔ Invalid phone/password → 401 (same response whether or not the phone exists)</li>
                         </ul>
+                        <div class="note info"><strong>Login rule:</strong> Valid credentials return <code>200</code>. Invalid phone/password combinations return <code>401 Unauthorized</code> without revealing whether the phone number exists.</div>
                     </div>
                 </div>
                 <div class="note success">
@@ -1011,16 +1204,14 @@ mkdir -p database docs tests .github/workflows</pre>
                     <div>
                         <h4>Backend</h4>
                         <ul>
-                            <li>Middleware: <code>roleGuard(roles)</code> – check <code>req.user.role</code></li>
+                            <li>FastAPI dependency/guard: <code>require_roles(roles)</code> – verify the JWT and check the authenticated user role</li>
                             <li>Apply to protected endpoints</li>
                         </ul>
                     </div>
                     <div>
                         <h4>Frontend</h4>
                         <ul>
-                            <li>Context: <code>context/AuthContext.jsx</code></li>
-                            <li>Component: <code>components/ProtectedRoute.jsx</code></li>
-                            <li>Component: <code>components/RoleGuard.jsx</code></li>
+                            <li>JavaScript auth module: <code>frontend/js/auth.js</code> – store/read JWT, check auth state, logout, redirect unauthenticated users, and provide role-check helpers</li>
                         </ul>
                         <h4>Testing</h4>
                         <ul>
@@ -1029,6 +1220,7 @@ mkdir -p database docs tests .github/workflows</pre>
                         </ul>
                     </div>
                 </div>
+                <div class="note info"><strong>Logout:</strong> JWT logout is client-side: <code>localStorage.removeItem("access_token")</code>, clear local auth state, then redirect to the login page. No token blacklist is required.</div>
                 <div class="note success">
                     <strong>Git:</strong> <code>feature/auth-roles</code> &nbsp;|&nbsp; Commit: <code>feat(auth): add role-based guards and protected routes</code>
                 </div>
@@ -1044,9 +1236,9 @@ mkdir -p database docs tests .github/workflows</pre>
             <div class="card">
                 <h3><i class="fas fa-user-edit"></i> User Profile &amp; Privacy</h3>
                 <ul>
-                    <li><strong>DB:</strong> Add fields to <code>users</code>: bio, location, privacy_settings (JSON), nid_number, nid_photo</li>
-                    <li><strong>BE:</strong> PUT <code>/api/users/profile</code> – update profile, privacy controls</li>
-                    <li><strong>FE:</strong> <code>pages/Profile.jsx</code> – view/edit profile, privacy toggles</li>
+                    <li><strong>DB:</strong> Add fields to <code>users</code>: bio, location, privacy_settings (JSON), nid_number, nid_photo (Cloudinary URL)</li>
+                    <li><strong>BE:</strong> PUT <code>/api/users/me</code> – update profile, privacy controls</li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/profile.js</code> – view/edit profile, privacy toggles</li>
                     <li><strong>Branch:</strong> <code>feature/user-profile</code></li>
                 </ul>
             </div>
@@ -1055,8 +1247,8 @@ mkdir -p database docs tests .github/workflows</pre>
                 <h3><i class="fas fa-id-card"></i> NID Submission &amp; Verification</h3>
                 <ul>
                     <li><strong>DB:</strong> <code>verification_requests</code> – id, user_id, nid_number, nid_photo, status (pending/approved/rejected), admin_notes, created_at</li>
-                    <li><strong>BE:</strong> POST <code>/api/verification/submit</code>, GET <code>/api/verification/status</code>, PATCH <code>/api/admin/verification/:id</code> (admin only)</li>
-                    <li><strong>FE:</strong> <code>pages/VerifyNID.jsx</code>, <code>pages/Admin/VerificationQueue.jsx</code></li>
+                    <li><strong>BE:</strong> POST <code>/api/verification/submit</code>, GET <code>/api/verification/status</code>, PATCH <code>/api/admin/verification/{id}</code> (admin only)</li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/verify-nid.js</code>, <code>frontend/js/components/verification-queue.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/nid-verification</code></li>
                 </ul>
                 <div class="note info">
@@ -1068,17 +1260,18 @@ mkdir -p database docs tests .github/workflows</pre>
                 <h3><i class="fas fa-star"></i> Ratings &amp; Trust Component</h3>
                 <ul>
                     <li><strong>DB:</strong> <code>ratings</code> – id, rated_user_id, rater_user_id, score (1–5), review, created_at</li>
-                    <li><strong>BE:</strong> POST <code>/api/ratings</code>, GET <code>/api/ratings/:userId</code></li>
-                    <li><strong>FE:</strong> <code>components/RatingDisplay.jsx</code>, <code>components/RatingForm.jsx</code></li>
+                    <li><strong>BE:</strong> POST <code>/api/ratings</code>, GET <code>/api/ratings/{user_id}</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/components/rating-display.js</code>, <code>frontend/js/components/rating-form.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/ratings</code></li>
                 </ul>
+                <div class="note info"><strong>Duplicate-rating rule:</strong> A user cannot repeatedly rate the same user without a valid interaction, transaction or event relationship. Enforce this in the backend before inserting a rating.</div>
             </div>
 
             <div class="card">
                 <h3><i class="fas fa-clipboard-list"></i> Admin Verification Queue &amp; Audit Log</h3>
                 <ul>
                     <li><strong>DB:</strong> <code>audit_logs</code> – id, user_id, action, timestamp, ip, details</li>
-                    <li><strong>BE:</strong> GET <code>/api/admin/verification</code>, PATCH <code>/api/admin/verification/:id</code>, GET <code>/api/admin/audit</code></li>
+                    <li><strong>BE:</strong> GET <code>/api/admin/verification</code>, PATCH <code>/api/admin/verification/{id}</code>, GET <code>/api/admin/audit</code></li>
                     <li><strong>FE:</strong> Admin dashboard with queue and log views</li>
                     <li><strong>Branch:</strong> <code>feature/admin-verification</code></li>
                 </ul>
@@ -1096,7 +1289,7 @@ mkdir -p database docs tests .github/workflows</pre>
                 <ul>
                     <li><strong>DB:</strong> <code>donors</code> – id, user_id, blood_group, location, is_available, last_donation_date, supporting_docs</li>
                     <li><strong>BE:</strong> POST <code>/api/donors/register</code>, PUT <code>/api/donors/availability</code></li>
-                    <li><strong>FE:</strong> <code>pages/DonorRegister.jsx</code>, <code>components/DonorCard.jsx</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/donor-register.js</code>, <code>frontend/js/components/donor-card.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/blood-donor</code></li>
                 </ul>
             </div>
@@ -1105,8 +1298,8 @@ mkdir -p database docs tests .github/workflows</pre>
                 <h3><i class="fas fa-tint"></i> Blood Request &amp; Matching</h3>
                 <ul>
                     <li><strong>DB:</strong> <code>blood_requests</code> – id, requester_id, blood_group, urgency, location, supporting_doc, status, created_at</li>
-                    <li><strong>BE:</strong> POST <code>/api/blood/request</code>, GET <code>/api/blood/match</code> (nearby donors)</li>
-                    <li><strong>FE:</strong> <code>pages/BloodRequest.jsx</code>, <code>pages/BloodMatch.jsx</code></li>
+                    <li><strong>BE:</strong> POST <code>/api/blood-requests</code>, GET <code>/api/blood-requests/{id}/matches</code> (compatible available donors)</li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/blood-request.js</code>, <code>frontend/js/pages/blood-match.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/blood-request</code></li>
                 </ul>
             </div>
@@ -1115,8 +1308,8 @@ mkdir -p database docs tests .github/workflows</pre>
                 <h3><i class="fas fa-bell"></i> Notifications</h3>
                 <ul>
                     <li><strong>DB:</strong> <code>notifications</code> – id, user_id, title, message, type, is_read, created_at</li>
-                    <li><strong>BE:</strong> GET <code>/api/notifications</code>, PATCH <code>/api/notifications/:id/read</code></li>
-                    <li><strong>FE:</strong> <code>components/NotificationBell.jsx</code>, <code>pages/NotificationCentre.jsx</code></li>
+                    <li><strong>BE:</strong> GET <code>/api/notifications</code>, PATCH <code>/api/notifications/{id}/read</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/components/notification-bell.js</code>, <code>frontend/js/pages/notification-centre.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/notifications</code></li>
                 </ul>
                 <div class="note">
@@ -1127,8 +1320,8 @@ mkdir -p database docs tests .github/workflows</pre>
             <div class="card">
                 <h3><i class="fas fa-check-circle"></i> Blood Request Closure &amp; History</h3>
                 <ul>
-                    <li><strong>BE:</strong> PATCH <code>/api/blood/request/:id/close</code>, GET <code>/api/blood/history</code></li>
-                    <li><strong>FE:</strong> <code>pages/BloodHistory.jsx</code></li>
+                    <li><strong>BE:</strong> PATCH <code>/api/blood-requests/{id}/close</code>, GET <code>/api/blood-requests</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/blood-history.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/blood-history</code></li>
                 </ul>
             </div>
@@ -1138,7 +1331,7 @@ mkdir -p database docs tests .github/workflows</pre>
                 <ul>
                     <li><strong>DB:</strong> <code>reports</code> – id, reporter_id, target_id, target_type, reason, status</li>
                     <li><strong>BE:</strong> POST <code>/api/reports</code> (blood request)</li>
-                    <li><strong>FE:</strong> <code>components/ReportButton.jsx</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/components/report-button.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/reports</code></li>
                 </ul>
             </div>
@@ -1147,9 +1340,10 @@ mkdir -p database docs tests .github/workflows</pre>
                 <h3><i class="fas fa-file-upload"></i> Supporting Document Upload</h3>
                 <ul>
                     <li><strong>BE:</strong> Cloudinary integration, POST <code>/api/upload</code></li>
-                    <li><strong>FE:</strong> <code>components/FileUpload.jsx</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/components/file-upload.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/file-upload</code></li>
                 </ul>
+                <div class="note info"><strong>Cloudinary:</strong> Actual uploaded images/documents are stored in Cloudinary. MySQL stores their Cloudinary URLs. Single-file fields such as <code>nid_photo</code> and <code>supporting_doc</code> store one URL; multi-photo fields such as <code>goods_listings.photos</code> and <code>farmer_products.photos</code> store JSON arrays of URLs.</div>
             </div>
         </section>
 
@@ -1164,7 +1358,7 @@ mkdir -p database docs tests .github/workflows</pre>
                 <ul>
                     <li><strong>DB:</strong> <code>volunteer_events</code> – id, ngo_id, title, description, date, location, capacity, status</li>
                     <li><strong>BE:</strong> POST <code>/api/events</code>, GET <code>/api/events</code></li>
-                    <li><strong>FE:</strong> <code>pages/CreateEvent.jsx</code>, <code>pages/EventsList.jsx</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/create-event.js</code>, <code>frontend/js/pages/events-list.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/volunteer-events</code></li>
                 </ul>
             </div>
@@ -1173,8 +1367,8 @@ mkdir -p database docs tests .github/workflows</pre>
                 <h3><i class="fas fa-user-check"></i> Volunteer Signup &amp; Profile</h3>
                 <ul>
                     <li><strong>DB:</strong> <code>volunteer_signups</code> – id, event_id, volunteer_id, status, attended, certificate_issued</li>
-                    <li><strong>BE:</strong> POST <code>/api/events/:id/signup</code>, GET <code>/api/volunteer/profile</code></li>
-                    <li><strong>FE:</strong> <code>pages/EventDetail.jsx</code>, <code>pages/MyVolunteering.jsx</code></li>
+                    <li><strong>BE:</strong> POST <code>/api/events/{id}/signup</code>, GET <code>/api/volunteer/profile</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/event-detail.js</code>, <code>frontend/js/pages/my-volunteering.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/volunteer-signup</code></li>
                 </ul>
             </div>
@@ -1182,17 +1376,18 @@ mkdir -p database docs tests .github/workflows</pre>
             <div class="card">
                 <h3><i class="fas fa-qrcode"></i> Digital Attendance &amp; Certificate</h3>
                 <ul>
-                    <li><strong>BE:</strong> PATCH <code>/api/events/:id/attendance</code> (admin/ngo), GET <code>/api/volunteer/certificate/:id</code></li>
-                    <li><strong>FE:</strong> <code>pages/EventAttendance.jsx</code>, <code>pages/Certificate.jsx</code></li>
+                    <li><strong>BE:</strong> PATCH <code>/api/events/{id}/attendance</code> (admin/ngo), GET <code>/api/volunteer/certificate/{id}</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/event-attendance.js</code>, <code>frontend/js/pages/certificate.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/volunteer-attendance</code></li>
                 </ul>
+                <div class="note info"><strong>Certificate generation:</strong> Volunteer attends event → NGO/Admin confirms attendance → FastAPI certificate service uses ReportLab to generate a PDF → volunteer can view/download the certificate.</div>
             </div>
 
             <div class="card">
                 <h3><i class="fas fa-search"></i> Volunteer Search &amp; Export</h3>
                 <ul>
                     <li><strong>BE:</strong> GET <code>/api/volunteer/search</code>, GET <code>/api/admin/volunteer/export</code> (CSV)</li>
-                    <li><strong>FE:</strong> <code>pages/VolunteerSearch.jsx</code>, admin export button</li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/volunteer-search.js</code>, admin export button</li>
                     <li><strong>Branch:</strong> <code>feature/volunteer-search</code></li>
                 </ul>
             </div>
@@ -1203,10 +1398,11 @@ mkdir -p database docs tests .github/workflows</pre>
                     <strong>⚠ Real-time chat is out of scope.</strong> We use email announcements and in-app notifications instead.
                 </div>
                 <ul>
-                    <li><strong>BE:</strong> POST <code>/api/events/:id/announce</code> – send email to all signed-up volunteers via Nodemailer</li>
-                    <li><strong>FE:</strong> <code>components/EventAnnounce.jsx</code></li>
+                    <li><strong>BE:</strong> POST <code>/api/events/{id}/announce</code> – send email to all signed-up volunteers via the configured email service</li>
+                    <li><strong>FE:</strong> <code>frontend/js/components/event-announce.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/event-communication</code></li>
                 </ul>
+                <div class="note info"><strong>Email implementation:</strong> Use FastAPI-Mail with SMTP. Registration confirmation, verification results, blood request notifications and event announcements use the configured email service. Event announcement → backend loads signed-up volunteers → email service sends the announcement → an in-app notification may also be created. Real-time chat remains out of scope.</div>
             </div>
         </section>
 
@@ -1214,14 +1410,14 @@ mkdir -p database docs tests .github/workflows</pre>
         <!--  SPRINT 5                                                      -->
         <!-- ============================================================ -->
         <section class="section" id="sprint5">
-            <h2 class="section-title"><i class="fas fa-store"></i> Sprint 5 – Goods, Waste, Farmer <span class="count">6 tasks</span></h2>
+            <h2 class="section-title"><i class="fas fa-store"></i> Sprint 5 – Goods, Waste, Farmer <span class="count">5 tasks</span></h2>
 
             <div class="card">
                 <h3><i class="fas fa-boxes"></i> Second-Hand Goods</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>goods_listings</code> – id, seller_id, title, description, price, category, photos, status, created_at</li>
-                    <li><strong>BE:</strong> CRUD endpoints <code>/api/goods</code>, POST <code>/api/goods/:id/interest</code></li>
-                    <li><strong>FE:</strong> <code>pages/GoodsList.jsx</code>, <code>pages/CreateListing.jsx</code>, <code>components/ListingCard.jsx</code></li>
+                    <li><strong>DB:</strong> <code>goods_listings</code> – id, seller_id, title, description, price, category, photos (JSON array of Cloudinary URLs), status, created_at</li>
+                    <li><strong>BE:</strong> CRUD endpoints <code>/api/goods</code>, POST <code>/api/goods/{id}/interest</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/goods-list.js</code>, <code>frontend/js/pages/create-listing.js</code>, <code>frontend/js/components/listing-card.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/goods</code></li>
                 </ul>
             </div>
@@ -1229,12 +1425,12 @@ mkdir -p database docs tests .github/workflows</pre>
             <div class="card">
                 <h3><i class="fas fa-trash-alt"></i> Waste Management</h3>
                 <div class="note warning">
-                    <strong>⚠ Waste collectors do NOT have accounts.</strong> Contact by phone only.
+                    <strong>⚠ Waste collectors/Vangariwalas do NOT create HELPNET accounts.</strong> There is no WasteCollector role, authentication or account. Contact is by phone only.
                 </div>
                 <ul>
                     <li><strong>DB:</strong> <code>waste_requests</code> – id, user_id, location, waste_type, preferred_time, status, collector_phone</li>
-                    <li><strong>BE:</strong> POST <code>/api/waste/request</code>, GET <code>/api/waste/nearby</code></li>
-                    <li><strong>FE:</strong> <code>pages/WasteRequest.jsx</code>, <code>components/WasteCollectorCard.jsx</code> (shows phone only)</li>
+                    <li><strong>BE:</strong> POST <code>/api/waste-requests</code>, GET <code>/api/waste-requests/nearby</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/waste-request.js</code>, <code>frontend/js/components/waste-collector-card.js</code> (shows phone only)</li>
                     <li><strong>Branch:</strong> <code>feature/waste</code></li>
                 </ul>
             </div>
@@ -1242,9 +1438,9 @@ mkdir -p database docs tests .github/workflows</pre>
             <div class="card">
                 <h3><i class="fas fa-tractor"></i> Farmer Marketplace</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>farmer_products</code> – id, farmer_id, name, description, price, unit, quantity, location, photos, status</li>
-                    <li><strong>BE:</strong> CRUD <code>/api/farmer/products</code>, GET <code>/api/farmer/browse</code></li>
-                    <li><strong>FE:</strong> <code>pages/FarmerDashboard.jsx</code>, <code>pages/FarmerBrowse.jsx</code>, <code>components/ProductCard.jsx</code></li>
+                    <li><strong>DB:</strong> <code>farmer_products</code> – id, farmer_id, name, description, price, unit, quantity, location, photos (JSON array of Cloudinary URLs), status</li>
+                    <li><strong>BE:</strong> CRUD <code>/api/farmer-products</code>, GET <code>/api/farmer-products/browse</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/farmer-dashboard.js</code>, <code>frontend/js/pages/farmer-browse.js</code>, <code>frontend/js/components/product-card.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/farmer</code></li>
                 </ul>
             </div>
@@ -1252,8 +1448,8 @@ mkdir -p database docs tests .github/workflows</pre>
             <div class="card">
                 <h3><i class="fas fa-shield-alt"></i> Admin Moderation</h3>
                 <ul>
-                    <li><strong>BE:</strong> GET <code>/api/admin/reports</code>, PATCH <code>/api/admin/reports/:id</code>, DELETE <code>/api/admin/goods/:id</code></li>
-                    <li><strong>FE:</strong> <code>pages/Admin/Moderation.jsx</code></li>
+                    <li><strong>BE:</strong> GET <code>/api/admin/reports</code>, PATCH <code>/api/admin/reports/{id}</code>, DELETE <code>/api/admin/goods/{id}</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/components/moderation.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/admin-moderation</code></li>
                 </ul>
             </div>
@@ -1280,7 +1476,7 @@ mkdir -p database docs tests .github/workflows</pre>
                         <code>health_replies</code> – id, post_id, user_id, content, created_at
                     </li>
                     <li><strong>BE:</strong> CRUD <code>/api/health/posts</code>, <code>/api/health/replies</code></li>
-                    <li><strong>FE:</strong> <code>pages/HealthCommunity.jsx</code>, <code>components/HealthPostCard.jsx</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/health-community.js</code>, <code>frontend/js/components/health-post-card.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/health</code></li>
                 </ul>
             </div>
@@ -1290,7 +1486,7 @@ mkdir -p database docs tests .github/workflows</pre>
                 <ul>
                     <li><strong>DB:</strong> <code>health_professionals</code> – id, user_id, specialty, qualification, license_number, is_verified</li>
                     <li><strong>BE:</strong> GET <code>/api/health/professionals</code></li>
-                    <li><strong>FE:</strong> <code>pages/HealthDirectory.jsx</code>, <code>components/ProfessionalCard.jsx</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/pages/health-directory.js</code>, <code>frontend/js/components/professional-card.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/health-professionals</code></li>
                 </ul>
             </div>
@@ -1298,7 +1494,7 @@ mkdir -p database docs tests .github/workflows</pre>
             <div class="card">
                 <h3><i class="fas fa-balance-scale"></i> Trust Indicators &amp; Medical Disclaimer</h3>
                 <ul>
-                    <li><strong>FE:</strong> Display verification badges, "Medical Disclaimer" banner on all health pages</li>
+                    <li><strong>FE:</strong> Display verified professional badges and a "Medical Disclaimer" banner on all health pages. HELPNET does not diagnose diseases; health suggestions are informational only and users should consult qualified healthcare professionals.</li>
                     <li><strong>Branch:</strong> <code>feature/health-trust</code></li>
                 </ul>
             </div>
@@ -1306,8 +1502,8 @@ mkdir -p database docs tests .github/workflows</pre>
             <div class="card">
                 <h3><i class="fas fa-sliders-h"></i> Admin Content Management</h3>
                 <ul>
-                    <li><strong>BE:</strong> PATCH <code>/api/admin/health/posts/:id</code> (hide/feature), DELETE <code>/api/admin/health/posts/:id</code></li>
-                    <li><strong>FE:</strong> <code>pages/Admin/ContentManagement.jsx</code></li>
+                    <li><strong>BE:</strong> PATCH <code>/api/admin/health/posts/{id}</code> (hide/feature), DELETE <code>/api/admin/health/posts/{id}</code></li>
+                    <li><strong>FE:</strong> <code>frontend/js/components/content-management.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/admin-content</code></li>
                 </ul>
             </div>
@@ -1337,15 +1533,15 @@ mkdir -p database docs tests .github/workflows</pre>
                         <tbody>
                             <tr><td><code>users</code></td><td>id, phone, password_hash, role, full_name, bio, location, privacy_settings, nid_number, nid_photo, is_verified, created_at, updated_at</td><td>PK: id</td><td>phone UNIQUE</td></tr>
                             <tr><td><code>verification_requests</code></td><td>id, user_id, nid_number, nid_photo, status, admin_notes, created_at</td><td>FK: user_id → users.id</td><td>status IN (pending,approved,rejected)</td></tr>
-                            <tr><td><code>ratings</code></td><td>id, rated_user_id, rater_user_id, score, review, created_at</td><td>FK: rated_user_id → users.id, rater_user_id → users.id</td><td>score 1–5</td></tr>
-                            <tr><td><code>donors</code></td><td>id, user_id, blood_group, location, is_available, last_donation_date, supporting_docs</td><td>FK: user_id → users.id</td><td>blood_group IN (A+,A-,B+,B-,AB+,AB-,O+,O-)</td></tr>
-                            <tr><td><code>blood_requests</code></td><td>id, requester_id, blood_group, urgency, location, supporting_doc, status, created_at</td><td>FK: requester_id → users.id</td><td>status IN (open,matched,closed)</td></tr>
+                            <tr><td><code>ratings</code></td><td>id, rated_user_id, rater_user_id, score, review, created_at</td><td>FK: rated_user_id → users.id, rater_user_id → users.id</td><td>score 1–5; duplicate rating prevented for the same valid interaction/transaction/event relationship</td></tr>
+                            <tr><td><code>donors</code></td><td>id, user_id, blood_group, location, is_available, last_donation_date, supporting_docs (JSON array of Cloudinary URLs)</td><td>FK: user_id → users.id</td><td>blood_group IN (A+,A-,B+,B-,AB+,AB-,O+,O-)</td></tr>
+                            <tr><td><code>blood_requests</code></td><td>id, requester_id, blood_group, urgency, location, supporting_doc (Cloudinary URL), status, created_at</td><td>FK: requester_id → users.id</td><td>status IN (open,matched,closed)</td></tr>
                             <tr><td><code>notifications</code></td><td>id, user_id, title, message, type, is_read, created_at</td><td>FK: user_id → users.id</td><td>is_read BOOLEAN DEFAULT false</td></tr>
                             <tr><td><code>volunteer_events</code></td><td>id, ngo_id, title, description, date, location, capacity, status</td><td>FK: ngo_id → users.id</td><td>status IN (upcoming,ongoing,completed)</td></tr>
                             <tr><td><code>volunteer_signups</code></td><td>id, event_id, volunteer_id, status, attended, certificate_issued</td><td>FK: event_id → volunteer_events.id, volunteer_id → users.id</td><td>status IN (pending,approved,rejected)</td></tr>
-                            <tr><td><code>goods_listings</code></td><td>id, seller_id, title, description, price, category, photos, status, created_at</td><td>FK: seller_id → users.id</td><td>status IN (active,sold,reported)</td></tr>
+                            <tr><td><code>goods_listings</code></td><td>id, seller_id, title, description, price, category, photos (JSON array of Cloudinary URLs), status, created_at</td><td>FK: seller_id → users.id</td><td>status IN (active,sold,reported)</td></tr>
                             <tr><td><code>waste_requests</code></td><td>id, user_id, location, waste_type, preferred_time, status, collector_phone</td><td>FK: user_id → users.id</td><td>status IN (pending,assigned,completed)</td></tr>
-                            <tr><td><code>farmer_products</code></td><td>id, farmer_id, name, description, price, unit, quantity, location, photos, status</td><td>FK: farmer_id → users.id</td><td>status IN (active,sold,reported)</td></tr>
+                            <tr><td><code>farmer_products</code></td><td>id, farmer_id, name, description, price, unit, quantity, location, photos (JSON array of Cloudinary URLs), status</td><td>FK: farmer_id → users.id</td><td>status IN (active,sold,reported)</td></tr>
                             <tr><td><code>health_posts</code></td><td>id, user_id, title, content, category, is_anonymous, created_at</td><td>FK: user_id → users.id</td><td>is_anonymous BOOLEAN</td></tr>
                             <tr><td><code>health_replies</code></td><td>id, post_id, user_id, content, created_at</td><td>FK: post_id → health_posts.id, user_id → users.id</td><td>—</td></tr>
                             <tr><td><code>health_professionals</code></td><td>id, user_id, specialty, qualification, license_number, is_verified</td><td>FK: user_id → users.id</td><td>is_verified BOOLEAN</td></tr>
@@ -1355,8 +1551,26 @@ mkdir -p database docs tests .github/workflows</pre>
                     </table>
                 </div>
                 <div class="note info">
+                    <strong>Database connection:</strong> SQLAlchemy uses <code>DATABASE_URL=mysql+pymysql://helpnet:PASSWORD@mysql:3306/helpnet</code> in Docker.
+                </div>
+                <div class="note info">
                     <strong>Relationships:</strong> Most tables link to <code>users</code>. <code>volunteer_signups</code> links events and volunteers. <code>health_replies</code> links to <code>health_posts</code>.
                 </div>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-code-branch"></i> Alembic Migration Strategy</h3>
+                <p>SQLAlchemy models define the database structure, while Alembic is the single schema-migration system.</p>
+                <pre>backend/
+├── alembic.ini
+└── alembic/
+    ├── env.py
+    └── versions/</pre>
+                <ul>
+                    <li>Install <code>alembic</code> in <code>backend/requirements.txt</code>.</li>
+                    <li>Create revisions with Alembic and apply them with <code>alembic upgrade head</code>.</li>
+                    <li>Do not maintain a second competing migration mechanism.</li>
+                    <li><code>database/migrations/</code> remains a project folder for database-related artifacts only; it is not used as the schema migration engine.</li>
+                </ul>
             </div>
         </section>
 
@@ -1380,20 +1594,20 @@ mkdir -p database docs tests .github/workflows</pre>
                             <tr><td>Verification</td><td>POST</td><td><code>/api/verification/submit</code></td><td>✅</td><td>all</td><td>Submit NID</td></tr>
                             <tr><td>Verification</td><td>GET</td><td><code>/api/verification/status</code></td><td>✅</td><td>all</td><td>Check status</td></tr>
                             <tr><td>Admin</td><td>GET</td><td><code>/api/admin/verification</code></td><td>✅</td><td>admin</td><td>Queue list</td></tr>
-                            <tr><td>Admin</td><td>PATCH</td><td><code>/api/admin/verification/:id</code></td><td>✅</td><td>admin</td><td>Approve/reject</td></tr>
+                            <tr><td>Admin</td><td>PATCH</td><td><code>/api/admin/verification/{id}</code></td><td>✅</td><td>admin</td><td>Approve/reject</td></tr>
                             <tr><td>Ratings</td><td>POST</td><td><code>/api/ratings</code></td><td>✅</td><td>all</td><td>Rate a user</td></tr>
-                            <tr><td>Ratings</td><td>GET</td><td><code>/api/ratings/:userId</code></td><td>✅</td><td>all</td><td>Get user ratings</td></tr>
-                            <tr><td>Blood</td><td>POST</td><td><code>/api/donors/register</code></td><td>✅</td><td>all</td><td>Register as donor</td></tr>
-                            <tr><td>Blood</td><td>POST</td><td><code>/api/blood/request</code></td><td>✅</td><td>all</td><td>Create blood request</td></tr>
-                            <tr><td>Blood</td><td>GET</td><td><code>/api/blood/match</code></td><td>✅</td><td>all</td><td>Find nearby donors</td></tr>
+                            <tr><td>Ratings</td><td>GET</td><td><code>/api/ratings/{user_id}</code></td><td>✅</td><td>all</td><td>Get user ratings</td></tr>
+                            <tr><td>Blood</td><td>POST</td><td><code>/api/donors/register</code></td><td>✅</td><td>citizen</td><td>Register as donor</td></tr>
+                            <tr><td>Blood</td><td>POST</td><td><code>/api/blood-requests</code></td><td>✅</td><td>all</td><td>Create blood request</td></tr>
+                            <tr><td>Blood</td><td>GET</td><td><code>/api/blood-requests/{id}/matches</code></td><td>✅</td><td>all</td><td>Find compatible/available donors for a request</td></tr>
                             <tr><td>Notifications</td><td>GET</td><td><code>/api/notifications</code></td><td>✅</td><td>all</td><td>List notifications</td></tr>
                             <tr><td>Volunteer</td><td>POST</td><td><code>/api/events</code></td><td>✅</td><td>ngo,admin</td><td>Create event</td></tr>
-                            <tr><td>Volunteer</td><td>POST</td><td><code>/api/events/:id/signup</code></td><td>✅</td><td>all</td><td>Sign up for event</td></tr>
+                            <tr><td>Volunteer</td><td>POST</td><td><code>/api/events/{id}/signup</code></td><td>✅</td><td>all</td><td>Sign up for event</td></tr>
                             <tr><td>Goods</td><td>POST</td><td><code>/api/goods</code></td><td>✅</td><td>all</td><td>Create listing</td></tr>
                             <tr><td>Goods</td><td>GET</td><td><code>/api/goods</code></td><td>✅</td><td>all</td><td>List goods</td></tr>
-                            <tr><td>Waste</td><td>POST</td><td><code>/api/waste/request</code></td><td>✅</td><td>all</td><td>Request pickup</td></tr>
-                            <tr><td>Farmer</td><td>POST</td><td><code>/api/farmer/products</code></td><td>✅</td><td>farmer</td><td>Add product</td></tr>
-                            <tr><td>Farmer</td><td>GET</td><td><code>/api/farmer/browse</code></td><td>✅</td><td>all</td><td>Browse products</td></tr>
+                            <tr><td>Waste</td><td>POST</td><td><code>/api/waste-requests</code></td><td>✅</td><td>all</td><td>Request pickup</td></tr>
+                            <tr><td>Farmer</td><td>POST</td><td><code>/api/farmer-products</code></td><td>✅</td><td>farmer</td><td>Add product</td></tr>
+                            <tr><td>Farmer</td><td>GET</td><td><code>/api/farmer-products/browse</code></td><td>✅</td><td>all</td><td>Browse products</td></tr>
                             <tr><td>Health</td><td>POST</td><td><code>/api/health/posts</code></td><td>✅</td><td>all</td><td>Ask a health question</td></tr>
                             <tr><td>Health</td><td>GET</td><td><code>/api/health/posts</code></td><td>✅</td><td>all</td><td>List health posts</td></tr>
                             <tr><td>Health</td><td>GET</td><td><code>/api/health/professionals</code></td><td>✅</td><td>all</td><td>List verified pros</td></tr>
@@ -1401,7 +1615,10 @@ mkdir -p database docs tests .github/workflows</pre>
                         </tbody>
                     </table>
                 </div>
-                <p class="mt-2"><i class="fas fa-info-circle"></i> All endpoints return JSON with <code>{ success, data, message }</code> structure. Error codes: 400, 401, 403, 404, 409, 500.</p>
+                <p class="mt-2"><i class="fas fa-info-circle"></i> All endpoints return the standard JSON envelope. Success: <code>{"success": true, "data": {}, "message": "..."}</code>. Error: <code>{"success": false, "data": null, "message": "..."}</code>. Error status codes: 400, 401, 403, 404, 409, 500.</p>
+                <div class="note info">
+                    <strong>Blood matching:</strong> <code>GET /api/blood-requests/{id}/matches</code> identifies compatible, currently available donors using the request's blood group, location and donor availability. Medical eligibility decisions remain outside HELPNET's authority.
+                </div>
             </div>
         </section>
 
@@ -1418,30 +1635,35 @@ mkdir -p database docs tests .github/workflows</pre>
                             <tr><th>Page</th><th>Route</th><th>Access</th><th>Components</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td>Register</td><td><code>/register</code></td><td>public</td><td>RegisterForm</td></tr>
-                            <tr><td>Login</td><td><code>/login</code></td><td>public</td><td>LoginForm</td></tr>
-                            <tr><td>Profile</td><td><code>/profile</code></td><td>auth</td><td>ProfileForm, PrivacySettings</td></tr>
-                            <tr><td>Verify NID</td><td><code>/verify-nid</code></td><td>auth</td><td>NIDUpload, StatusBadge</td></tr>
+                            <tr><td>Register</td><td><code>pages/register.html</code></td><td>public</td><td>RegisterForm</td></tr>
+                            <tr><td>Login</td><td><code>pages/login.html</code></td><td>public</td><td>LoginForm</td></tr>
+                            <tr><td>Profile</td><td><code>pages/profile.html</code></td><td>auth</td><td>ProfileForm, PrivacySettings</td></tr>
+                            <tr><td>Verify NID</td><td><code>pages/verify-nid.html</code></td><td>auth</td><td>NIDUpload, StatusBadge</td></tr>
                             <tr><td>Admin Verification</td><td><code>/admin/verification</code></td><td>admin</td><td>VerificationQueue, AuditLog</td></tr>
-                            <tr><td>Donor Register</td><td><code>/donor/register</code></td><td>auth</td><td>DonorForm, BloodGroupSelect</td></tr>
-                            <tr><td>Blood Request</td><td><code>/blood/request</code></td><td>auth</td><td>RequestForm, MatchList</td></tr>
-                            <tr><td>Notification Centre</td><td><code>/notifications</code></td><td>auth</td><td>NotificationList, NotificationBell</td></tr>
-                            <tr><td>Events</td><td><code>/events</code></td><td>auth</td><td>EventCard, CreateEventForm</td></tr>
-                            <tr><td>My Volunteering</td><td><code>/my-volunteering</code></td><td>auth</td><td>SignupList, CertificateDownload</td></tr>
-                            <tr><td>Goods</td><td><code>/goods</code></td><td>auth</td><td>ListingCard, CreateListingForm</td></tr>
-                            <tr><td>Waste</td><td><code>/waste</code></td><td>auth</td><td>WasteRequestForm, CollectorContact</td></tr>
-                            <tr><td>Farmer</td><td><code>/farmer</code></td><td>auth</td><td>ProductCard, FarmerDashboard</td></tr>
-                            <tr><td>Health Community</td><td><code>/health</code></td><td>auth</td><td>PostCard, ReplyForm</td></tr>
-                            <tr><td>Health Directory</td><td><code>/health/directory</code></td><td>auth</td><td>ProfessionalCard</td></tr>
-                            <tr><td>Admin Dashboard</td><td><code>/admin</code></td><td>admin</td><td>AdminMenu, ModerationPanel</td></tr>
+                            <tr><td>Donor Register</td><td><code>pages/donor-register.html</code></td><td>auth</td><td>DonorForm, BloodGroupSelect</td></tr>
+                            <tr><td>Blood Request</td><td><code>pages/blood-request.html</code></td><td>auth</td><td>RequestForm, MatchList</td></tr>
+                            <tr><td>Notification Centre</td><td><code>pages/notifications.html</code></td><td>auth</td><td>NotificationList, NotificationBell</td></tr>
+                            <tr><td>Events</td><td><code>pages/events.html</code></td><td>auth</td><td>EventCard, CreateEventForm</td></tr>
+                            <tr><td>My Volunteering</td><td><code>pages/my-volunteering.html</code></td><td>auth</td><td>SignupList, CertificateDownload</td></tr>
+                            <tr><td>Goods</td><td><code>pages/goods.html</code></td><td>auth</td><td>ListingCard, CreateListingForm</td></tr>
+                            <tr><td>Waste</td><td><code>pages/waste.html</code></td><td>auth</td><td>WasteRequestForm, CollectorContact</td></tr>
+                            <tr><td>Farmer</td><td><code>pages/farmer.html</code></td><td>auth</td><td>ProductCard, FarmerDashboard</td></tr>
+                            <tr><td>Health Community</td><td><code>pages/health.html</code></td><td>auth</td><td>PostCard, ReplyForm</td></tr>
+                            <tr><td>Health Directory</td><td><code>pages/health-directory.html</code></td><td>auth</td><td>ProfessionalCard</td></tr>
+                            <tr><td>Admin Dashboard</td><td><code>pages/admin.html</code></td><td>admin</td><td>AdminMenu, ModerationPanel</td></tr>
                         </tbody>
                     </table>
                 </div>
+                <h4>Shared JavaScript Modules</h4>
+                <ul>
+                    <li><code>frontend/js/api.js</code> – shared <code>fetch()</code> helpers, base URL and JSON/error handling</li>
+                    <li><code>frontend/js/auth.js</code> – JWT storage/read, authentication state, logout, redirect and role helpers</li>
+                </ul>
                 <h4>Reusable Components</h4>
                 <div class="flex flex-wrap gap-2 mt-2">
                     <span class="tag blue">Navbar</span>
                     <span class="tag blue">Sidebar</span>
-                    <span class="tag blue">ProtectedRoute</span>
+                    <span class="tag blue">AuthGuard</span>
                     <span class="tag blue">RoleGuard</span>
                     <span class="tag blue">NotificationBell</span>
                     <span class="tag blue">VerificationBadge</span>
@@ -1465,6 +1687,7 @@ mkdir -p database docs tests .github/workflows</pre>
             <div class="card">
                 <h3><i class="fas fa-check-circle"></i> Test Categories</h3>
                 <ul>
+                    <li><strong>Location:</strong> All executable Python tests live under <code>backend/tests/</code>.</li>
                     <li><strong>Unit tests:</strong> Validators, helpers, model methods</li>
                     <li><strong>API tests:</strong> All endpoints (success &amp; error cases)</li>
                     <li><strong>Integration tests:</strong> Auth → protected routes, blood request → notification</li>
@@ -1477,7 +1700,7 @@ mkdir -p database docs tests .github/workflows</pre>
                     <ul>
                         <li>✔ Unauthorized access → 401</li>
                         <li>✔ Wrong role → 403</li>
-                        <li>✔ Duplicate registration → 409</li>
+                        <li>✔ Duplicate phone → 409 Conflict</li>
                         <li>✔ Invalid phone format → 400</li>
                         <li>✔ Weak password → 400</li>
                     </ul>
@@ -1493,58 +1716,104 @@ mkdir -p database docs tests .github/workflows</pre>
         </section>
 
         <!-- ============================================================ -->
+        <!--  PYTHON DEPENDENCIES                                             -->
+        <!-- ============================================================ -->
+        <section class="section" id="dependencies">
+            <h2 class="section-title"><i class="fas fa-box"></i> Backend Dependencies</h2>
+            <div class="card">
+                <h3><i class="fas fa-file-code"></i> backend/requirements.txt</h3>
+                <pre>fastapi
+uvicorn[standard]
+sqlalchemy
+pymysql
+python-dotenv
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+python-multipart
+pytest
+httpx
+alembic
+cloudinary
+fastapi-mail
+reportlab</pre>
+                <p>Authentication uses JWT tokens with bcrypt/passlib password hashing. The backend exposes a REST API through FastAPI.</p>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
         <!--  DOCKER                                                        -->
         <!-- ============================================================ -->
         <section class="section" id="docker">
             <h2 class="section-title"><i class="fab fa-docker"></i> Docker Plan</h2>
             <div class="card">
                 <h3><i class="fas fa-file"></i> docker-compose.yml</h3>
-                <pre>version: '3.8'
-                    services:
-                    postgres:
-                    image: postgres:15
-                    container_name: helpnet-db
-                    environment:
-                    POSTGRES_USER: helpnet
-                    POSTGRES_PASSWORD: helpnet123
-                    POSTGRES_DB: helpnet
-                    ports:
-                    - "5432:5432"
-                    volumes:
-                    - postgres-data:/var/lib/postgresql/data
+                <pre>services:
+  mysql:
+    image: mysql:8.0
+    container_name: helpnet-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
 
-                    backend:
-                    build: ./backend
-                    container_name: helpnet-backend
-                    ports:
-                    - "5000:5000"
-                    environment:
-                    NODE_ENV: development
-                    DATABASE_URL: postgresql://helpnet:helpnet123@postgres:5432/helpnet
-                    depends_on:
-                    - postgres
-                    volumes:
-                    - ./backend:/app
-                    - /app/node_modules
+  backend:
+    build: ./backend
+    container_name: helpnet-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - mysql
 
-                    frontend:
-                    build: ./frontend
-                    container_name: helpnet-frontend
-                    ports:
-                    - "3000:3000"
-                    environment:
-                    REACT_APP_API_URL: http://localhost:5000/api
-                    depends_on:
-                    - backend
-                    volumes:
-                    - ./frontend:/app
-                    - /app/node_modules
+  frontend:
+    image: nginx:alpine
+    container_name: helpnet-frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
 
-                    volumes:
-                    postgres-data:</pre>
+volumes:
+  mysql-data:</pre>
+                <div class="note info"><strong>Local architecture:</strong> Browser → Nginx static frontend (<code>:8080</code>) → FastAPI backend (<code>:8000</code>) → MySQL (<code>:3306</code>). The frontend container serves only static HTML/CSS/JavaScript; API calls go directly to the configured FastAPI base URL.</div>
+                <h4>Required Dockerfiles</h4>
+                <ul>
+                    <li><code>backend/Dockerfile</code> – install Python dependencies and run FastAPI with Uvicorn on <code>0.0.0.0:$PORT</code> in deployment (the local Compose service may use port 8000).</li>
+                    <li><code>backend/alembic.ini</code> and <code>backend/alembic/versions/</code> – schema changes are managed only through Alembic migrations.</li>
+                    <li><code>frontend</code> – plain static HTML/CSS/JavaScript served by Nginx; no frontend build step is required.</li>
+                </ul>
+                <h4>Environment files</h4>
+                <pre># Root .env — Docker Compose database variables
+MYSQL_ROOT_PASSWORD=
+MYSQL_DATABASE=helpnet
+MYSQL_USER=helpnet
+MYSQL_PASSWORD=
+
+# backend/.env — application variables
+DATABASE_URL=mysql+pymysql://helpnet:PASSWORD@mysql:3306/helpnet
+JWT_SECRET=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USERNAME=
+SMTP_PASSWORD=
+SMTP_FROM=
+SMTP_TLS=true</pre>
+                <p class="command-note">The root <code>.env</code> is read by Docker Compose for MySQL container variables. The backend container reads application settings from <code>backend/.env</code>. Neither file is committed. The root <code>.env.example</code> mirrors the MySQL variables above, while <code>backend/.env.example</code> mirrors the application variables above. The application database URL points to the Docker service name <code>mysql</code>.</p>
                 <h4>Commands</h4>
                 <ul>
-                    <li><code>docker compose up</code> – start all services</li>
+                    <li><code>docker compose up --build</code> – build and start all services</li>
                     <li><code>docker compose down</code> – stop and remove containers</li>
                     <li><code>docker compose build</code> – rebuild images</li>
                 </ul>
@@ -1560,49 +1829,55 @@ mkdir -p database docs tests .github/workflows</pre>
                 <h3><i class="fas fa-file-code"></i> .github/workflows/ci.yml</h3>
                 <pre>name: CI
 
-                    on:
-                    push:
-                    branches: [ main, develop ]
-                    pull_request:
-                    branches: [ develop ]
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [develop, main]
 
-                    jobs:
-                    test:
-                    runs-on: ubuntu-latest
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+      - name: Compile Python files
+        working-directory: backend
+        run: python -m compileall app tests
+      - name: Run backend tests
+        working-directory: backend
+        run: pytest
+      - name: Validate frontend
+        run: test -f frontend/index.html && test -f frontend/css/style.css && test -f frontend/js/app.js && test -f frontend/js/api.js && test -f frontend/js/auth.js && test -f frontend/pages/register.html && test -f frontend/pages/login.html</pre>
+                <p><i class="fas fa-info-circle"></i> Runs on every push/PR to <code>develop</code> or <code>main</code>. It installs only Python dependencies, compiles/checks the backend, runs <code>pytest</code>, and validates required static frontend files. No frontend build step is required.</p>
+            </div>
+        </section>
 
-                    steps:
-                    - uses: actions/checkout@v3
-
-                    - name: Setup Node.js
-                    uses: actions/setup-node@v3
-                    with:
-                    node-version: 18
-
-                    - name: Install backend dependencies
-                    run: |
-                    cd backend
-                    npm ci
-
-                    - name: Run backend tests
-                    run: |
-                    cd backend
-                    npm test
-
-                    - name: Install frontend dependencies
-                    run: |
-                    cd frontend
-                    npm ci
-
-                    - name: Build frontend
-                    run: |
-                    cd frontend
-                    npm run build
-
-                    - name: Run frontend tests
-                    run: |
-                    cd frontend
-                    npm test -- --watchAll=false</pre>
-                <p><i class="fas fa-info-circle"></i> Runs on every push/PR to <code>develop</code> or <code>main</code>. Fails if tests or build fail.</p>
+        <!-- ============================================================ -->
+        <!--  PACKAGE SCRIPTS                                                 -->
+        <!-- ============================================================ -->
+        <section class="section" id="scripts">
+            <h2 class="section-title"><i class="fas fa-terminal"></i> Development Commands</h2>
+            <div class="card">
+                <h3><i class="fas fa-code"></i> Backend commands</h3>
+                <pre>python -m venv .venv
+pip install -r requirements.txt
+uvicorn app.main:app --reload</pre>
+                <h3><i class="fas fa-globe"></i> Frontend</h3>
+                <pre>Static HTML/CSS/JavaScript — no package manager or frontend build step is required.
+For local development, serve the frontend with any static web server.</pre>
+                <div class="note info">
+                    <strong>Important:</strong> JavaScript communicates with the FastAPI REST API using <code>fetch()</code>. The backend uses Python, FastAPI, SQLAlchemy and MySQL.
+                </div>
             </div>
         </section>
 
@@ -1614,23 +1889,29 @@ mkdir -p database docs tests .github/workflows</pre>
             <div class="card">
                 <h3><i class="fas fa-server"></i> Backend</h3>
                 <ul>
-                    <li><strong>Build:</strong> <code>npm install</code></li>
-                    <li><strong>Start:</strong> <code>node src/server.js</code></li>
-                    <li><strong>Env:</strong> DATABASE_URL, JWT_SECRET, CLOUDINARY_*, SMTP_*</li>
+                    <li><strong>Runtime:</strong> Python + FastAPI</li>
+                    <li><strong>Build:</strong> <code>pip install -r requirements.txt</code></li>
+                    <li><strong>Start:</strong> <code>uvicorn app.main:app --host 0.0.0.0 --port $PORT</code></li>
+                    <li><strong>Env:</strong> MySQL credentials, <code>DATABASE_URL</code>, <code>JWT_SECRET</code> and service secrets</li>
                 </ul>
                 <h3><i class="fas fa-globe"></i> Frontend</h3>
                 <ul>
-                    <li><strong>Build:</strong> <code>npm run build</code></li>
-                    <li><strong>Publish:</strong> <code>build/</code> folder</li>
-                    <li><strong>Env:</strong> REACT_APP_API_URL</li>
+                    <li><strong>Type:</strong> Static HTML + CSS + JavaScript</li>
+                    <li><strong>Build:</strong> None required</li>
+                    <li><strong>Publish:</strong> <code>frontend/</code></li>
+                    <li><strong>API:</strong> Configure the FastAPI base URL in <code>frontend/js/api.js</code>.</li>
                 </ul>
                 <h3><i class="fas fa-database"></i> Database</h3>
                 <ul>
-                    <li>Use Render PostgreSQL or Supabase</li>
-                    <li>Run migrations manually or via startup script</li>
+                    <li>Use MySQL 8.x.</li>
+                    <li>Run Alembic migrations from <code>backend/</code> with <code>alembic upgrade head</code> as an explicit deployment step (or a Render deployment command that invokes it before the web service starts). Do not depend on a paid-only pre-deploy feature. The required <code>database/migrations/</code> folder is reserved for database-related project artifacts and is not a second migration system.</li>
+                    <li>SQLAlchemy + PyMySQL provide the Python database layer.</li>
                 </ul>
                 <div class="note info">
-                    <strong>CORS:</strong> Configure <code>cors</code> middleware to allow frontend origin. Use environment variable for production URL.
+                    <strong>Render architecture:</strong> Frontend is a Render Static Site serving HTML/CSS/Vanilla JavaScript; backend is a Render Web Service running FastAPI + Uvicorn; MySQL is a separate MySQL 8.x service reachable privately/internal where possible.
+                </div>
+                <div class="note info">
+                    <strong>CORS:</strong> Configure FastAPI <code>CORSMiddleware</code> with an explicit allowlist. Development may allow the local frontend origin (for example, the local Nginx origin); production must allow only the deployed Render Static Site origin. Do not use <code>allow_origins=["*"]</code> for the authenticated production application. Store production secrets in the deployment platform, never in Git.
                 </div>
             </div>
         </section>
@@ -1644,7 +1925,7 @@ mkdir -p database docs tests .github/workflows</pre>
                 <h3><i class="fas fa-list-check"></i> After Sprint 6</h3>
                 <div class="grid-2">
                     <ul>
-                        <li>✔ Authentication works (login/register/logout)</li>
+                        <li>✔ Authentication works (login/register/client-side logout)</li>
                         <li>✔ Profile &amp; privacy settings</li>
                         <li>✔ NID verification &amp; badge</li>
                         <li>✔ Ratings displayed on profiles</li>
@@ -1665,14 +1946,14 @@ mkdir -p database docs tests .github/workflows</pre>
                     </ul>
                 </div>
                 <div class="note success">
-                    <strong>✔ Done:</strong> All 6 sprints integrated, tested, and deployed. The system is ready for demo.
+                    <strong>Final target:</strong> All 6 sprints are integrated, tested, and deployed only after the checklist above is verified.
                 </div>
             </div>
         </section>
 
         <!-- ─── FOOTER ─── -->
         <div style="margin-top:64px; padding-top:24px; border-top:1px solid var(--gray-200); color:var(--gray-400); font-size:13px; text-align:center;">
-            <i class="fas fa-hand-holding-heart"></i> HELPNET – Development Execution Plan &bull; Built for 5‑member CSE team &bull; All sprints covered
+            <i class="fas fa-hand-holding-heart"></i> HELPNET – Development Execution Plan &bull; 5‑member CSE team &bull; 6 sprints
         </div>
 
     </main>
