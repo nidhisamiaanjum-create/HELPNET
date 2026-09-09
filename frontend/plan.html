@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="HELPNET development execution plan for a 5-member CSE team using HTML, CSS, JavaScript, Python, FastAPI, MySQL, JWT, bcrypt/passlib, Docker, GitHub Actions and Render." />
+    <meta name="description" content="HELPNET development execution plan for a 5-member CSE team using HTML, CSS, JavaScript, Django 5.2, Django REST Framework, MySQL, JWT, Docker, GitHub Actions and Render." />
     <title>HELPNET – Development Execution Plan</title>
     <!-- Font & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -727,7 +727,7 @@
             <div class="badge-group">
                 <span class="badge primary"><i class="fas fa-calendar-alt"></i> 6 Sprints</span>
                 <span class="badge accent"><i class="fas fa-user-friends"></i> 5 Members</span>
-                <span class="badge"><i class="fas fa-layer-group"></i> HTML + CSS + JavaScript + FastAPI + MySQL</span>
+                <span class="badge"><i class="fas fa-layer-group"></i> HTML + CSS + JavaScript + Django 5.2 + MySQL</span>
                 <span class="badge"><i class="fab fa-docker"></i> Docker</span>
                 <span class="badge"><i class="fas fa-cloud"></i> Render</span>
             </div>
@@ -782,7 +782,7 @@
                             <li>HTML, CSS and Vanilla JavaScript</li>
                             <li><code>fetch()</code> for API calls</li>
                             <li><code>frontend/pages/</code>, <code>frontend/js/</code>, <code>frontend/js/components/</code></li>
-                            <li><code>frontend/js/api.js</code> for API helpers</li>
+                            <li><code>frontend/js/api.js</code> – configurable base URL (e.g., via <code>window.API_BASE_URL</code> or a setting)</li>
                             <li><code>frontend/js/auth.js</code> for JWT/auth state, logout and role helpers</li>
                             <li>Nginx for serving the static frontend</li>
                         </ul>
@@ -790,21 +790,23 @@
                     <div>
                         <h4>Backend</h4>
                         <ul>
-                            <li>Python + FastAPI + Uvicorn</li>
-                            <li>SQLAlchemy + PyMySQL</li>
-                            <li>JWT + bcrypt/passlib</li>
-                            <li>FastAPI <code>CORSMiddleware</code></li>
+                            <li>Python 3.12 + Django 5.2 + Django REST Framework</li>
+                            <li>Gunicorn (WSGI) for production</li>
+                            <li>Django ORM + <code>mysqlclient</code> (MySQL driver)</li>
+                            <li><code>djangorestframework-simplejwt</code> for JWT authentication</li>
+                            <li>Django CORS headers middleware</li>
+                            <li>Custom User model (extends <code>AbstractUser</code>) – decided from the start</li>
                         </ul>
                         <h4>Database &amp; Services</h4>
                         <ul>
                             <li>MySQL 8.x</li>
                             <li>Cloudinary for uploaded files; URLs stored in MySQL</li>
-                            <li>FastAPI-Mail + SMTP for email announcements</li>
+                            <li>Django's built-in email backend + SMTP for email announcements</li>
                             <li>ReportLab for volunteer certificate PDFs</li>
                         </ul>
                     </div>
                 </div>
-                <div class="note warning"><strong>Scope boundary:</strong> The frontend remains plain HTML/CSS/Vanilla JavaScript, the backend remains Python/FastAPI, and communication remains email plus in-app notifications. Waste collectors/Vangariwalas never receive HELPNET accounts.</div>
+                <div class="note warning"><strong>Scope boundary:</strong> The frontend remains plain HTML/CSS/Vanilla JavaScript, the backend remains Python/Django/Django REST Framework, and communication remains email plus in-app notifications. Waste collectors/Vangariwalas never receive HELPNET accounts.</div>
             </div>
         </section>
 
@@ -814,10 +816,9 @@
         <section class="section" id="setup">
             <h2 class="section-title"><i class="fas fa-server"></i> Project Setup from Zero</h2>
             <div class="card">
-                <h3><i class="fas fa-terminal"></i> Exact Commands</h3>
+                <h3><i class="fas fa-terminal"></i> Exact Commands (Windows PowerShell / VS Code)</h3>
                 <p>Start from an empty folder and an empty GitHub repository.</p>
-                <pre><span class="comment"># Windows PowerShell / VS Code</span>
-<span class="comment"># 1. Create project folder</span>
+                <pre><span class="comment"># 1. Create project folder and enter it</span>
 mkdir HELPNET
 cd HELPNET
 code .
@@ -829,43 +830,61 @@ git branch -M main
 <span class="comment"># 3. Create the GitHub repository, then connect it</span>
 git remote add origin https://github.com/YOUR-USERNAME/HELPNET.git
 
-<span class="comment"># 4. Create the required project folders</span>
-New-Item -ItemType Directory -Force -Path `
-  backend, backend/app, backend/app/models, backend/app/schemas, backend/app/routers, `
-  backend/app/services, backend/app/middleware, backend/app/utils, backend/tests, `
-  backend/alembic/versions, frontend, frontend/pages, frontend/css, frontend/js, `
-  frontend/js/components, frontend/js/pages, frontend/assets, database, database/migrations, docs, `
-  .github, .github/workflows
-
-<span class="comment"># 5. Create backend/requirements.txt before installing dependencies</span>
-@"
-fastapi
-uvicorn[standard]
-sqlalchemy
-pymysql
-python-dotenv
-python-jose[cryptography]
-passlib[bcrypt]
-bcrypt
-python-multipart
-alembic
-cloudinary
-fastapi-mail
-reportlab
-pytest
-httpx
-"@ | Set-Content backend/requirements.txt
-
-<span class="comment"># 6. Create the Python + FastAPI backend environment</span>
+<span class="comment"># 4. Create the backend folder and a Python virtual environment</span>
+mkdir backend
 cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+
+<span class="comment"># 5. Create requirements.txt (Django 5.2, DRF, mysqlclient, etc.)</span>
+@"
+Django>=5.2,<5.3
+djangorestframework>=3.15.0,<3.16
+djangorestframework-simplejwt>=5.3.0,<6.0
+django-cors-headers>=4.3.0,<5.0
+django-environ>=0.11.0,<0.12
+mysqlclient>=2.2.0,<2.3
+django-cloudinary-storage>=0.3.0,<0.4
+cloudinary>=1.36.0,<2.0
+reportlab>=4.0.0,<5.0
+pytest-django>=4.7.0,<5.0
+pytest>=8.0.0,<9.0
+gunicorn>=21.0.0,<22.0
+"@ | Set-Content requirements.txt
+
 pip install -r requirements.txt
+
+<span class="comment"># 6. Create the Django project (using django-admin)</span>
+django-admin startproject helpnet .
+<span class="comment"># This creates: backend/helpnet/ (settings, urls, wsgi, asgi)</span>
+
+<span class="comment"># 7. Create a custom User app (we'll use a custom User model from the start)</span>
+python manage.py startapp users
+<span class="comment"># Move the 'users' folder to a new 'apps/' directory for better organisation</span>
+mkdir apps
+move users apps\
+<span class="comment"># Create __init__.py in apps</span>
+New-Item -ItemType File -Force -Path apps\__init__.py
+
+<span class="comment"># 8. Create the other Django apps (blood, volunteer, goods, waste, farmer, health, notifications, verification, ratings, reports, common)</span>
+python manage.py startapp blood apps/blood
+python manage.py startapp volunteer apps/volunteer
+python manage.py startapp goods apps/goods
+python manage.py startapp waste apps/waste
+python manage.py startapp farmer apps/farmer
+python manage.py startapp health apps/health
+python manage.py startapp notifications apps/notifications
+python manage.py startapp verification apps/verification
+python manage.py startapp ratings apps/ratings
+python manage.py startapp reports apps/reports
+python manage.py startapp common apps/common
+
+<span class="comment"># 9. Create the frontend folders (outside backend)</span>
 cd ..
+New-Item -ItemType Directory -Force -Path `
+  frontend, frontend/pages, frontend/css, frontend/js, frontend/js/components, frontend/js/pages, frontend/assets
 
-<span class="comment"># 7. Create environment templates and local environment files</span>
-New-Item -ItemType File -Force -Path .env, .env.example, backend/.env, backend/.env.example
-
+<span class="comment"># 10. Create root .env and backend/.env files (templates)</span>
 @"
 MYSQL_ROOT_PASSWORD=
 MYSQL_DATABASE=helpnet
@@ -874,20 +893,21 @@ MYSQL_PASSWORD=
 "@ | Set-Content .env.example
 
 @"
-DATABASE_URL=mysql+pymysql://helpnet:PASSWORD@mysql:3306/helpnet
+DJANGO_SETTINGS_MODULE=helpnet.settings.local
+DATABASE_URL=mysql://helpnet:PASSWORD@mysql:3306/helpnet
 JWT_SECRET=
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
-SMTP_HOST=
-SMTP_PORT=587
-SMTP_USERNAME=
-SMTP_PASSWORD=
-SMTP_FROM=
-SMTP_TLS=true
-"@ | Set-Content backend/.env.example
+EMAIL_HOST=
+EMAIL_PORT=587
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+EMAIL_USE_TLS=true
+DEFAULT_FROM_EMAIL=
+"@ | Set-Content backend\.env.example
 
-<span class="comment"># 8. Create README and root .gitignore</span>
+<span class="comment"># 11. Create .gitignore and README</span>
 @"
 .venv/
 **/.venv/
@@ -907,23 +927,30 @@ Thumbs.db
 **/.env
 !.env.example
 !**/.env.example
+db.sqlite3
+**/migrations/__pycache__/
+staticfiles/
+media/
 "@ | Set-Content .gitignore
 
 @"
 # HELPNET – Unified Community Services Platform
 "@ | Set-Content README.md
 
-<span class="comment"># 9. Add the initial scaffold before the first push</span>
+<span class="comment"># 12. Add the initial scaffold, commit and push</span>
 git add .
-git commit -m "chore: initial project scaffold"
+git commit -m "chore: initial Django project scaffold"
 git push -u origin main
 
-<span class="comment"># 10. Create the shared development branch</span>
+<span class="comment"># 13. Create the develop branch</span>
 git checkout -b develop
 git push -u origin develop
 git checkout develop</pre>
                 <div class="note success">
                     <strong>Setup rule:</strong> Do the initial scaffold once. After that, every developer works from <code>develop</code> and creates a separate <code>feature/*</code> branch.
+                </div>
+                <div class="note info">
+                    <strong>Custom User model:</strong> We create a custom <code>User</code> model (e.g., in <code>apps/users/models.py</code>) extending <code>AbstractUser</code> with additional fields like <code>phone</code>, <code>role</code>, <code>bio</code>, <code>location</code>, <code>privacy_settings</code>, <code>nid_number</code>, <code>nid_photo</code>, <code>is_verified</code>. Set <code>AUTH_USER_MODEL = 'users.User'</code> in settings. Do this before any migration.
                 </div>
             </div>
         </section>
@@ -959,7 +986,7 @@ git checkout develop</pre>
                     │   │   └── style.css
                     │   ├── js/
                     │   │   ├── app.js
-                    │   │   ├── api.js
+                    │   │   ├── api.js          # configurable base URL (e.g., window.API_BASE_URL)
                     │   │   ├── auth.js
                     │   │   ├── utils.js
                     │   │   ├── pages/
@@ -967,28 +994,42 @@ git checkout develop</pre>
                     │   └── assets/
                     │
                     ├── backend/
-                    │   ├── app/
-                    │   │   ├── main.py
-                    │   │   ├── config.py
-                    │   │   ├── database.py
-                    │   │   ├── models/
-                    │   │   ├── schemas/
-                    │   │   ├── routers/
-                    │   │   ├── services/
-                    │   │   ├── middleware/
-                    │   │   └── utils/
-                    │   ├── tests/
-                    │   ├── alembic.ini
-                    │   ├── alembic/
-                    │   │   ├── env.py
-                    │   │   └── versions/
+                    │   ├── manage.py
                     │   ├── requirements.txt
                     │   ├── .env
                     │   ├── .env.example
-                    │   └── Dockerfile
+                    │   ├── Dockerfile
+                    │   ├── helpnet/
+                    │   │   ├── __init__.py
+                    │   │   ├── asgi.py
+                    │   │   ├── wsgi.py
+                    │   │   ├── urls.py
+                    │   │   └── settings/
+                    │   │       ├── __init__.py
+                    │   │       ├── base.py
+                    │   │       ├── local.py
+                    │   │       └── production.py
+                    │   ├── apps/
+                    │   │   ├── __init__.py
+                    │   │   ├── users/           # custom User model, auth, profile, roles
+                    │   │   ├── verification/    # NID verification
+                    │   │   ├── ratings/         # user ratings
+                    │   │   ├── blood/           # donors + requests
+                    │   │   ├── notifications/   # in-app notifications
+                    │   │   ├── volunteer/       # events, signups, certificates
+                    │   │   ├── goods/           # second-hand listings
+                    │   │   ├── waste/           # waste requests
+                    │   │   ├── farmer/          # farmer marketplace
+                    │   │   ├── health/          # community posts + directory
+                    │   │   ├── reports/         # content moderation
+                    │   │   └── common/          # shared utilities, mixins, permissions
+                    │   ├── static/
+                    │   ├── media/
+                    │   ├── templates/
+                    │   └── tests/
                     │
                     ├── database/
-                    │   └── migrations/           # project database artifacts only; schema changes use Alembic
+                    │   └── migrations/           # project database artifacts only; schema changes use Django migrations
                     ├── docs/                     # API docs, ERD, sprint plans
                     ├── .github/workflows/        # GitHub Actions YAML
                     ├── .env                      # Docker Compose database variables only
@@ -1003,7 +1044,7 @@ git checkout develop</pre>
                             <li><i class="fas fa-folder"></i> <strong>js/pages</strong> – page-specific Vanilla JavaScript modules</li>
                             <li><i class="fas fa-folder"></i> <strong>js/components</strong> – reusable DOM/UI modules</li>
                             <li><i class="fas fa-folder"></i> <strong>pages</strong> – static HTML page views</li>
-                            <li><i class="fas fa-folder"></i> <strong>js/api.js</strong> – shared API helpers using <code>fetch()</code></li>
+                            <li><i class="fas fa-folder"></i> <strong>js/api.js</strong> – shared API helpers using <code>fetch()</code>, base URL configurable via <code>window.API_BASE_URL</code></li>
                             <li><i class="fas fa-folder"></i> <strong>js/auth.js</strong> – JWT storage, authentication state, logout and role helpers</li>
                             <li><i class="fas fa-folder"></i> <strong>js/utils.js</strong> – shared small frontend utilities</li>
                         </ul>
@@ -1012,11 +1053,11 @@ git checkout develop</pre>
                     <div>
                         <h4>Backend folders</h4>
                         <ul class="icon-list">
-                            <li><i class="fas fa-folder"></i> <strong>routers</strong> – request/response logic</li>
-                            <li><i class="fas fa-folder"></i> <strong>models</strong> – database models</li>
-                            <li><i class="fas fa-folder"></i> <strong>schemas</strong> – Pydantic request/response schemas</li>
-                            <li><i class="fas fa-folder"></i> <strong>services</strong> – core business logic</li>
-                            <li><i class="fas fa-folder"></i> <strong>middleware</strong> – auth, validation, error</li>
+                            <li><i class="fas fa-folder"></i> <strong>apps/</strong> – Django apps, each containing models, views, serializers, urls, admin</li>
+                            <li><i class="fas fa-folder"></i> <strong>helpnet/settings/</strong> – environment-specific settings (base, local, production)</li>
+                            <li><i class="fas fa-folder"></i> <strong>helpnet/urls.py</strong> – root URL configuration</li>
+                            <li><i class="fas fa-folder"></i> <strong>apps/common/</strong> – shared utilities, mixins, base models, custom permissions</li>
+                            <li><i class="fas fa-folder"></i> <strong>tests/</strong> – project-level test suite</li>
                         </ul>
                     </div>
                 </div>
@@ -1059,7 +1100,7 @@ git commit -m "feat(scope): description"</pre>
                 <h3><i class="fas fa-shield-alt"></i> Preventing Conflicts</h3>
                 <ul class="icon-list">
                     <li><i class="fas fa-user"></i> <strong>Ownership:</strong> Assign specific files/features to each member (see team table).</li>
-                    <li><i class="fas fa-file"></i> <strong>Shared files:</strong> <code>backend/app/main.py</code>, <code>backend/app/routers/</code> and <code>backend/requirements.txt</code> – coordinate via daily stand-up.</li>
+                    <li><i class="fas fa-file"></i> <strong>Shared files:</strong> <code>backend/helpnet/urls.py</code>, <code>backend/helpnet/settings/</code> and <code>backend/requirements.txt</code> – coordinate via daily stand-up.</li>
                     <li><i class="fas fa-database"></i> <strong>DB schema:</strong> One person (e.g. Samia) owns all migration files.</li>
                     <li><i class="fas fa-code"></i> <strong>JavaScript components:</strong> Build isolated DOM/UI modules; share via <code>frontend/js/components/</code>.</li>
                     <li><i class="fas fa-env"></i> <strong>Environment files:</strong> Never commit <code>.env</code>; use root and backend <code>.env.example</code> templates as sources of truth.</li>
@@ -1092,28 +1133,29 @@ git commit -m "feat(scope): description"</pre>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td>Samia Anjum</td><td>1</td><td>Auth – Register</td><td>BE+FE</td><td>backend/app/models/user.py, backend/app/routers/auth.py, frontend/js/pages/register.js</td><td>feature/auth-register</td></tr>
-                            <tr><td>Arnob Richard</td><td>1</td><td>Auth – Login &amp; JWT</td><td>BE+FE</td><td>backend/app/routers/auth.py, backend/app/middleware/auth.py, frontend/js/pages/login.js</td><td>feature/auth-login</td></tr>
-                            <tr><td>Annotoma Mirdha</td><td>1</td><td>Auth – Role &amp; Protected Routes</td><td>FE+BE</td><td>frontend/js/auth.js, frontend/js/components/role-guard.js</td><td>feature/auth-roles</td></tr>
-                            <tr><td>Mokarram Ahmed</td><td>2</td><td>User Profile &amp; Privacy</td><td>BE+FE</td><td>backend/app/routers/users.py, frontend/js/pages/profile.js</td><td>feature/user-profile</td></tr>
-                            <tr><td>Shakil Ahmed</td><td>2</td><td>NID Verification &amp; Admin Queue</td><td>BE+FE</td><td>backend/app/models/verification.py, frontend/js/components/verification-queue.js</td><td>feature/nid-verification</td></tr>
-                            <tr><td>Samia Anjum</td><td>2</td><td>Ratings &amp; Trust Component</td><td>BE+FE</td><td>backend/app/models/rating.py, frontend/js/components/rating-display.js</td><td>feature/ratings</td></tr>
-                            <tr><td>Arnob Richard</td><td>3</td><td>Blood Donor Registration &amp; Availability</td><td>BE+FE</td><td>backend/app/models/donor.py, frontend/js/pages/donor-register.js</td><td>feature/blood-donor</td></tr>
-                            <tr><td>Annotoma Mirdha</td><td>3</td><td>Blood Request &amp; Matching</td><td>BE+FE</td><td>backend/app/routers/blood.py, frontend/js/pages/blood-request.js</td><td>feature/blood-request</td></tr>
-                            <tr><td>Mokarram Ahmed</td><td>3</td><td>Notifications</td><td>BE+FE</td><td>backend/app/models/notification.py, frontend/js/components/notification-bell.js</td><td>feature/notifications</td></tr>
-                            <tr><td>Shakil Ahmed</td><td>4</td><td>Volunteer Events &amp; Signup</td><td>BE+FE</td><td>backend/app/models/volunteer_event.py, frontend/js/pages/events-list.js</td><td>feature/volunteer-events</td></tr>
-                            <tr><td>Samia Anjum</td><td>4</td><td>Attendance &amp; Certificates</td><td>BE+FE</td><td>backend/app/routers/volunteer.py, frontend/js/pages/my-volunteering.js</td><td>feature/volunteer-attendance</td></tr>
-                            <tr><td>Arnob Richard</td><td>5</td><td>Second-Hand Goods</td><td>BE+FE</td><td>backend/app/models/goods_listing.py, frontend/js/pages/goods-list.js</td><td>feature/goods</td></tr>
-                            <tr><td>Annotoma Mirdha</td><td>5</td><td>Waste Management</td><td>BE+FE</td><td>backend/app/models/waste_request.py, frontend/js/pages/waste-request.js</td><td>feature/waste</td></tr>
-                            <tr><td>Mokarram Ahmed</td><td>5</td><td>Farmer Marketplace</td><td>BE+FE</td><td>backend/app/models/farmer_product.py, frontend/js/pages/farmer-browse.js</td><td>feature/farmer</td></tr>
-                            <tr><td>Shakil Ahmed</td><td>6</td><td>Health Community &amp; Professional Directory</td><td>BE+FE</td><td>backend/app/models/health_post.py, frontend/js/pages/health-community.js</td><td>feature/health</td></tr>
-                            <tr><td>Samia Anjum</td><td>6</td><td>Admin Content Management</td><td>BE+FE</td><td>backend/app/routers/admin.py, frontend/js/components/admin.js</td><td>feature/admin-content</td></tr>
+                            <tr><td>Samia Anjum</td><td>1</td><td>Auth – Register</td><td>BE+FE</td><td>apps/users/models.py, apps/users/views.py, apps/users/serializers.py, frontend/js/pages/register.js</td><td>feature/auth-register</td></tr>
+                            <tr><td>Arnob Richard</td><td>1</td><td>Auth – Login &amp; JWT</td><td>BE+FE</td><td>apps/users/views.py, apps/users/serializers.py, frontend/js/pages/login.js</td><td>feature/auth-login</td></tr>
+                            <tr><td>Annotoma Mirdha</td><td>1</td><td>Auth – Role &amp; Protected Routes</td><td>FE+BE</td><td>frontend/js/auth.js, apps/common/permissions.py, frontend/js/components/role-guard.js</td><td>feature/auth-roles</td></tr>
+                            <tr><td>Mokarram Ahmed</td><td>2</td><td>User Profile &amp; Privacy</td><td>BE+FE</td><td>apps/users/views.py, apps/users/serializers.py, frontend/js/pages/profile.js</td><td>feature/user-profile</td></tr>
+                            <tr><td>Shakil Ahmed</td><td>2</td><td>NID Verification &amp; Admin Queue</td><td>BE+FE</td><td>apps/verification/models.py, frontend/js/components/verification-queue.js</td><td>feature/nid-verification</td></tr>
+                            <tr><td>Samia Anjum</td><td>2</td><td>Ratings &amp; Trust Component</td><td>BE+FE</td><td>apps/ratings/models.py, frontend/js/components/rating-display.js</td><td>feature/ratings</td></tr>
+                            <tr><td>Mokarram Ahmed</td><td>2</td><td>Admin Verification Queue &amp; Audit Log</td><td>BE+FE</td><td>apps/verification/views.py, apps/reports/models.py, frontend/js/pages/admin.js</td><td>feature/admin-verification</td></tr>
+                            <tr><td>Arnob Richard</td><td>3</td><td>Blood Donor Registration &amp; Availability</td><td>BE+FE</td><td>apps/blood/models.py, frontend/js/pages/donor-register.js</td><td>feature/blood-donor</td></tr>
+                            <tr><td>Annotoma Mirdha</td><td>3</td><td>Blood Request &amp; Matching</td><td>BE+FE</td><td>apps/blood/views.py, frontend/js/pages/blood-request.js</td><td>feature/blood-request</td></tr>
+                            <tr><td>Mokarram Ahmed</td><td>3</td><td>Notifications</td><td>BE+FE</td><td>apps/notifications/models.py, frontend/js/components/notification-bell.js</td><td>feature/notifications</td></tr>
+                            <tr><td>Shakil Ahmed</td><td>4</td><td>Volunteer Events &amp; Signup</td><td>BE+FE</td><td>apps/volunteer/models.py, frontend/js/pages/events-list.js</td><td>feature/volunteer-events</td></tr>
+                            <tr><td>Samia Anjum</td><td>4</td><td>Attendance &amp; Certificates</td><td>BE+FE</td><td>apps/volunteer/views.py, frontend/js/pages/my-volunteering.js</td><td>feature/volunteer-attendance</td></tr>
+                            <tr><td>Arnob Richard</td><td>5</td><td>Second-Hand Goods</td><td>BE+FE</td><td>apps/goods/models.py, frontend/js/pages/goods-list.js</td><td>feature/goods</td></tr>
+                            <tr><td>Annotoma Mirdha</td><td>5</td><td>Waste Management</td><td>BE+FE</td><td>apps/waste/models.py, frontend/js/pages/waste-request.js</td><td>feature/waste</td></tr>
+                            <tr><td>Mokarram Ahmed</td><td>5</td><td>Farmer Marketplace</td><td>BE+FE</td><td>apps/farmer/models.py, frontend/js/pages/farmer-browse.js</td><td>feature/farmer</td></tr>
+                            <tr><td>Shakil Ahmed</td><td>6</td><td>Health Community &amp; Professional Directory</td><td>BE+FE</td><td>apps/health/models.py, frontend/js/pages/health-community.js</td><td>feature/health</td></tr>
+                            <tr><td>Samia Anjum</td><td>6</td><td>Admin Content Management</td><td>BE+FE</td><td>apps/health/admin.py, apps/health/views.py, frontend/js/components/admin.js</td><td>feature/admin-content</td></tr>
                         </tbody>
                     </table>
                 </div>
                 <p class="mt-2"><i class="fas fa-info-circle"></i> Full task breakdown with files, dependencies, and outputs is provided in each sprint section below.</p>
                 <div class="note info">
-                    <strong>Implementation standard:</strong> Use MySQL through <code>PyMySQL</code> and SQLAlchemy consistently. Keep the FastAPI entry point at <code>backend/app/main.py</code>.
+                    <strong>Implementation standard:</strong> Use MySQL through Django ORM consistently. Keep the Django root URL configuration at <code>backend/helpnet/urls.py</code>. Use the custom <code>User</code> model defined in <code>apps/users/models.py</code>.
                 </div>
             </div>
         </section>
@@ -1130,16 +1172,16 @@ git commit -m "feat(scope): description"</pre>
                     <div>
                         <h4>Database</h4>
                         <ul>
-                            <li>Table <code>users</code></li>
-                            <li>Fields: id, phone, password_hash, role, full_name, created_at, updated_at</li>
+                            <li>Custom <code>User</code> model (extends <code>AbstractUser</code>)</li>
+                            <li>Fields: id, phone (used as username), password, role, full_name, created_at, updated_at</li>
                             <li>Constraint: phone UNIQUE</li>
                         </ul>
                         <h4>Backend</h4>
                         <ul>
-                            <li>Model: <code>backend/app/models/user.py</code></li>
-                            <li>Router: <code>backend/app/routers/auth.py</code> – register()</li>
+                            <li>Model: <code>apps/users/models.py</code></li>
+                            <li>ViewSet/APIView: <code>apps/users/views.py</code> – register()</li>
                             <li>Route: POST <code>/api/auth/register</code></li>
-                            <li>bcrypt hashing, validation (phone, password strength)</li>
+                            <li>Django's built-in password hashing (PBKDF2) + validation (phone, password strength)</li>
                         </ul>
                     </div>
                     <div>
@@ -1169,12 +1211,12 @@ git commit -m "feat(scope): description"</pre>
                 <div class="grid-2">
                     <div>
                         <h4>Database</h4>
-                        <ul><li>Same <code>users</code> table (check password_hash)</li></ul>
+                        <ul><li>Same <code>User</code> model (check password via Django's <code>check_password</code>)</li></ul>
                         <h4>Backend</h4>
                         <ul>
-                            <li>Router: <code>login()</code> – verify password, issue JWT</li>
+                            <li>View: <code>login()</code> – verify password, issue JWT using <code>djangorestframework-simplejwt</code></li>
                             <li>Route: POST <code>/api/auth/login</code></li>
-                            <li>Middleware: <code>backend/app/middleware/auth.py</code> (verify token)</li>
+                            <li>Permission classes: <code>IsAuthenticated</code>, custom role-based permissions</li>
                         </ul>
                     </div>
                     <div>
@@ -1204,8 +1246,8 @@ git commit -m "feat(scope): description"</pre>
                     <div>
                         <h4>Backend</h4>
                         <ul>
-                            <li>FastAPI dependency/guard: <code>require_roles(roles)</code> – verify the JWT and check the authenticated user role</li>
-                            <li>Apply to protected endpoints</li>
+                            <li>Django REST Framework permission class: <code>IsAuthenticated</code> + custom <code>HasRole</code> permission</li>
+                            <li>Apply to protected views using <code>permission_classes</code></li>
                         </ul>
                     </div>
                     <div>
@@ -1236,8 +1278,8 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-user-edit"></i> User Profile &amp; Privacy</h3>
                 <ul>
-                    <li><strong>DB:</strong> Add fields to <code>users</code>: bio, location, privacy_settings (JSON), nid_number, nid_photo (Cloudinary URL)</li>
-                    <li><strong>BE:</strong> PUT <code>/api/users/me</code> – update profile, privacy controls</li>
+                    <li><strong>DB:</strong> Extend custom <code>User</code> model with fields: bio, location, privacy_settings (JSON), nid_number, nid_photo (Cloudinary URL), is_verified</li>
+                    <li><strong>BE:</strong> <code>/api/users/me</code> – GET/PUT using Django REST Framework ModelViewSet</li>
                     <li><strong>FE:</strong> <code>frontend/js/pages/profile.js</code> – view/edit profile, privacy toggles</li>
                     <li><strong>Branch:</strong> <code>feature/user-profile</code></li>
                 </ul>
@@ -1246,7 +1288,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-id-card"></i> NID Submission &amp; Verification</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>verification_requests</code> – id, user_id, nid_number, nid_photo, status (pending/approved/rejected), admin_notes, created_at</li>
+                    <li><strong>DB:</strong> <code>VerificationRequest</code> – id, user (ForeignKey), nid_number, nid_photo, status (pending/approved/rejected), admin_notes, created_at</li>
                     <li><strong>BE:</strong> POST <code>/api/verification/submit</code>, GET <code>/api/verification/status</code>, PATCH <code>/api/admin/verification/{id}</code> (admin only)</li>
                     <li><strong>FE:</strong> <code>frontend/js/pages/verify-nid.js</code>, <code>frontend/js/components/verification-queue.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/nid-verification</code></li>
@@ -1259,7 +1301,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-star"></i> Ratings &amp; Trust Component</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>ratings</code> – id, rated_user_id, rater_user_id, score (1–5), review, created_at</li>
+                    <li><strong>DB:</strong> <code>Rating</code> – id, rated_user (FK), rater_user (FK), score (1–5), review, created_at</li>
                     <li><strong>BE:</strong> POST <code>/api/ratings</code>, GET <code>/api/ratings/{user_id}</code></li>
                     <li><strong>FE:</strong> <code>frontend/js/components/rating-display.js</code>, <code>frontend/js/components/rating-form.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/ratings</code></li>
@@ -1270,7 +1312,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-clipboard-list"></i> Admin Verification Queue &amp; Audit Log</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>audit_logs</code> – id, user_id, action, timestamp, ip, details</li>
+                    <li><strong>DB:</strong> <code>AuditLog</code> – id, user, action, timestamp, ip, details</li>
                     <li><strong>BE:</strong> GET <code>/api/admin/verification</code>, PATCH <code>/api/admin/verification/{id}</code>, GET <code>/api/admin/audit</code></li>
                     <li><strong>FE:</strong> Admin dashboard with queue and log views</li>
                     <li><strong>Branch:</strong> <code>feature/admin-verification</code></li>
@@ -1287,7 +1329,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-hand-holding-heart"></i> Donor Registration &amp; Availability</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>donors</code> – id, user_id, blood_group, location, is_available, last_donation_date, supporting_docs</li>
+                    <li><strong>DB:</strong> <code>Donor</code> – id, user (OneToOne), blood_group, location, is_available, last_donation_date, supporting_docs (JSON array of Cloudinary URLs)</li>
                     <li><strong>BE:</strong> POST <code>/api/donors/register</code>, PUT <code>/api/donors/availability</code></li>
                     <li><strong>FE:</strong> <code>frontend/js/pages/donor-register.js</code>, <code>frontend/js/components/donor-card.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/blood-donor</code></li>
@@ -1297,7 +1339,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-tint"></i> Blood Request &amp; Matching</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>blood_requests</code> – id, requester_id, blood_group, urgency, location, supporting_doc, status, created_at</li>
+                    <li><strong>DB:</strong> <code>BloodRequest</code> – id, requester (FK), blood_group, urgency, location, supporting_doc (Cloudinary URL), status, created_at</li>
                     <li><strong>BE:</strong> POST <code>/api/blood-requests</code>, GET <code>/api/blood-requests/{id}/matches</code> (compatible available donors)</li>
                     <li><strong>FE:</strong> <code>frontend/js/pages/blood-request.js</code>, <code>frontend/js/pages/blood-match.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/blood-request</code></li>
@@ -1307,7 +1349,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-bell"></i> Notifications</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>notifications</code> – id, user_id, title, message, type, is_read, created_at</li>
+                    <li><strong>DB:</strong> <code>Notification</code> – id, user (FK), title, message, type, is_read, created_at</li>
                     <li><strong>BE:</strong> GET <code>/api/notifications</code>, PATCH <code>/api/notifications/{id}/read</code></li>
                     <li><strong>FE:</strong> <code>frontend/js/components/notification-bell.js</code>, <code>frontend/js/pages/notification-centre.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/notifications</code></li>
@@ -1329,7 +1371,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-flag"></i> Report Fake Blood Request</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>reports</code> – id, reporter_id, target_id, target_type, reason, status</li>
+                    <li><strong>DB:</strong> <code>Report</code> – id, reporter (FK), target_id, target_type, reason, status</li>
                     <li><strong>BE:</strong> POST <code>/api/reports</code> (blood request)</li>
                     <li><strong>FE:</strong> <code>frontend/js/components/report-button.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/reports</code></li>
@@ -1339,7 +1381,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-file-upload"></i> Supporting Document Upload</h3>
                 <ul>
-                    <li><strong>BE:</strong> Cloudinary integration, POST <code>/api/upload</code></li>
+                    <li><strong>BE:</strong> Cloudinary integration via <code>django-cloudinary-storage</code>, POST <code>/api/upload</code></li>
                     <li><strong>FE:</strong> <code>frontend/js/components/file-upload.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/file-upload</code></li>
                 </ul>
@@ -1356,7 +1398,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-calendar-plus"></i> NGO Event Creation</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>volunteer_events</code> – id, ngo_id, title, description, date, location, capacity, status</li>
+                    <li><strong>DB:</strong> <code>VolunteerEvent</code> – id, ngo (FK), title, description, date, location, capacity, status</li>
                     <li><strong>BE:</strong> POST <code>/api/events</code>, GET <code>/api/events</code></li>
                     <li><strong>FE:</strong> <code>frontend/js/pages/create-event.js</code>, <code>frontend/js/pages/events-list.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/volunteer-events</code></li>
@@ -1366,7 +1408,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-user-check"></i> Volunteer Signup &amp; Profile</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>volunteer_signups</code> – id, event_id, volunteer_id, status, attended, certificate_issued</li>
+                    <li><strong>DB:</strong> <code>VolunteerSignup</code> – id, event (FK), volunteer (FK), status, attended, certificate_issued</li>
                     <li><strong>BE:</strong> POST <code>/api/events/{id}/signup</code>, GET <code>/api/volunteer/profile</code></li>
                     <li><strong>FE:</strong> <code>frontend/js/pages/event-detail.js</code>, <code>frontend/js/pages/my-volunteering.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/volunteer-signup</code></li>
@@ -1380,7 +1422,7 @@ git commit -m "feat(scope): description"</pre>
                     <li><strong>FE:</strong> <code>frontend/js/pages/event-attendance.js</code>, <code>frontend/js/pages/certificate.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/volunteer-attendance</code></li>
                 </ul>
-                <div class="note info"><strong>Certificate generation:</strong> Volunteer attends event → NGO/Admin confirms attendance → FastAPI certificate service uses ReportLab to generate a PDF → volunteer can view/download the certificate.</div>
+                <div class="note info"><strong>Certificate generation:</strong> Volunteer attends event → NGO/Admin confirms attendance → Django certificate service uses ReportLab to generate a PDF → volunteer can view/download the certificate.</div>
             </div>
 
             <div class="card">
@@ -1398,11 +1440,11 @@ git commit -m "feat(scope): description"</pre>
                     <strong>⚠ Real-time chat is out of scope.</strong> We use email announcements and in-app notifications instead.
                 </div>
                 <ul>
-                    <li><strong>BE:</strong> POST <code>/api/events/{id}/announce</code> – send email to all signed-up volunteers via the configured email service</li>
+                    <li><strong>BE:</strong> POST <code>/api/events/{id}/announce</code> – send email to all signed-up volunteers via Django's email backend</li>
                     <li><strong>FE:</strong> <code>frontend/js/components/event-announce.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/event-communication</code></li>
                 </ul>
-                <div class="note info"><strong>Email implementation:</strong> Use FastAPI-Mail with SMTP. Registration confirmation, verification results, blood request notifications and event announcements use the configured email service. Event announcement → backend loads signed-up volunteers → email service sends the announcement → an in-app notification may also be created. Real-time chat remains out of scope.</div>
+                <div class="note info"><strong>Email implementation:</strong> Use Django's built-in email support with SMTP. Registration confirmation, verification results, blood request notifications and event announcements use the configured email service. Event announcement → backend loads signed-up volunteers → email service sends the announcement → an in-app notification may also be created. Real-time chat remains out of scope.</div>
             </div>
         </section>
 
@@ -1415,7 +1457,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-boxes"></i> Second-Hand Goods</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>goods_listings</code> – id, seller_id, title, description, price, category, photos (JSON array of Cloudinary URLs), status, created_at</li>
+                    <li><strong>DB:</strong> <code>GoodsListing</code> – id, seller (FK), title, description, price, category, photos (JSON array of Cloudinary URLs), status, created_at</li>
                     <li><strong>BE:</strong> CRUD endpoints <code>/api/goods</code>, POST <code>/api/goods/{id}/interest</code></li>
                     <li><strong>FE:</strong> <code>frontend/js/pages/goods-list.js</code>, <code>frontend/js/pages/create-listing.js</code>, <code>frontend/js/components/listing-card.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/goods</code></li>
@@ -1428,7 +1470,7 @@ git commit -m "feat(scope): description"</pre>
                     <strong>⚠ Waste collectors/Vangariwalas do NOT create HELPNET accounts.</strong> There is no WasteCollector role, authentication or account. Contact is by phone only.
                 </div>
                 <ul>
-                    <li><strong>DB:</strong> <code>waste_requests</code> – id, user_id, location, waste_type, preferred_time, status, collector_phone</li>
+                    <li><strong>DB:</strong> <code>WasteRequest</code> – id, user (FK), location, waste_type, preferred_time, status, collector_phone</li>
                     <li><strong>BE:</strong> POST <code>/api/waste-requests</code>, GET <code>/api/waste-requests/nearby</code></li>
                     <li><strong>FE:</strong> <code>frontend/js/pages/waste-request.js</code>, <code>frontend/js/components/waste-collector-card.js</code> (shows phone only)</li>
                     <li><strong>Branch:</strong> <code>feature/waste</code></li>
@@ -1438,7 +1480,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-tractor"></i> Farmer Marketplace</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>farmer_products</code> – id, farmer_id, name, description, price, unit, quantity, location, photos (JSON array of Cloudinary URLs), status</li>
+                    <li><strong>DB:</strong> <code>FarmerProduct</code> – id, farmer (FK), name, description, price, unit, quantity, location, photos (JSON array of Cloudinary URLs), status</li>
                     <li><strong>BE:</strong> CRUD <code>/api/farmer-products</code>, GET <code>/api/farmer-products/browse</code></li>
                     <li><strong>FE:</strong> <code>frontend/js/pages/farmer-dashboard.js</code>, <code>frontend/js/pages/farmer-browse.js</code>, <code>frontend/js/components/product-card.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/farmer</code></li>
@@ -1472,8 +1514,8 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-comments"></i> Health Community – Q&amp;A</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>health_posts</code> – id, user_id, title, content, category, is_anonymous, created_at<br />
-                        <code>health_replies</code> – id, post_id, user_id, content, created_at
+                    <li><strong>DB:</strong> <code>HealthPost</code> – id, user (FK), title, content, category, is_anonymous, created_at<br />
+                        <code>HealthReply</code> – id, post (FK), user (FK), content, created_at
                     </li>
                     <li><strong>BE:</strong> CRUD <code>/api/health/posts</code>, <code>/api/health/replies</code></li>
                     <li><strong>FE:</strong> <code>frontend/js/pages/health-community.js</code>, <code>frontend/js/components/health-post-card.js</code></li>
@@ -1484,7 +1526,7 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-user-md"></i> Verified Health Professional Directory</h3>
                 <ul>
-                    <li><strong>DB:</strong> <code>health_professionals</code> – id, user_id, specialty, qualification, license_number, is_verified</li>
+                    <li><strong>DB:</strong> <code>HealthProfessional</code> – id, user (OneToOne), specialty, qualification, license_number, is_verified</li>
                     <li><strong>BE:</strong> GET <code>/api/health/professionals</code></li>
                     <li><strong>FE:</strong> <code>frontend/js/pages/health-directory.js</code>, <code>frontend/js/components/professional-card.js</code></li>
                     <li><strong>Branch:</strong> <code>feature/health-professionals</code></li>
@@ -1531,43 +1573,44 @@ git commit -m "feat(scope): description"</pre>
                             <tr><th>Table</th><th>Fields</th><th>PK / FK</th><th>Constraints</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td><code>users</code></td><td>id, phone, password_hash, role, full_name, bio, location, privacy_settings, nid_number, nid_photo, is_verified, created_at, updated_at</td><td>PK: id</td><td>phone UNIQUE</td></tr>
-                            <tr><td><code>verification_requests</code></td><td>id, user_id, nid_number, nid_photo, status, admin_notes, created_at</td><td>FK: user_id → users.id</td><td>status IN (pending,approved,rejected)</td></tr>
-                            <tr><td><code>ratings</code></td><td>id, rated_user_id, rater_user_id, score, review, created_at</td><td>FK: rated_user_id → users.id, rater_user_id → users.id</td><td>score 1–5; duplicate rating prevented for the same valid interaction/transaction/event relationship</td></tr>
-                            <tr><td><code>donors</code></td><td>id, user_id, blood_group, location, is_available, last_donation_date, supporting_docs (JSON array of Cloudinary URLs)</td><td>FK: user_id → users.id</td><td>blood_group IN (A+,A-,B+,B-,AB+,AB-,O+,O-)</td></tr>
-                            <tr><td><code>blood_requests</code></td><td>id, requester_id, blood_group, urgency, location, supporting_doc (Cloudinary URL), status, created_at</td><td>FK: requester_id → users.id</td><td>status IN (open,matched,closed)</td></tr>
-                            <tr><td><code>notifications</code></td><td>id, user_id, title, message, type, is_read, created_at</td><td>FK: user_id → users.id</td><td>is_read BOOLEAN DEFAULT false</td></tr>
-                            <tr><td><code>volunteer_events</code></td><td>id, ngo_id, title, description, date, location, capacity, status</td><td>FK: ngo_id → users.id</td><td>status IN (upcoming,ongoing,completed)</td></tr>
-                            <tr><td><code>volunteer_signups</code></td><td>id, event_id, volunteer_id, status, attended, certificate_issued</td><td>FK: event_id → volunteer_events.id, volunteer_id → users.id</td><td>status IN (pending,approved,rejected)</td></tr>
-                            <tr><td><code>goods_listings</code></td><td>id, seller_id, title, description, price, category, photos (JSON array of Cloudinary URLs), status, created_at</td><td>FK: seller_id → users.id</td><td>status IN (active,sold,reported)</td></tr>
-                            <tr><td><code>waste_requests</code></td><td>id, user_id, location, waste_type, preferred_time, status, collector_phone</td><td>FK: user_id → users.id</td><td>status IN (pending,assigned,completed)</td></tr>
-                            <tr><td><code>farmer_products</code></td><td>id, farmer_id, name, description, price, unit, quantity, location, photos (JSON array of Cloudinary URLs), status</td><td>FK: farmer_id → users.id</td><td>status IN (active,sold,reported)</td></tr>
-                            <tr><td><code>health_posts</code></td><td>id, user_id, title, content, category, is_anonymous, created_at</td><td>FK: user_id → users.id</td><td>is_anonymous BOOLEAN</td></tr>
-                            <tr><td><code>health_replies</code></td><td>id, post_id, user_id, content, created_at</td><td>FK: post_id → health_posts.id, user_id → users.id</td><td>—</td></tr>
-                            <tr><td><code>health_professionals</code></td><td>id, user_id, specialty, qualification, license_number, is_verified</td><td>FK: user_id → users.id</td><td>is_verified BOOLEAN</td></tr>
-                            <tr><td><code>audit_logs</code></td><td>id, user_id, action, timestamp, ip, details</td><td>FK: user_id → users.id</td><td>—</td></tr>
-                            <tr><td><code>reports</code></td><td>id, reporter_id, target_id, target_type, reason, status</td><td>FK: reporter_id → users.id</td><td>target_type VARCHAR, status IN (pending,resolved,dismissed)</td></tr>
+                            <tr><td><code>users_user</code></td><td>id, phone (username), password, role, full_name, bio, location, privacy_settings, nid_number, nid_photo, is_verified, created_at, updated_at</td><td>PK: id</td><td>phone UNIQUE</td></tr>
+                            <tr><td><code>verification_verificationrequest</code></td><td>id, user_id, nid_number, nid_photo, status, admin_notes, created_at</td><td>FK: user_id → users_user.id</td><td>status IN (pending,approved,rejected)</td></tr>
+                            <tr><td><code>ratings_rating</code></td><td>id, rated_user_id, rater_user_id, score, review, created_at</td><td>FK: rated_user_id → users_user.id, rater_user_id → users_user.id</td><td>score 1–5; duplicate rating prevented for the same valid interaction/transaction/event relationship</td></tr>
+                            <tr><td><code>blood_donor</code></td><td>id, user_id, blood_group, location, is_available, last_donation_date, supporting_docs (JSON array of Cloudinary URLs)</td><td>FK: user_id → users_user.id</td><td>blood_group IN (A+,A-,B+,B-,AB+,AB-,O+,O-)</td></tr>
+                            <tr><td><code>blood_bloodrequest</code></td><td>id, requester_id, blood_group, urgency, location, supporting_doc (Cloudinary URL), status, created_at</td><td>FK: requester_id → users_user.id</td><td>status IN (open,matched,closed)</td></tr>
+                            <tr><td><code>notifications_notification</code></td><td>id, user_id, title, message, type, is_read, created_at</td><td>FK: user_id → users_user.id</td><td>is_read BOOLEAN DEFAULT false</td></tr>
+                            <tr><td><code>volunteer_volunteerevent</code></td><td>id, ngo_id, title, description, date, location, capacity, status</td><td>FK: ngo_id → users_user.id</td><td>status IN (upcoming,ongoing,completed)</td></tr>
+                            <tr><td><code>volunteer_volunteersignup</code></td><td>id, event_id, volunteer_id, status, attended, certificate_issued</td><td>FK: event_id → volunteer_volunteerevent.id, volunteer_id → users_user.id</td><td>status IN (pending,approved,rejected)</td></tr>
+                            <tr><td><code>goods_goodslisting</code></td><td>id, seller_id, title, description, price, category, photos (JSON array of Cloudinary URLs), status, created_at</td><td>FK: seller_id → users_user.id</td><td>status IN (active,sold,reported)</td></tr>
+                            <tr><td><code>waste_wasterequest</code></td><td>id, user_id, location, waste_type, preferred_time, status, collector_phone</td><td>FK: user_id → users_user.id</td><td>status IN (pending,assigned,completed)</td></tr>
+                            <tr><td><code>farmer_farmerproduct</code></td><td>id, farmer_id, name, description, price, unit, quantity, location, photos (JSON array of Cloudinary URLs), status</td><td>FK: farmer_id → users_user.id</td><td>status IN (active,sold,reported)</td></tr>
+                            <tr><td><code>health_healthpost</code></td><td>id, user_id, title, content, category, is_anonymous, created_at</td><td>FK: user_id → users_user.id</td><td>is_anonymous BOOLEAN</td></tr>
+                            <tr><td><code>health_healthreply</code></td><td>id, post_id, user_id, content, created_at</td><td>FK: post_id → health_healthpost.id, user_id → users_user.id</td><td>—</td></tr>
+                            <tr><td><code>health_healthprofessional</code></td><td>id, user_id, specialty, qualification, license_number, is_verified</td><td>FK: user_id → users_user.id</td><td>is_verified BOOLEAN</td></tr>
+                            <tr><td><code>reports_auditlog</code></td><td>id, user_id, action, timestamp, ip, details</td><td>FK: user_id → users_user.id</td><td>—</td></tr>
+                            <tr><td><code>reports_report</code></td><td>id, reporter_id, target_id, target_type, reason, status</td><td>FK: reporter_id → users_user.id</td><td>target_type VARCHAR, status IN (pending,resolved,dismissed)</td></tr>
                         </tbody>
                     </table>
                 </div>
                 <div class="note info">
-                    <strong>Database connection:</strong> SQLAlchemy uses <code>DATABASE_URL=mysql+pymysql://helpnet:PASSWORD@mysql:3306/helpnet</code> in Docker.
+                    <strong>Database connection:</strong> Django uses <code>DATABASE_URL=mysql://helpnet:PASSWORD@mysql:3306/helpnet</code> in Docker (using <code>mysqlclient</code>).
                 </div>
                 <div class="note info">
-                    <strong>Relationships:</strong> Most tables link to <code>users</code>. <code>volunteer_signups</code> links events and volunteers. <code>health_replies</code> links to <code>health_posts</code>.
+                    <strong>Relationships:</strong> Most tables link to <code>users_user</code>. <code>volunteer_volunteersignup</code> links events and volunteers. <code>health_healthreply</code> links to <code>health_healthpost</code>.
                 </div>
             </div>
             <div class="card">
-                <h3><i class="fas fa-code-branch"></i> Alembic Migration Strategy</h3>
-                <p>SQLAlchemy models define the database structure, while Alembic is the single schema-migration system.</p>
+                <h3><i class="fas fa-code-branch"></i> Django Migration Strategy</h3>
+                <p>Django models define the database structure, and Django's built-in migration system is the <strong>single</strong> schema-migration engine.</p>
                 <pre>backend/
-├── alembic.ini
-└── alembic/
-    ├── env.py
-    └── versions/</pre>
+├── manage.py
+└── apps/
+    └── users/
+        ├── models.py
+        └── migrations/        # auto-generated by Django</pre>
                 <ul>
-                    <li>Install <code>alembic</code> in <code>backend/requirements.txt</code>.</li>
-                    <li>Create revisions with Alembic and apply them with <code>alembic upgrade head</code>.</li>
+                    <li>Django migrations are auto-generated with <code>python manage.py makemigrations</code>.</li>
+                    <li>Apply migrations with <code>python manage.py migrate</code>.</li>
                     <li>Do not maintain a second competing migration mechanism.</li>
                     <li><code>database/migrations/</code> remains a project folder for database-related artifacts only; it is not used as the schema migration engine.</li>
                 </ul>
@@ -1656,8 +1699,8 @@ git commit -m "feat(scope): description"</pre>
                 </div>
                 <h4>Shared JavaScript Modules</h4>
                 <ul>
-                    <li><code>frontend/js/api.js</code> – shared <code>fetch()</code> helpers, base URL and JSON/error handling</li>
-                    <li><code>frontend/js/auth.js</code> – JWT storage/read, authentication state, logout, redirect and role helpers</li>
+                    <li><code>frontend/js/api.js</code> – shared <code>fetch()</code> helpers, base URL configurable via <code>window.API_BASE_URL</code> (set in each HTML page or via a global script).</li>
+                    <li><code>frontend/js/auth.js</code> – JWT storage/read, authentication state, logout, redirect and role helpers.</li>
                 </ul>
                 <h4>Reusable Components</h4>
                 <div class="flex flex-wrap gap-2 mt-2">
@@ -1687,9 +1730,9 @@ git commit -m "feat(scope): description"</pre>
             <div class="card">
                 <h3><i class="fas fa-check-circle"></i> Test Categories</h3>
                 <ul>
-                    <li><strong>Location:</strong> All executable Python tests live under <code>backend/tests/</code>.</li>
+                    <li><strong>Location:</strong> All executable Python tests live under <code>backend/tests/</code> and within each Django app's <code>tests.py</code>.</li>
                     <li><strong>Unit tests:</strong> Validators, helpers, model methods</li>
-                    <li><strong>API tests:</strong> All endpoints (success &amp; error cases)</li>
+                    <li><strong>API tests:</strong> All endpoints (success &amp; error cases) using Django REST Framework's APITestCase</li>
                     <li><strong>Integration tests:</strong> Auth → protected routes, blood request → notification</li>
                     <li><strong>UI tests:</strong> Form validation, redirects, error messages</li>
                     <li><strong>Permission tests:</strong> Role guards, admin-only endpoints</li>
@@ -1716,28 +1759,25 @@ git commit -m "feat(scope): description"</pre>
         </section>
 
         <!-- ============================================================ -->
-        <!--  PYTHON DEPENDENCIES                                             -->
+        <!--  PYTHON DEPENDENCIES                                           -->
         <!-- ============================================================ -->
         <section class="section" id="dependencies">
             <h2 class="section-title"><i class="fas fa-box"></i> Backend Dependencies</h2>
             <div class="card">
                 <h3><i class="fas fa-file-code"></i> backend/requirements.txt</h3>
-                <pre>fastapi
-uvicorn[standard]
-sqlalchemy
-pymysql
-python-dotenv
-python-jose[cryptography]
-passlib[bcrypt]
-bcrypt
-python-multipart
-pytest
-httpx
-alembic
-cloudinary
-fastapi-mail
-reportlab</pre>
-                <p>Authentication uses JWT tokens with bcrypt/passlib password hashing. The backend exposes a REST API through FastAPI.</p>
+                <pre>Django>=5.2,<5.3
+djangorestframework>=3.15.0,<3.16
+djangorestframework-simplejwt>=5.3.0,<6.0
+django-cors-headers>=4.3.0,<5.0
+django-environ>=0.11.0,<0.12
+mysqlclient>=2.2.0,<2.3
+django-cloudinary-storage>=0.3.0,<0.4
+cloudinary>=1.36.0,<2.0
+reportlab>=4.0.0,<5.0
+pytest-django>=4.7.0,<5.0
+pytest>=8.0.0,<9.0
+gunicorn>=21.0.0,<22.0</pre>
+                <p>Authentication uses JWT tokens with Django's built-in password hashing (PBKDF2 by default). The backend exposes a REST API through Django REST Framework. <code>mysqlclient</code> is the MySQL driver (no <code>pymysql</code>). <code>gunicorn</code> is used for production; <code>uvicorn</code> is not required unless ASGI is later needed.</p>
             </div>
         </section>
 
@@ -1771,6 +1811,9 @@ reportlab</pre>
       - ./backend/.env
     depends_on:
       - mysql
+    command: >
+      sh -c "python manage.py migrate &&
+             gunicorn helpnet.wsgi:application --bind 0.0.0.0:8000"
 
   frontend:
     image: nginx:alpine
@@ -1784,11 +1827,10 @@ reportlab</pre>
 
 volumes:
   mysql-data:</pre>
-                <div class="note info"><strong>Local architecture:</strong> Browser → Nginx static frontend (<code>:8080</code>) → FastAPI backend (<code>:8000</code>) → MySQL (<code>:3306</code>). The frontend container serves only static HTML/CSS/JavaScript; API calls go directly to the configured FastAPI base URL.</div>
+                <div class="note info"><strong>Local architecture:</strong> Browser → Nginx static frontend (<code>:8080</code>) → Django backend (<code>:8000</code>) → MySQL (<code>:3306</code>). The frontend container serves only static HTML/CSS/JavaScript; API calls go directly to the configured Django base URL.</div>
                 <h4>Required Dockerfiles</h4>
                 <ul>
-                    <li><code>backend/Dockerfile</code> – install Python dependencies and run FastAPI with Uvicorn on <code>0.0.0.0:$PORT</code> in deployment (the local Compose service may use port 8000).</li>
-                    <li><code>backend/alembic.ini</code> and <code>backend/alembic/versions/</code> – schema changes are managed only through Alembic migrations.</li>
+                    <li><code>backend/Dockerfile</code> – install Python dependencies, copy project, and run Gunicorn. (No Uvicorn needed unless ASGI is later required.)</li>
                     <li><code>frontend</code> – plain static HTML/CSS/JavaScript served by Nginx; no frontend build step is required.</li>
                 </ul>
                 <h4>Environment files</h4>
@@ -1799,18 +1841,19 @@ MYSQL_USER=helpnet
 MYSQL_PASSWORD=
 
 # backend/.env — application variables
-DATABASE_URL=mysql+pymysql://helpnet:PASSWORD@mysql:3306/helpnet
+DJANGO_SETTINGS_MODULE=helpnet.settings.local
+DATABASE_URL=mysql://helpnet:PASSWORD@mysql:3306/helpnet
 JWT_SECRET=
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
-SMTP_HOST=
-SMTP_PORT=587
-SMTP_USERNAME=
-SMTP_PASSWORD=
-SMTP_FROM=
-SMTP_TLS=true</pre>
-                <p class="command-note">The root <code>.env</code> is read by Docker Compose for MySQL container variables. The backend container reads application settings from <code>backend/.env</code>. Neither file is committed. The root <code>.env.example</code> mirrors the MySQL variables above, while <code>backend/.env.example</code> mirrors the application variables above. The application database URL points to the Docker service name <code>mysql</code>.</p>
+EMAIL_HOST=
+EMAIL_PORT=587
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+EMAIL_USE_TLS=true
+DEFAULT_FROM_EMAIL=</pre>
+                <p class="command-note">The root <code>.env</code> is read by Docker Compose for MySQL container variables. The backend container reads application settings from <code>backend/.env</code>. Neither file is committed. The root <code>.env.example</code> mirrors the MySQL variables above, while <code>backend/.env.example</code> mirrors the application variables above. The application database URL points to the Docker service name <code>mysql</code> and uses the <code>mysql://</code> scheme (for <code>mysqlclient</code>).</p>
                 <h4>Commands</h4>
                 <ul>
                     <li><code>docker compose up --build</code> – build and start all services</li>
@@ -1850,20 +1893,20 @@ jobs:
       - name: Install backend dependencies
         working-directory: backend
         run: pip install -r requirements.txt
-      - name: Compile Python files
+      - name: Run Django checks
         working-directory: backend
-        run: python -m compileall app tests
+        run: python manage.py check
       - name: Run backend tests
         working-directory: backend
         run: pytest
       - name: Validate frontend
         run: test -f frontend/index.html && test -f frontend/css/style.css && test -f frontend/js/app.js && test -f frontend/js/api.js && test -f frontend/js/auth.js && test -f frontend/pages/register.html && test -f frontend/pages/login.html</pre>
-                <p><i class="fas fa-info-circle"></i> Runs on every push/PR to <code>develop</code> or <code>main</code>. It installs only Python dependencies, compiles/checks the backend, runs <code>pytest</code>, and validates required static frontend files. No frontend build step is required.</p>
+                <p><i class="fas fa-info-circle"></i> Runs on every push/PR to <code>develop</code> or <code>main</code>. It installs Python dependencies, runs Django system checks, executes <code>pytest</code>, and validates required static frontend files. No frontend build step is required.</p>
             </div>
         </section>
 
         <!-- ============================================================ -->
-        <!--  PACKAGE SCRIPTS                                                 -->
+        <!--  PACKAGE SCRIPTS                                               -->
         <!-- ============================================================ -->
         <section class="section" id="scripts">
             <h2 class="section-title"><i class="fas fa-terminal"></i> Development Commands</h2>
@@ -1871,12 +1914,13 @@ jobs:
                 <h3><i class="fas fa-code"></i> Backend commands</h3>
                 <pre>python -m venv .venv
 pip install -r requirements.txt
-uvicorn app.main:app --reload</pre>
+python manage.py migrate
+python manage.py runserver</pre>
                 <h3><i class="fas fa-globe"></i> Frontend</h3>
                 <pre>Static HTML/CSS/JavaScript — no package manager or frontend build step is required.
 For local development, serve the frontend with any static web server.</pre>
                 <div class="note info">
-                    <strong>Important:</strong> JavaScript communicates with the FastAPI REST API using <code>fetch()</code>. The backend uses Python, FastAPI, SQLAlchemy and MySQL.
+                    <strong>Important:</strong> JavaScript communicates with the Django REST API using <code>fetch()</code>. The backend uses Python, Django, Django REST Framework and MySQL.
                 </div>
             </div>
         </section>
@@ -1889,29 +1933,30 @@ For local development, serve the frontend with any static web server.</pre>
             <div class="card">
                 <h3><i class="fas fa-server"></i> Backend</h3>
                 <ul>
-                    <li><strong>Runtime:</strong> Python + FastAPI</li>
+                    <li><strong>Runtime:</strong> Python + Django</li>
                     <li><strong>Build:</strong> <code>pip install -r requirements.txt</code></li>
-                    <li><strong>Start:</strong> <code>uvicorn app.main:app --host 0.0.0.0 --port $PORT</code></li>
+                    <li><strong>Start:</strong> <code>gunicorn helpnet.wsgi:application --bind 0.0.0.0:$PORT</code></li>
                     <li><strong>Env:</strong> MySQL credentials, <code>DATABASE_URL</code>, <code>JWT_SECRET</code> and service secrets</li>
+                    <li><strong>Migrations:</strong> Run <code>python manage.py migrate</code> as part of the deployment process (e.g., in a pre‑start script or a one‑off job). Do not rely on Render's paid pre‑deploy feature.</li>
                 </ul>
                 <h3><i class="fas fa-globe"></i> Frontend</h3>
                 <ul>
                     <li><strong>Type:</strong> Static HTML + CSS + JavaScript</li>
                     <li><strong>Build:</strong> None required</li>
                     <li><strong>Publish:</strong> <code>frontend/</code></li>
-                    <li><strong>API:</strong> Configure the FastAPI base URL in <code>frontend/js/api.js</code>.</li>
+                    <li><strong>API:</strong> Set the Django base URL in the frontend by defining <code>window.API_BASE_URL</code> in each HTML page or via a global script. For production, this points to the deployed backend URL.</li>
                 </ul>
                 <h3><i class="fas fa-database"></i> Database</h3>
                 <ul>
                     <li>Use MySQL 8.x.</li>
-                    <li>Run Alembic migrations from <code>backend/</code> with <code>alembic upgrade head</code> as an explicit deployment step (or a Render deployment command that invokes it before the web service starts). Do not depend on a paid-only pre-deploy feature. The required <code>database/migrations/</code> folder is reserved for database-related project artifacts and is not a second migration system.</li>
-                    <li>SQLAlchemy + PyMySQL provide the Python database layer.</li>
+                    <li>Run Django migrations with <code>python manage.py migrate</code> as an explicit deployment step (for example, a Render Start Command that includes the migration). The <code>database/migrations/</code> folder is reserved for project artifacts only; Django's <code>migrations/</code> folders inside each app are the sole migration source.</li>
+                    <li>Django ORM + <code>mysqlclient</code> provide the Python database layer.</li>
                 </ul>
                 <div class="note info">
-                    <strong>Render architecture:</strong> Frontend is a Render Static Site serving HTML/CSS/Vanilla JavaScript; backend is a Render Web Service running FastAPI + Uvicorn; MySQL is a separate MySQL 8.x service reachable privately/internal where possible.
+                    <strong>Render architecture:</strong> Frontend is a Render Static Site serving HTML/CSS/Vanilla JavaScript; backend is a Render Web Service running Django + Gunicorn; MySQL is a separate MySQL 8.x service reachable privately/internal where possible.
                 </div>
                 <div class="note info">
-                    <strong>CORS:</strong> Configure FastAPI <code>CORSMiddleware</code> with an explicit allowlist. Development may allow the local frontend origin (for example, the local Nginx origin); production must allow only the deployed Render Static Site origin. Do not use <code>allow_origins=["*"]</code> for the authenticated production application. Store production secrets in the deployment platform, never in Git.
+                    <strong>CORS:</strong> Configure Django CORS headers with <code>django-cors-headers</code> and an explicit allowlist. Development may allow the local frontend origin (for example, the local Nginx origin); production must allow only the deployed Render Static Site origin. Do not use <code>CORS_ALLOW_ALL_ORIGINS=True</code> for the authenticated production application. Store production secrets in the deployment platform, never in Git.
                 </div>
             </div>
         </section>
