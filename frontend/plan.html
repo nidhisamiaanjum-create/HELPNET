@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HELPNET – Development Execution Plan</title>
+    <!-- Font & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        /* ─── RESET & BASE ─── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0b3b5c;
+            --primary-light: #1a5a7a;
+            --primary-dark: #072433;
+            --accent: #f59e0b;
+            --accent-light: #fbbf24;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.10);
+            --transition: 0.25s ease;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            line-height: 1.6;
+            display: flex;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        a:hover {
+            color: var(--accent);
+        }
+
+        /* ─── SCROLLBAR ─── */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-400);
+        }
+
+        /* ─── SIDEBAR ─── */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--primary-dark);
+            color: #fff;
+            overflow-y: auto;
+            padding: 24px 16px 32px;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-light) transparent;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary-light);
+            border-radius: 8px;
+        }
+
+        .sidebar .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 20px;
+        }
+        .sidebar .logo i {
+            color: var(--accent);
+            font-size: 28px;
+        }
+        .sidebar .logo span {
+            color: var(--accent);
+        }
+
+        .sidebar nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar nav a:hover,
+        .sidebar nav a.active {
+            background: rgba(255, 255, 255, 0.07);
+            color: #fff;
+            border-left-color: var(--accent);
+        }
+        .sidebar nav a i {
+            width: 20px;
+            text-align: center;
+            font-size: 15px;
+        }
+        .sidebar nav .section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.3);
+            padding: 16px 14px 6px;
+            font-weight: 600;
+        }
+
+        /* ─── MAIN CONTENT ─── */
+        .main {
+            margin-left: 280px;
+            flex: 1;
+            padding: 40px 48px 80px;
+            max-width: 1200px;
+        }
+
+        /* ─── HEADER ─── */
+        .page-header {
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid var(--gray-200);
+        }
+        .page-header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--primary-dark);
+        }
+        .page-header h1 i {
+            color: var(--accent);
+            margin-right: 12px;
+        }
+        .page-header .subtitle {
+            font-size: 18px;
+            color: var(--gray-500);
+            margin-top: 6px;
+            font-weight: 400;
+        }
+        .page-header .badge-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 14px;
+        }
+        .page-header .badge-group .badge {
+            background: var(--gray-200);
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        .page-header .badge-group .badge.accent {
+            background: var(--accent);
+            color: #fff;
+        }
+        .page-header .badge-group .badge.primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        /* ─── SECTION CARDS ─── */
+        .section {
+            margin-bottom: 56px;
+        }
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .section-title i {
+            color: var(--accent);
+            font-size: 26px;
+        }
+        .section-title .count {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-400);
+            background: var(--gray-200);
+            padding: 0 12px;
+            border-radius: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px 28px;
+            margin-bottom: 20px;
+            border: 1px solid var(--gray-200);
+            transition: box-shadow 0.2s;
+        }
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+        .card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+        }
+        .card h3 i {
+            color: var(--accent);
+            font-size: 18px;
+        }
+        .card h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 18px 0 8px;
+            color: var(--gray-700);
+        }
+        .card p,
+        .card li {
+            color: var(--gray-700);
+            font-size: 14.5px;
+        }
+        .card ul,
+        .card ol {
+            padding-left: 22px;
+            margin: 8px 0 12px;
+        }
+        .card li {
+            margin-bottom: 4px;
+        }
+
+        /* ─── TABLES ─── */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 16px 0 8px;
+            border-radius: var(--radius);
+            border: 1px solid var(--gray-200);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            min-width: 600px;
+        }
+        table thead {
+            background: var(--gray-100);
+        }
+        table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 600;
+            color: var(--gray-700);
+            border-bottom: 2px solid var(--gray-200);
+            font-size: 12.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--gray-100);
+            color: var(--gray-700);
+            vertical-align: top;
+        }
+        table tbody tr:hover {
+            background: var(--gray-50);
+        }
+        table .highlight {
+            background: #fefce8;
+        }
+
+        /* ─── CODE BLOCKS ─── */
+        pre {
+            background: var(--gray-900);
+            color: #e2e8f0;
+            padding: 18px 22px;
+            border-radius: var(--radius);
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.7;
+            margin: 12px 0 16px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            border: 1px solid var(--gray-800);
+        }
+        pre .comment {
+            color: #94a3b8;
+        }
+        pre .keyword {
+            color: #f472b6;
+        }
+        pre .string {
+            color: #a3e635;
+        }
+        pre .func {
+            color: #60a5fa;
+        }
+        code {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            background: var(--gray-100);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--primary-dark);
+        }
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        /* ─── GRID LAYOUTS ─── */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ─── TAGS / LABELS ─── */
+        .tag {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            background: var(--gray-200);
+            color: var(--gray-700);
+            margin: 2px 4px 2px 0;
+        }
+        .tag.green {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .tag.blue {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .tag.yellow {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+        .tag.red {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .tag.purple {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+        .tag.orange {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        /* ─── SPRINT TIMELINE ─── */
+        .timeline {
+            position: relative;
+            padding-left: 28px;
+            border-left: 3px solid var(--gray-200);
+            margin: 12px 0 8px;
+        }
+        .timeline-item {
+            margin-bottom: 24px;
+        }
+        .timeline-item .date {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .timeline-item .content {
+            margin-top: 4px;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 1024px) {
+            .main {
+                padding: 32px 24px 60px;
+            }
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main {
+                margin-left: 0;
+                padding: 24px 16px 60px;
+            }
+            .page-header h1 {
+                font-size: 26px;
+            }
+            .section-title {
+                font-size: 22px;
+            }
+            .card {
+                padding: 18px 16px;
+            }
+            .hamburger {
+                display: flex !important;
+            }
+        }
+
+        .hamburger {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1100;
+            background: var(--primary-dark);
+            color: #fff;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+        }
+        .hamburger:hover {
+            background: var(--primary);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 999;
+        }
+        .overlay.active {
+            display: block;
+        }
+
+        /* ─── MISC ─── */
+        .mt-2 {
+            margin-top: 8px;
+        }
+        .mt-4 {
+            margin-top: 16px;
+        }
+        .flex {
+            display: flex;
+        }
+        .flex-wrap {
+            flex-wrap: wrap;
+        }
+        .gap-2 {
+            gap: 8px;
+        }
+        .gap-4 {
+            gap: 16px;
+        }
+        .items-center {
+            align-items: center;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--gray-200);
+            margin: 24px 0;
+        }
+
+        .icon-list {
+            list-style: none;
+            padding: 0;
+        }
+        .icon-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 4px 0;
+        }
+        .icon-list li i {
+            color: var(--accent);
+            margin-top: 3px;
+            width: 18px;
+            text-align: center;
+        }
+
+        .file-path {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            background: var(--gray-100);
+            padding: 2px 10px;
+            border-radius: 4px;
+            color: var(--primary-dark);
+        }
+
+        .note {
+            background: #fffbeb;
+            border-left: 4px solid var(--accent);
+            padding: 14px 20px;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            margin: 12px 0;
+        }
+        .note strong {
+            color: var(--primary-dark);
+        }
+        .note.warning {
+            background: #fef2f2;
+            border-left-color: var(--danger);
+        }
+        .note.success {
+            background: #f0fdf4;
+            border-left-color: var(--success);
+        }
+        .note.info {
+            background: #eff6ff;
+            border-left-color: var(--info);
+        }
+
+        .print-only {
+            display: none;
+        }
+        @media print {
+            .sidebar,
+            .hamburger,
+            .overlay {
+                display: none !important;
+            }
+            .main {
+                margin-left: 0 !important;
+                padding: 20px !important;
+            }
+            .card {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+                break-inside: avoid;
+            }
+            .page-header {
+                border-bottom-color: #ccc !important;
+            }
+            .print-only {
+                display: block;
+            }
+        }
+
+        /* ─── BACK TO TOP ─── */
+        .back-top {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--primary-dark);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.2s;
+            z-index: 500;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .back-top.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .back-top:hover {
+            background: var(--primary);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ─── HAMBURGER ─── -->
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- ─── OVERLAY ─── -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- ─── SIDEBAR ─── -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-hand-holding-heart"></i>
+            HELP<span>NET</span>
+        </div>
+        <nav>
+            <div class="section-label">Getting Started</div>
+            <a href="#setup" class="active"><i class="fas fa-server"></i> Project Setup</a>
+            <a href="#folder"><i class="fas fa-folder-tree"></i> Folder Structure</a>
+            <a href="#git"><i class="fas fa-code-branch"></i> Git Workflow</a>
+            <a href="#team"><i class="fas fa-users"></i> Team &amp; Tasks</a>
+
+            <div class="section-label">Sprints</div>
+            <a href="#sprint1"><i class="fas fa-key"></i> Sprint 1 – Auth</a>
+            <a href="#sprint2"><i class="fas fa-id-card"></i> Sprint 2 – Profile &amp; Verification</a>
+            <a href="#sprint3"><i class="fas fa-droplet"></i> Sprint 3 – Blood &amp; Notifications</a>
+            <a href="#sprint4"><i class="fas fa-hands-helping"></i> Sprint 4 – Volunteer</a>
+            <a href="#sprint5"><i class="fas fa-store"></i> Sprint 5 – Goods, Waste, Farmer</a>
+            <a href="#sprint6"><i class="fas fa-heartbeat"></i> Sprint 6 – Health &amp; Admin</a>
+
+            <div class="section-label">Technical</div>
+            <a href="#database"><i class="fas fa-database"></i> Database Plan</a>
+            <a href="#api"><i class="fas fa-code"></i> API Plan</a>
+            <a href="#frontend"><i class="fas fa-laptop-code"></i> Frontend Plan</a>
+            <a href="#testing"><i class="fas fa-vial"></i> Testing</a>
+
+            <div class="section-label">DevOps</div>
+            <a href="#docker"><i class="fab fa-docker"></i> Docker</a>
+            <a href="#github-actions"><i class="fas fa-cogs"></i> GitHub Actions</a>
+            <a href="#deployment"><i class="fas fa-rocket"></i> Deployment</a>
+
+            <div class="section-label">Final</div>
+            <a href="#integration"><i class="fas fa-check-double"></i> Integration Checklist</a>
+        </nav>
+    </aside>
+
+    <!-- ─── MAIN ─── -->
+    <main class="main" id="main">
+
+        <!-- ─── HEADER ─── -->
+        <header class="page-header">
+            <h1><i class="fas fa-hand-holding-heart"></i> HELPNET · Development Execution Plan</h1>
+            <p class="subtitle">A Unified Community Services Platform for Bangladesh — 5‑member team, 6 sprints</p>
+            <div class="badge-group">
+                <span class="badge primary"><i class="fas fa-calendar-alt"></i> 6 Sprints</span>
+                <span class="badge accent"><i class="fas fa-user-friends"></i> 5 Members</span>
+                <span class="badge"><i class="fas fa-layer-group"></i> MERN + PostgreSQL</span>
+                <span class="badge"><i class="fab fa-docker"></i> Docker</span>
+                <span class="badge"><i class="fas fa-cloud"></i> Render</span>
+            </div>
+        </header>
+
+        <!-- ============================================================ -->
+        <!--  SETUP                                                         -->
+        <!-- ============================================================ -->
+        <section class="section" id="setup">
+            <h2 class="section-title"><i class="fas fa-server"></i> Project Setup from Zero</h2>
+            <div class="card">
+                <h3><i class="fas fa-terminal"></i> Exact Commands</h3>
+                <p>Start from an empty folder and an empty GitHub repository.</p>
+                <pre><span class="comment"># 1. Create project folder</span>
+mkdir HELPNET
+cd HELPNET
+
+<span class="comment"># 2. Open in VS Code</span>
+code .
+
+<span class="comment"># 3. Initialize Git</span>
+git init
+
+<span class="comment"># 4. Create GitHub repo (via browser) then connect</span>
+git remote add origin https://github.com/your-org/HELPNET.git
+
+<span class="comment"># 5. Create main branch and push</span>
+git checkout -b main
+git add .
+git commit -m "chore: initial project structure"
+git push -u origin main
+
+<span class="comment"># 6. Create develop branch</span>
+git checkout -b develop
+git push -u origin develop
+
+<span class="comment"># 7. Create frontend (React + Tailwind)</span>
+npx create-react-app frontend --template tailwindcss
+cd frontend
+npm install axios react-router-dom
+cd ..
+
+<span class="comment"># 8. Create backend (Node + Express)</span>
+mkdir backend && cd backend
+npm init -y
+npm install express cors dotenv bcrypt jsonwebtoken nodemailer multer cloudinary
+npm install pg sequelize  <span class="comment"># or raw pg</span>
+npm install -D nodemon
+cd ..
+
+<span class="comment"># 9. Create .env files</span>
+touch backend/.env backend/.env.example
+touch frontend/.env
+
+<span class="comment"># 10. Create .gitignore</span>
+echo "node_modules/\n.env\n.DS_Store\nbuild/\ndist/" > .gitignore
+
+<span class="comment"># 11. Create README.md</span>
+echo "# HELPNET – Unified Community Services Platform" > README.md
+
+<span class="comment"># 12. Initial folder structure (see below)</span>
+mkdir -p backend/src/{config,controllers,middleware,models,routes,services,utils}
+mkdir -p frontend/src/{components,pages,layouts,services,hooks,context,utils}
+mkdir -p database docs tests .github/workflows</pre>
+                <p class="mt-2"><i class="fas fa-check-circle" style="color:var(--success);"></i> After these steps, push the initial structure:</p>
+                <pre>git add .
+                    git commit -m "chore: initial project scaffold"
+                    git push origin develop</pre>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  FOLDER STRUCTURE                                              -->
+        <!-- ============================================================ -->
+        <section class="section" id="folder">
+            <h2 class="section-title"><i class="fas fa-folder-tree"></i> Folder Structure</h2>
+            <div class="card">
+                <h3><i class="fas fa-sitemap"></i> Recommended Layout</h3>
+                <pre style="font-size:13px; line-height:1.8;">
+                    HELPNET/
+                    ├── frontend/
+                    │   ├── public/
+                    │   ├── src/
+                    │   │   ├── components/       # Reusable UI (Button, Card, Modal, etc.)
+                    │   │   ├── pages/            # Route-level pages (Login, Dashboard, etc.)
+                    │   │   ├── layouts/          # Layout wrappers (AuthLayout, MainLayout)
+                    │   │   ├── services/         # API client &amp; service functions
+                    │   │   ├── hooks/            # Custom React hooks
+                    │   │   ├── context/          # React Context providers (Auth, Theme)
+                    │   │   ├── utils/            # Helpers, validators, formatters
+                    │   │   ├── App.js
+                    │   │   └── index.js
+                    │   ├── package.json
+                    │   └── tailwind.config.js
+                    │
+                    ├── backend/
+                    │   ├── src/
+                    │   │   ├── config/           # DB config, Cloudinary, email, etc.
+                    │   │   ├── controllers/      # Request handlers
+                    │   │   ├── middleware/       # Auth, validation, error handler
+                    │   │   ├── models/           # Sequelize models / raw SQL
+                    │   │   ├── routes/           # Express route definitions
+                    │   │   ├── services/         # Business logic layer
+                    │   │   └── utils/            # Helpers, JWT, bcrypt, validators
+                    │   ├── .env
+                    │   ├── package.json
+                    │   └── server.js
+                    │
+                    ├── database/
+                    │   └── migrations/           # SQL migration files (if any)
+                    ├── docs/                     # API docs, ERD, sprint plans
+                    ├── tests/                    # Unit / integration tests
+                    ├── .github/
+                    │   └── workflows/            # GitHub Actions YAML
+                    ├── .gitignore
+                    ├── .env.example
+                    ├── README.md
+                    ├── docker-compose.yml
+                    └── package.json              # (optional) root for workspaces</pre>
+                <div class="grid-2 mt-4">
+                    <div>
+                        <h4>Frontend folders</h4>
+                        <ul class="icon-list">
+                            <li><i class="fas fa-folder"></i> <strong>components</strong> – reusable UI pieces</li>
+                            <li><i class="fas fa-folder"></i> <strong>pages</strong> – full page views</li>
+                            <li><i class="fas fa-folder"></i> <strong>services</strong> – API calls (axios instances)</li>
+                            <li><i class="fas fa-folder"></i> <strong>context</strong> – global state (auth, notifications)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Backend folders</h4>
+                        <ul class="icon-list">
+                            <li><i class="fas fa-folder"></i> <strong>controllers</strong> – request/response logic</li>
+                            <li><i class="fas fa-folder"></i> <strong>models</strong> – database models</li>
+                            <li><i class="fas fa-folder"></i> <strong>routes</strong> – endpoint definitions</li>
+                            <li><i class="fas fa-folder"></i> <strong>services</strong> – core business logic</li>
+                            <li><i class="fas fa-folder"></i> <strong>middleware</strong> – auth, validation, error</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  GIT WORKFLOW                                                  -->
+        <!-- ============================================================ -->
+        <section class="section" id="git">
+            <h2 class="section-title"><i class="fas fa-code-branch"></i> 5‑Member Git Workflow</h2>
+            <div class="card">
+                <h3><i class="fas fa-git-alt"></i> Branch Strategy</h3>
+                <ul>
+                    <li><strong>main</strong> – production-ready code (protected)</li>
+                    <li><strong>develop</strong> – integration branch (all features merge here)</li>
+                    <li><strong>feature/*</strong> – one branch per task (e.g. <code>feature/auth-register</code>, <code>feature/nid-verification</code>)</li>
+                </ul>
+                <div class="divider"></div>
+                <h4>Before starting work</h4>
+                <pre>git checkout develop
+                    git pull origin develop
+                    git checkout -b feature/your-task-name</pre>
+
+                <h4>During work</h4>
+                <pre>git status
+                    git add .
+                    git commit -m "feat(scope): description"</pre>
+
+                <h4>Push &amp; PR</h4>
+                <pre>git push origin feature/your-task-name</pre>
+                <p>Open a Pull Request from <code>feature/your-task-name</code> → <code>develop</code>. At least one reviewer (another team member) must approve.</p>
+
+                <div class="note success">
+                    <strong>✔ Who reviews?</strong> The team lead or a member who is not working on the same feature. Rotate reviewers to share knowledge.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-shield-alt"></i> Preventing Conflicts</h3>
+                <ul class="icon-list">
+                    <li><i class="fas fa-user"></i> <strong>Ownership:</strong> Assign specific files/features to each member (see team table).</li>
+                    <li><i class="fas fa-file"></i> <strong>Shared files:</strong> <code>routes/index.js</code>, <code>package.json</code> – coordinate via daily stand-up.</li>
+                    <li><i class="fas fa-database"></i> <strong>DB schema:</strong> One person (e.g. Samia) owns all migration files.</li>
+                    <li><i class="fas fa-code"></i> <strong>React components:</strong> Build isolated components; share via <code>components/common/</code>.</li>
+                    <li><i class="fas fa-env"></i> <strong>.env:</strong> Never commit; use <code>.env.example</code> as source of truth.</li>
+                </ul>
+                <div class="note info">
+                    <strong>If two people must edit the same file:</strong> <br />
+                    1. Both pull latest <code>develop</code> before starting.<br />
+                    2. The first to merge resolves any conflicts with the second via a quick sync.
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  TEAM & TASKS                                                  -->
+        <!-- ============================================================ -->
+        <section class="section" id="team">
+            <h2 class="section-title"><i class="fas fa-users"></i> Team Responsibility</h2>
+            <div class="card">
+                <h3><i class="fas fa-table"></i> Task Ownership (Sprint 1–6)</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Sprint</th>
+                                <th>Task</th>
+                                <th>Layer</th>
+                                <th>Files</th>
+                                <th>Branch</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Samia Anjum</td><td>1</td><td>Auth – Register</td><td>BE+FE</td><td>models/User, controllers/auth, pages/Register</td><td>feature/auth-register</td></tr>
+                            <tr><td>Arnob Richard</td><td>1</td><td>Auth – Login &amp; JWT</td><td>BE+FE</td><td>controllers/auth, middleware/auth, pages/Login</td><td>feature/auth-login</td></tr>
+                            <tr><td>Annotoma Mirdha</td><td>1</td><td>Auth – Role &amp; Protected Routes</td><td>FE+BE</td><td>context/Auth, components/ProtectedRoute</td><td>feature/auth-roles</td></tr>
+                            <tr><td>Mokarram Ahmed</td><td>2</td><td>User Profile &amp; Privacy</td><td>BE+FE</td><td>controllers/user, pages/Profile</td><td>feature/user-profile</td></tr>
+                            <tr><td>Shakil Ahmed</td><td>2</td><td>NID Verification &amp; Admin Queue</td><td>BE+FE</td><td>models/Verification, pages/Admin/Verification</td><td>feature/nid-verification</td></tr>
+                            <tr><td>Samia Anjum</td><td>2</td><td>Ratings &amp; Trust Component</td><td>BE+FE</td><td>models/Rating, components/RatingDisplay</td><td>feature/ratings</td></tr>
+                            <tr><td>Arnob Richard</td><td>3</td><td>Blood Donor Registration &amp; Availability</td><td>BE+FE</td><td>models/Donor, pages/DonorRegister</td><td>feature/blood-donor</td></tr>
+                            <tr><td>Annotoma Mirdha</td><td>3</td><td>Blood Request &amp; Matching</td><td>BE+FE</td><td>controllers/blood, pages/BloodRequest</td><td>feature/blood-request</td></tr>
+                            <tr><td>Mokarram Ahmed</td><td>3</td><td>Notifications</td><td>BE+FE</td><td>models/Notification, components/NotificationBell</td><td>feature/notifications</td></tr>
+                            <tr><td>Shakil Ahmed</td><td>4</td><td>Volunteer Events &amp; Signup</td><td>BE+FE</td><td>models/VolunteerEvent, pages/Events</td><td>feature/volunteer-events</td></tr>
+                            <tr><td>Samia Anjum</td><td>4</td><td>Attendance &amp; Certificates</td><td>BE+FE</td><td>controllers/volunteer, pages/MyVolunteering</td><td>feature/volunteer-attendance</td></tr>
+                            <tr><td>Arnob Richard</td><td>5</td><td>Second-Hand Goods</td><td>BE+FE</td><td>models/GoodsListing, pages/Goods</td><td>feature/goods</td></tr>
+                            <tr><td>Annotoma Mirdha</td><td>5</td><td>Waste Management</td><td>BE+FE</td><td>models/WasteRequest, pages/Waste</td><td>feature/waste</td></tr>
+                            <tr><td>Mokarram Ahmed</td><td>5</td><td>Farmer Marketplace</td><td>BE+FE</td><td>models/FarmerProduct, pages/Farmer</td><td>feature/farmer</td></tr>
+                            <tr><td>Shakil Ahmed</td><td>6</td><td>Health Community &amp; Professional Directory</td><td>BE+FE</td><td>models/HealthPost, pages/Health</td><td>feature/health</td></tr>
+                            <tr><td>Samia Anjum</td><td>6</td><td>Admin Content Management</td><td>BE+FE</td><td>controllers/admin, pages/Admin</td><td>feature/admin-content</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-2"><i class="fas fa-info-circle"></i> Full task breakdown with files, dependencies, and outputs is provided in each sprint section below.</p>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  SPRINT 1                                                      -->
+        <!-- ============================================================ -->
+        <section class="section" id="sprint1">
+            <h2 class="section-title"><i class="fas fa-key"></i> Sprint 1 – Authentication <span class="count">3 tasks</span></h2>
+
+            <div class="card">
+                <h3><i class="fas fa-user-plus"></i> Task: Register</h3>
+                <div class="grid-2">
+                    <div>
+                        <h4>Database</h4>
+                        <ul>
+                            <li>Table <code>users</code></li>
+                            <li>Fields: id, phone, password_hash, role, full_name, created_at, updated_at</li>
+                            <li>Constraint: phone UNIQUE</li>
+                        </ul>
+                        <h4>Backend</h4>
+                        <ul>
+                            <li>Model: <code>models/User.js</code></li>
+                            <li>Controller: <code>controllers/auth.js</code> – register()</li>
+                            <li>Route: POST <code>/api/auth/register</code></li>
+                            <li>bcrypt hashing, validation (phone, password strength)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Frontend</h4>
+                        <ul>
+                            <li>Page: <code>pages/Register.jsx</code></li>
+                            <li>Form with phone, password, full_name, role</li>
+                            <li>Client validation (phone format, password length)</li>
+                            <li>API service: <code>services/auth.js</code></li>
+                        </ul>
+                        <h4>Testing</h4>
+                        <ul>
+                            <li>✔ Valid registration → 201</li>
+                            <li>✔ Duplicate phone → 409</li>
+                            <li>✔ Weak password → 400</li>
+                            <li>✔ Missing fields → 400</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="note success">
+                    <strong>Git:</strong> <code>feature/auth-register</code> &nbsp;|&nbsp; Commit: <code>feat(auth): add user registration API and page</code> &nbsp;|&nbsp; PR → <code>develop</code>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-sign-in-alt"></i> Task: Login &amp; JWT</h3>
+                <div class="grid-2">
+                    <div>
+                        <h4>Database</h4>
+                        <ul><li>Same <code>users</code> table (check password_hash)</li></ul>
+                        <h4>Backend</h4>
+                        <ul>
+                            <li>Controller: <code>login()</code> – verify password, issue JWT</li>
+                            <li>Route: POST <code>/api/auth/login</code></li>
+                            <li>Middleware: <code>middleware/auth.js</code> (verify token)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Frontend</h4>
+                        <ul>
+                            <li>Page: <code>pages/Login.jsx</code></li>
+                            <li>Store token in localStorage or context</li>
+                            <li>Redirect to dashboard after login</li>
+                        </ul>
+                        <h4>Testing</h4>
+                        <ul>
+                            <li>✔ Correct credentials → 200 + token</li>
+                            <li>✔ Wrong password → 401</li>
+                            <li>✔ Non-existent user → 404</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="note success">
+                    <strong>Git:</strong> <code>feature/auth-login</code> &nbsp;|&nbsp; Commit: <code>feat(auth): implement login and JWT flow</code>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-lock"></i> Task: Role &amp; Protected Routes</h3>
+                <div class="grid-2">
+                    <div>
+                        <h4>Backend</h4>
+                        <ul>
+                            <li>Middleware: <code>roleGuard(roles)</code> – check <code>req.user.role</code></li>
+                            <li>Apply to protected endpoints</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Frontend</h4>
+                        <ul>
+                            <li>Context: <code>context/AuthContext.jsx</code></li>
+                            <li>Component: <code>components/ProtectedRoute.jsx</code></li>
+                            <li>Component: <code>components/RoleGuard.jsx</code></li>
+                        </ul>
+                        <h4>Testing</h4>
+                        <ul>
+                            <li>✔ Unauthenticated → redirected to login</li>
+                            <li>✔ Wrong role → 403</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="note success">
+                    <strong>Git:</strong> <code>feature/auth-roles</code> &nbsp;|&nbsp; Commit: <code>feat(auth): add role-based guards and protected routes</code>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  SPRINT 2                                                      -->
+        <!-- ============================================================ -->
+        <section class="section" id="sprint2">
+            <h2 class="section-title"><i class="fas fa-id-card"></i> Sprint 2 – Profile &amp; Verification <span class="count">4 tasks</span></h2>
+
+            <div class="card">
+                <h3><i class="fas fa-user-edit"></i> User Profile &amp; Privacy</h3>
+                <ul>
+                    <li><strong>DB:</strong> Add fields to <code>users</code>: bio, location, privacy_settings (JSON), nid_number, nid_photo</li>
+                    <li><strong>BE:</strong> PUT <code>/api/users/profile</code> – update profile, privacy controls</li>
+                    <li><strong>FE:</strong> <code>pages/Profile.jsx</code> – view/edit profile, privacy toggles</li>
+                    <li><strong>Branch:</strong> <code>feature/user-profile</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-id-card"></i> NID Submission &amp; Verification</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>verification_requests</code> – id, user_id, nid_number, nid_photo, status (pending/approved/rejected), admin_notes, created_at</li>
+                    <li><strong>BE:</strong> POST <code>/api/verification/submit</code>, GET <code>/api/verification/status</code>, PATCH <code>/api/admin/verification/:id</code> (admin only)</li>
+                    <li><strong>FE:</strong> <code>pages/VerifyNID.jsx</code>, <code>pages/Admin/VerificationQueue.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/nid-verification</code></li>
+                </ul>
+                <div class="note info">
+                    <strong>Dependency:</strong> NID submission → Admin review → Approval → Verified badge displayed on profile.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-star"></i> Ratings &amp; Trust Component</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>ratings</code> – id, rated_user_id, rater_user_id, score (1–5), review, created_at</li>
+                    <li><strong>BE:</strong> POST <code>/api/ratings</code>, GET <code>/api/ratings/:userId</code></li>
+                    <li><strong>FE:</strong> <code>components/RatingDisplay.jsx</code>, <code>components/RatingForm.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/ratings</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-clipboard-list"></i> Admin Verification Queue &amp; Audit Log</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>audit_logs</code> – id, user_id, action, timestamp, ip, details</li>
+                    <li><strong>BE:</strong> GET <code>/api/admin/verification</code>, PATCH <code>/api/admin/verification/:id</code>, GET <code>/api/admin/audit</code></li>
+                    <li><strong>FE:</strong> Admin dashboard with queue and log views</li>
+                    <li><strong>Branch:</strong> <code>feature/admin-verification</code></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  SPRINT 3                                                      -->
+        <!-- ============================================================ -->
+        <section class="section" id="sprint3">
+            <h2 class="section-title"><i class="fas fa-droplet"></i> Sprint 3 – Blood Donation &amp; Notifications <span class="count">6 tasks</span></h2>
+
+            <div class="card">
+                <h3><i class="fas fa-hand-holding-heart"></i> Donor Registration &amp; Availability</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>donors</code> – id, user_id, blood_group, location, is_available, last_donation_date, supporting_docs</li>
+                    <li><strong>BE:</strong> POST <code>/api/donors/register</code>, PUT <code>/api/donors/availability</code></li>
+                    <li><strong>FE:</strong> <code>pages/DonorRegister.jsx</code>, <code>components/DonorCard.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/blood-donor</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-tint"></i> Blood Request &amp; Matching</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>blood_requests</code> – id, requester_id, blood_group, urgency, location, supporting_doc, status, created_at</li>
+                    <li><strong>BE:</strong> POST <code>/api/blood/request</code>, GET <code>/api/blood/match</code> (nearby donors)</li>
+                    <li><strong>FE:</strong> <code>pages/BloodRequest.jsx</code>, <code>pages/BloodMatch.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/blood-request</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-bell"></i> Notifications</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>notifications</code> – id, user_id, title, message, type, is_read, created_at</li>
+                    <li><strong>BE:</strong> GET <code>/api/notifications</code>, PATCH <code>/api/notifications/:id/read</code></li>
+                    <li><strong>FE:</strong> <code>components/NotificationBell.jsx</code>, <code>pages/NotificationCentre.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/notifications</code></li>
+                </ul>
+                <div class="note">
+                    <strong>Alerts:</strong> When a blood request matches a donor, a notification is created for both parties.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-check-circle"></i> Blood Request Closure &amp; History</h3>
+                <ul>
+                    <li><strong>BE:</strong> PATCH <code>/api/blood/request/:id/close</code>, GET <code>/api/blood/history</code></li>
+                    <li><strong>FE:</strong> <code>pages/BloodHistory.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/blood-history</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-flag"></i> Report Fake Blood Request</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>reports</code> – id, reporter_id, target_id, target_type, reason, status</li>
+                    <li><strong>BE:</strong> POST <code>/api/reports</code> (blood request)</li>
+                    <li><strong>FE:</strong> <code>components/ReportButton.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/reports</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-file-upload"></i> Supporting Document Upload</h3>
+                <ul>
+                    <li><strong>BE:</strong> Cloudinary integration, POST <code>/api/upload</code></li>
+                    <li><strong>FE:</strong> <code>components/FileUpload.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/file-upload</code></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  SPRINT 4                                                      -->
+        <!-- ============================================================ -->
+        <section class="section" id="sprint4">
+            <h2 class="section-title"><i class="fas fa-hands-helping"></i> Sprint 4 – Volunteer Gathering <span class="count">5 tasks</span></h2>
+
+            <div class="card">
+                <h3><i class="fas fa-calendar-plus"></i> NGO Event Creation</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>volunteer_events</code> – id, ngo_id, title, description, date, location, capacity, status</li>
+                    <li><strong>BE:</strong> POST <code>/api/events</code>, GET <code>/api/events</code></li>
+                    <li><strong>FE:</strong> <code>pages/CreateEvent.jsx</code>, <code>pages/EventsList.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/volunteer-events</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-user-check"></i> Volunteer Signup &amp; Profile</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>volunteer_signups</code> – id, event_id, volunteer_id, status, attended, certificate_issued</li>
+                    <li><strong>BE:</strong> POST <code>/api/events/:id/signup</code>, GET <code>/api/volunteer/profile</code></li>
+                    <li><strong>FE:</strong> <code>pages/EventDetail.jsx</code>, <code>pages/MyVolunteering.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/volunteer-signup</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-qrcode"></i> Digital Attendance &amp; Certificate</h3>
+                <ul>
+                    <li><strong>BE:</strong> PATCH <code>/api/events/:id/attendance</code> (admin/ngo), GET <code>/api/volunteer/certificate/:id</code></li>
+                    <li><strong>FE:</strong> <code>pages/EventAttendance.jsx</code>, <code>pages/Certificate.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/volunteer-attendance</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-search"></i> Volunteer Search &amp; Export</h3>
+                <ul>
+                    <li><strong>BE:</strong> GET <code>/api/volunteer/search</code>, GET <code>/api/admin/volunteer/export</code> (CSV)</li>
+                    <li><strong>FE:</strong> <code>pages/VolunteerSearch.jsx</code>, admin export button</li>
+                    <li><strong>Branch:</strong> <code>feature/volunteer-search</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-envelope"></i> Event Communication (non-real-time)</h3>
+                <div class="note warning">
+                    <strong>⚠ Real-time chat is out of scope.</strong> We use email announcements and in-app notifications instead.
+                </div>
+                <ul>
+                    <li><strong>BE:</strong> POST <code>/api/events/:id/announce</code> – send email to all signed-up volunteers via Nodemailer</li>
+                    <li><strong>FE:</strong> <code>components/EventAnnounce.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/event-communication</code></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  SPRINT 5                                                      -->
+        <!-- ============================================================ -->
+        <section class="section" id="sprint5">
+            <h2 class="section-title"><i class="fas fa-store"></i> Sprint 5 – Goods, Waste, Farmer <span class="count">6 tasks</span></h2>
+
+            <div class="card">
+                <h3><i class="fas fa-boxes"></i> Second-Hand Goods</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>goods_listings</code> – id, seller_id, title, description, price, category, photos, status, created_at</li>
+                    <li><strong>BE:</strong> CRUD endpoints <code>/api/goods</code>, POST <code>/api/goods/:id/interest</code></li>
+                    <li><strong>FE:</strong> <code>pages/GoodsList.jsx</code>, <code>pages/CreateListing.jsx</code>, <code>components/ListingCard.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/goods</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-trash-alt"></i> Waste Management</h3>
+                <div class="note warning">
+                    <strong>⚠ Waste collectors do NOT have accounts.</strong> Contact by phone only.
+                </div>
+                <ul>
+                    <li><strong>DB:</strong> <code>waste_requests</code> – id, user_id, location, waste_type, preferred_time, status, collector_phone</li>
+                    <li><strong>BE:</strong> POST <code>/api/waste/request</code>, GET <code>/api/waste/nearby</code></li>
+                    <li><strong>FE:</strong> <code>pages/WasteRequest.jsx</code>, <code>components/WasteCollectorCard.jsx</code> (shows phone only)</li>
+                    <li><strong>Branch:</strong> <code>feature/waste</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-tractor"></i> Farmer Marketplace</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>farmer_products</code> – id, farmer_id, name, description, price, unit, quantity, location, photos, status</li>
+                    <li><strong>BE:</strong> CRUD <code>/api/farmer/products</code>, GET <code>/api/farmer/browse</code></li>
+                    <li><strong>FE:</strong> <code>pages/FarmerDashboard.jsx</code>, <code>pages/FarmerBrowse.jsx</code>, <code>components/ProductCard.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/farmer</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-shield-alt"></i> Admin Moderation</h3>
+                <ul>
+                    <li><strong>BE:</strong> GET <code>/api/admin/reports</code>, PATCH <code>/api/admin/reports/:id</code>, DELETE <code>/api/admin/goods/:id</code></li>
+                    <li><strong>FE:</strong> <code>pages/Admin/Moderation.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/admin-moderation</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-file-signature"></i> Disclaimer</h3>
+                <ul>
+                    <li><strong>FE:</strong> Add disclaimer component to all listing pages (goods, farmer, blood)</li>
+                    <li><strong>Branch:</strong> <code>feature/disclaimer</code></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  SPRINT 6                                                      -->
+        <!-- ============================================================ -->
+        <section class="section" id="sprint6">
+            <h2 class="section-title"><i class="fas fa-heartbeat"></i> Sprint 6 – Health &amp; Admin <span class="count">5 tasks</span></h2>
+
+            <div class="card">
+                <h3><i class="fas fa-comments"></i> Health Community – Q&amp;A</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>health_posts</code> – id, user_id, title, content, category, is_anonymous, created_at<br />
+                        <code>health_replies</code> – id, post_id, user_id, content, created_at
+                    </li>
+                    <li><strong>BE:</strong> CRUD <code>/api/health/posts</code>, <code>/api/health/replies</code></li>
+                    <li><strong>FE:</strong> <code>pages/HealthCommunity.jsx</code>, <code>components/HealthPostCard.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/health</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-user-md"></i> Verified Health Professional Directory</h3>
+                <ul>
+                    <li><strong>DB:</strong> <code>health_professionals</code> – id, user_id, specialty, qualification, license_number, is_verified</li>
+                    <li><strong>BE:</strong> GET <code>/api/health/professionals</code></li>
+                    <li><strong>FE:</strong> <code>pages/HealthDirectory.jsx</code>, <code>components/ProfessionalCard.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/health-professionals</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-balance-scale"></i> Trust Indicators &amp; Medical Disclaimer</h3>
+                <ul>
+                    <li><strong>FE:</strong> Display verification badges, "Medical Disclaimer" banner on all health pages</li>
+                    <li><strong>Branch:</strong> <code>feature/health-trust</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-sliders-h"></i> Admin Content Management</h3>
+                <ul>
+                    <li><strong>BE:</strong> PATCH <code>/api/admin/health/posts/:id</code> (hide/feature), DELETE <code>/api/admin/health/posts/:id</code></li>
+                    <li><strong>FE:</strong> <code>pages/Admin/ContentManagement.jsx</code></li>
+                    <li><strong>Branch:</strong> <code>feature/admin-content</code></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-bell-slash"></i> Notification Restrictions</h3>
+                <ul>
+                    <li><strong>BE:</strong> Ensure no promotional content appears on urgent screens (blood requests, health emergencies)</li>
+                    <li><strong>FE:</strong> Filter notifications by type, restrict display on urgent pages</li>
+                    <li><strong>Branch:</strong> <code>feature/notification-restrictions</code></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  DATABASE PLAN                                                 -->
+        <!-- ============================================================ -->
+        <section class="section" id="database">
+            <h2 class="section-title"><i class="fas fa-database"></i> Database Plan</h2>
+            <div class="card">
+                <h3><i class="fas fa-table"></i> Core Entities</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Table</th><th>Fields</th><th>PK / FK</th><th>Constraints</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>users</code></td><td>id, phone, password_hash, role, full_name, bio, location, privacy_settings, nid_number, nid_photo, is_verified, created_at, updated_at</td><td>PK: id</td><td>phone UNIQUE</td></tr>
+                            <tr><td><code>verification_requests</code></td><td>id, user_id, nid_number, nid_photo, status, admin_notes, created_at</td><td>FK: user_id → users.id</td><td>status IN (pending,approved,rejected)</td></tr>
+                            <tr><td><code>ratings</code></td><td>id, rated_user_id, rater_user_id, score, review, created_at</td><td>FK: rated_user_id → users.id, rater_user_id → users.id</td><td>score 1–5</td></tr>
+                            <tr><td><code>donors</code></td><td>id, user_id, blood_group, location, is_available, last_donation_date, supporting_docs</td><td>FK: user_id → users.id</td><td>blood_group IN (A+,A-,B+,B-,AB+,AB-,O+,O-)</td></tr>
+                            <tr><td><code>blood_requests</code></td><td>id, requester_id, blood_group, urgency, location, supporting_doc, status, created_at</td><td>FK: requester_id → users.id</td><td>status IN (open,matched,closed)</td></tr>
+                            <tr><td><code>notifications</code></td><td>id, user_id, title, message, type, is_read, created_at</td><td>FK: user_id → users.id</td><td>is_read BOOLEAN DEFAULT false</td></tr>
+                            <tr><td><code>volunteer_events</code></td><td>id, ngo_id, title, description, date, location, capacity, status</td><td>FK: ngo_id → users.id</td><td>status IN (upcoming,ongoing,completed)</td></tr>
+                            <tr><td><code>volunteer_signups</code></td><td>id, event_id, volunteer_id, status, attended, certificate_issued</td><td>FK: event_id → volunteer_events.id, volunteer_id → users.id</td><td>status IN (pending,approved,rejected)</td></tr>
+                            <tr><td><code>goods_listings</code></td><td>id, seller_id, title, description, price, category, photos, status, created_at</td><td>FK: seller_id → users.id</td><td>status IN (active,sold,reported)</td></tr>
+                            <tr><td><code>waste_requests</code></td><td>id, user_id, location, waste_type, preferred_time, status, collector_phone</td><td>FK: user_id → users.id</td><td>status IN (pending,assigned,completed)</td></tr>
+                            <tr><td><code>farmer_products</code></td><td>id, farmer_id, name, description, price, unit, quantity, location, photos, status</td><td>FK: farmer_id → users.id</td><td>status IN (active,sold,reported)</td></tr>
+                            <tr><td><code>health_posts</code></td><td>id, user_id, title, content, category, is_anonymous, created_at</td><td>FK: user_id → users.id</td><td>is_anonymous BOOLEAN</td></tr>
+                            <tr><td><code>health_replies</code></td><td>id, post_id, user_id, content, created_at</td><td>FK: post_id → health_posts.id, user_id → users.id</td><td>—</td></tr>
+                            <tr><td><code>health_professionals</code></td><td>id, user_id, specialty, qualification, license_number, is_verified</td><td>FK: user_id → users.id</td><td>is_verified BOOLEAN</td></tr>
+                            <tr><td><code>audit_logs</code></td><td>id, user_id, action, timestamp, ip, details</td><td>FK: user_id → users.id</td><td>—</td></tr>
+                            <tr><td><code>reports</code></td><td>id, reporter_id, target_id, target_type, reason, status</td><td>FK: reporter_id → users.id</td><td>target_type VARCHAR, status IN (pending,resolved,dismissed)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="note info">
+                    <strong>Relationships:</strong> Most tables link to <code>users</code>. <code>volunteer_signups</code> links events and volunteers. <code>health_replies</code> links to <code>health_posts</code>.
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  API PLAN                                                      -->
+        <!-- ============================================================ -->
+        <section class="section" id="api">
+            <h2 class="section-title"><i class="fas fa-code"></i> API Plan</h2>
+            <div class="card">
+                <h3><i class="fas fa-list-ul"></i> Endpoint Overview</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Group</th><th>Method</th><th>Endpoint</th><th>Auth</th><th>Roles</th><th>Purpose</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Auth</td><td>POST</td><td><code>/api/auth/register</code></td><td>❌</td><td>—</td><td>User registration</td></tr>
+                            <tr><td>Auth</td><td>POST</td><td><code>/api/auth/login</code></td><td>❌</td><td>—</td><td>Login + JWT</td></tr>
+                            <tr><td>Users</td><td>GET</td><td><code>/api/users/me</code></td><td>✅</td><td>all</td><td>Get own profile</td></tr>
+                            <tr><td>Users</td><td>PUT</td><td><code>/api/users/me</code></td><td>✅</td><td>all</td><td>Update profile</td></tr>
+                            <tr><td>Verification</td><td>POST</td><td><code>/api/verification/submit</code></td><td>✅</td><td>all</td><td>Submit NID</td></tr>
+                            <tr><td>Verification</td><td>GET</td><td><code>/api/verification/status</code></td><td>✅</td><td>all</td><td>Check status</td></tr>
+                            <tr><td>Admin</td><td>GET</td><td><code>/api/admin/verification</code></td><td>✅</td><td>admin</td><td>Queue list</td></tr>
+                            <tr><td>Admin</td><td>PATCH</td><td><code>/api/admin/verification/:id</code></td><td>✅</td><td>admin</td><td>Approve/reject</td></tr>
+                            <tr><td>Ratings</td><td>POST</td><td><code>/api/ratings</code></td><td>✅</td><td>all</td><td>Rate a user</td></tr>
+                            <tr><td>Ratings</td><td>GET</td><td><code>/api/ratings/:userId</code></td><td>✅</td><td>all</td><td>Get user ratings</td></tr>
+                            <tr><td>Blood</td><td>POST</td><td><code>/api/donors/register</code></td><td>✅</td><td>all</td><td>Register as donor</td></tr>
+                            <tr><td>Blood</td><td>POST</td><td><code>/api/blood/request</code></td><td>✅</td><td>all</td><td>Create blood request</td></tr>
+                            <tr><td>Blood</td><td>GET</td><td><code>/api/blood/match</code></td><td>✅</td><td>all</td><td>Find nearby donors</td></tr>
+                            <tr><td>Notifications</td><td>GET</td><td><code>/api/notifications</code></td><td>✅</td><td>all</td><td>List notifications</td></tr>
+                            <tr><td>Volunteer</td><td>POST</td><td><code>/api/events</code></td><td>✅</td><td>ngo,admin</td><td>Create event</td></tr>
+                            <tr><td>Volunteer</td><td>POST</td><td><code>/api/events/:id/signup</code></td><td>✅</td><td>all</td><td>Sign up for event</td></tr>
+                            <tr><td>Goods</td><td>POST</td><td><code>/api/goods</code></td><td>✅</td><td>all</td><td>Create listing</td></tr>
+                            <tr><td>Goods</td><td>GET</td><td><code>/api/goods</code></td><td>✅</td><td>all</td><td>List goods</td></tr>
+                            <tr><td>Waste</td><td>POST</td><td><code>/api/waste/request</code></td><td>✅</td><td>all</td><td>Request pickup</td></tr>
+                            <tr><td>Farmer</td><td>POST</td><td><code>/api/farmer/products</code></td><td>✅</td><td>farmer</td><td>Add product</td></tr>
+                            <tr><td>Farmer</td><td>GET</td><td><code>/api/farmer/browse</code></td><td>✅</td><td>all</td><td>Browse products</td></tr>
+                            <tr><td>Health</td><td>POST</td><td><code>/api/health/posts</code></td><td>✅</td><td>all</td><td>Ask a health question</td></tr>
+                            <tr><td>Health</td><td>GET</td><td><code>/api/health/posts</code></td><td>✅</td><td>all</td><td>List health posts</td></tr>
+                            <tr><td>Health</td><td>GET</td><td><code>/api/health/professionals</code></td><td>✅</td><td>all</td><td>List verified pros</td></tr>
+                            <tr><td>Admin</td><td>GET</td><td><code>/api/admin/reports</code></td><td>✅</td><td>admin</td><td>List reports</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-2"><i class="fas fa-info-circle"></i> All endpoints return JSON with <code>{ success, data, message }</code> structure. Error codes: 400, 401, 403, 404, 409, 500.</p>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  FRONTEND PLAN                                                 -->
+        <!-- ============================================================ -->
+        <section class="section" id="frontend">
+            <h2 class="section-title"><i class="fas fa-laptop-code"></i> Frontend Plan</h2>
+            <div class="card">
+                <h3><i class="fas fa-file-alt"></i> Pages by Sprint</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Page</th><th>Route</th><th>Access</th><th>Components</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Register</td><td><code>/register</code></td><td>public</td><td>RegisterForm</td></tr>
+                            <tr><td>Login</td><td><code>/login</code></td><td>public</td><td>LoginForm</td></tr>
+                            <tr><td>Profile</td><td><code>/profile</code></td><td>auth</td><td>ProfileForm, PrivacySettings</td></tr>
+                            <tr><td>Verify NID</td><td><code>/verify-nid</code></td><td>auth</td><td>NIDUpload, StatusBadge</td></tr>
+                            <tr><td>Admin Verification</td><td><code>/admin/verification</code></td><td>admin</td><td>VerificationQueue, AuditLog</td></tr>
+                            <tr><td>Donor Register</td><td><code>/donor/register</code></td><td>auth</td><td>DonorForm, BloodGroupSelect</td></tr>
+                            <tr><td>Blood Request</td><td><code>/blood/request</code></td><td>auth</td><td>RequestForm, MatchList</td></tr>
+                            <tr><td>Notification Centre</td><td><code>/notifications</code></td><td>auth</td><td>NotificationList, NotificationBell</td></tr>
+                            <tr><td>Events</td><td><code>/events</code></td><td>auth</td><td>EventCard, CreateEventForm</td></tr>
+                            <tr><td>My Volunteering</td><td><code>/my-volunteering</code></td><td>auth</td><td>SignupList, CertificateDownload</td></tr>
+                            <tr><td>Goods</td><td><code>/goods</code></td><td>auth</td><td>ListingCard, CreateListingForm</td></tr>
+                            <tr><td>Waste</td><td><code>/waste</code></td><td>auth</td><td>WasteRequestForm, CollectorContact</td></tr>
+                            <tr><td>Farmer</td><td><code>/farmer</code></td><td>auth</td><td>ProductCard, FarmerDashboard</td></tr>
+                            <tr><td>Health Community</td><td><code>/health</code></td><td>auth</td><td>PostCard, ReplyForm</td></tr>
+                            <tr><td>Health Directory</td><td><code>/health/directory</code></td><td>auth</td><td>ProfessionalCard</td></tr>
+                            <tr><td>Admin Dashboard</td><td><code>/admin</code></td><td>admin</td><td>AdminMenu, ModerationPanel</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h4>Reusable Components</h4>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <span class="tag blue">Navbar</span>
+                    <span class="tag blue">Sidebar</span>
+                    <span class="tag blue">ProtectedRoute</span>
+                    <span class="tag blue">RoleGuard</span>
+                    <span class="tag blue">NotificationBell</span>
+                    <span class="tag blue">VerificationBadge</span>
+                    <span class="tag blue">RatingDisplay</span>
+                    <span class="tag blue">ReportButton</span>
+                    <span class="tag blue">ContactButton</span>
+                    <span class="tag blue">ListingCard</span>
+                    <span class="tag blue">EventCard</span>
+                    <span class="tag blue">ProductCard</span>
+                    <span class="tag blue">FileUpload</span>
+                    <span class="tag blue">DisclaimerBanner</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  TESTING                                                       -->
+        <!-- ============================================================ -->
+        <section class="section" id="testing">
+            <h2 class="section-title"><i class="fas fa-vial"></i> Testing Plan</h2>
+            <div class="card">
+                <h3><i class="fas fa-check-circle"></i> Test Categories</h3>
+                <ul>
+                    <li><strong>Unit tests:</strong> Validators, helpers, model methods</li>
+                    <li><strong>API tests:</strong> All endpoints (success &amp; error cases)</li>
+                    <li><strong>Integration tests:</strong> Auth → protected routes, blood request → notification</li>
+                    <li><strong>UI tests:</strong> Form validation, redirects, error messages</li>
+                    <li><strong>Permission tests:</strong> Role guards, admin-only endpoints</li>
+                </ul>
+                <div class="divider"></div>
+                <h4>Critical Test Cases</h4>
+                <div class="grid-2">
+                    <ul>
+                        <li>✔ Unauthorized access → 401</li>
+                        <li>✔ Wrong role → 403</li>
+                        <li>✔ Duplicate registration → 409</li>
+                        <li>✔ Invalid phone format → 400</li>
+                        <li>✔ Weak password → 400</li>
+                    </ul>
+                    <ul>
+                        <li>✔ Fake blood request → reported</li>
+                        <li>✔ Reported content → admin review</li>
+                        <li>✔ Admin permissions → full access</li>
+                        <li>✔ Privacy controls → data hidden</li>
+                        <li>✔ NID verification flow → status updates</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  DOCKER                                                        -->
+        <!-- ============================================================ -->
+        <section class="section" id="docker">
+            <h2 class="section-title"><i class="fab fa-docker"></i> Docker Plan</h2>
+            <div class="card">
+                <h3><i class="fas fa-file"></i> docker-compose.yml</h3>
+                <pre>version: '3.8'
+                    services:
+                    postgres:
+                    image: postgres:15
+                    container_name: helpnet-db
+                    environment:
+                    POSTGRES_USER: helpnet
+                    POSTGRES_PASSWORD: helpnet123
+                    POSTGRES_DB: helpnet
+                    ports:
+                    - "5432:5432"
+                    volumes:
+                    - postgres-data:/var/lib/postgresql/data
+
+                    backend:
+                    build: ./backend
+                    container_name: helpnet-backend
+                    ports:
+                    - "5000:5000"
+                    environment:
+                    NODE_ENV: development
+                    DATABASE_URL: postgresql://helpnet:helpnet123@postgres:5432/helpnet
+                    depends_on:
+                    - postgres
+                    volumes:
+                    - ./backend:/app
+                    - /app/node_modules
+
+                    frontend:
+                    build: ./frontend
+                    container_name: helpnet-frontend
+                    ports:
+                    - "3000:3000"
+                    environment:
+                    REACT_APP_API_URL: http://localhost:5000/api
+                    depends_on:
+                    - backend
+                    volumes:
+                    - ./frontend:/app
+                    - /app/node_modules
+
+                    volumes:
+                    postgres-data:</pre>
+                <h4>Commands</h4>
+                <ul>
+                    <li><code>docker compose up</code> – start all services</li>
+                    <li><code>docker compose down</code> – stop and remove containers</li>
+                    <li><code>docker compose build</code> – rebuild images</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  GITHUB ACTIONS                                                -->
+        <!-- ============================================================ -->
+        <section class="section" id="github-actions">
+            <h2 class="section-title"><i class="fas fa-cogs"></i> GitHub Actions</h2>
+            <div class="card">
+                <h3><i class="fas fa-file-code"></i> .github/workflows/ci.yml</h3>
+                <pre>name: CI
+
+                    on:
+                    push:
+                    branches: [ main, develop ]
+                    pull_request:
+                    branches: [ develop ]
+
+                    jobs:
+                    test:
+                    runs-on: ubuntu-latest
+
+                    steps:
+                    - uses: actions/checkout@v3
+
+                    - name: Setup Node.js
+                    uses: actions/setup-node@v3
+                    with:
+                    node-version: 18
+
+                    - name: Install backend dependencies
+                    run: |
+                    cd backend
+                    npm ci
+
+                    - name: Run backend tests
+                    run: |
+                    cd backend
+                    npm test
+
+                    - name: Install frontend dependencies
+                    run: |
+                    cd frontend
+                    npm ci
+
+                    - name: Build frontend
+                    run: |
+                    cd frontend
+                    npm run build
+
+                    - name: Run frontend tests
+                    run: |
+                    cd frontend
+                    npm test -- --watchAll=false</pre>
+                <p><i class="fas fa-info-circle"></i> Runs on every push/PR to <code>develop</code> or <code>main</code>. Fails if tests or build fail.</p>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  DEPLOYMENT                                                    -->
+        <!-- ============================================================ -->
+        <section class="section" id="deployment">
+            <h2 class="section-title"><i class="fas fa-rocket"></i> Deployment (Render)</h2>
+            <div class="card">
+                <h3><i class="fas fa-server"></i> Backend</h3>
+                <ul>
+                    <li><strong>Build:</strong> <code>npm install</code></li>
+                    <li><strong>Start:</strong> <code>node src/server.js</code></li>
+                    <li><strong>Env:</strong> DATABASE_URL, JWT_SECRET, CLOUDINARY_*, SMTP_*</li>
+                </ul>
+                <h3><i class="fas fa-globe"></i> Frontend</h3>
+                <ul>
+                    <li><strong>Build:</strong> <code>npm run build</code></li>
+                    <li><strong>Publish:</strong> <code>build/</code> folder</li>
+                    <li><strong>Env:</strong> REACT_APP_API_URL</li>
+                </ul>
+                <h3><i class="fas fa-database"></i> Database</h3>
+                <ul>
+                    <li>Use Render PostgreSQL or Supabase</li>
+                    <li>Run migrations manually or via startup script</li>
+                </ul>
+                <div class="note info">
+                    <strong>CORS:</strong> Configure <code>cors</code> middleware to allow frontend origin. Use environment variable for production URL.
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!--  INTEGRATION CHECKLIST                                         -->
+        <!-- ============================================================ -->
+        <section class="section" id="integration">
+            <h2 class="section-title"><i class="fas fa-check-double"></i> Final Integration Checklist</h2>
+            <div class="card">
+                <h3><i class="fas fa-list-check"></i> After Sprint 6</h3>
+                <div class="grid-2">
+                    <ul>
+                        <li>✔ Authentication works (login/register/logout)</li>
+                        <li>✔ Profile &amp; privacy settings</li>
+                        <li>✔ NID verification &amp; badge</li>
+                        <li>✔ Ratings displayed on profiles</li>
+                        <li>✔ Blood donation – register, request, match</li>
+                        <li>✔ Notifications work</li>
+                        <li>✔ Volunteer events – create, signup, attendance</li>
+                        <li>✔ Certificates generated</li>
+                    </ul>
+                    <ul>
+                        <li>✔ Second-hand goods listing &amp; interest</li>
+                        <li>✔ Waste management (collector by phone)</li>
+                        <li>✔ Farmer marketplace – products &amp; browse</li>
+                        <li>✔ Health community – posts, replies, directory</li>
+                        <li>✔ Admin moderation &amp; content management</li>
+                        <li>✔ Medical disclaimers shown</li>
+                        <li>✔ No promotional content on urgent screens</li>
+                        <li>✔ Responsive UI on mobile/tablet</li>
+                    </ul>
+                </div>
+                <div class="note success">
+                    <strong>✔ Done:</strong> All 6 sprints integrated, tested, and deployed. The system is ready for demo.
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── FOOTER ─── -->
+        <div style="margin-top:64px; padding-top:24px; border-top:1px solid var(--gray-200); color:var(--gray-400); font-size:13px; text-align:center;">
+            <i class="fas fa-hand-holding-heart"></i> HELPNET – Development Execution Plan &bull; Built for 5‑member CSE team &bull; All sprints covered
+        </div>
+
+    </main>
+
+    <!-- ─── BACK TO TOP ─── -->
+    <button class="back-top" id="backTop" aria-label="Back to top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- ─── SCRIPTS ─── -->
+    <script>
+        (function() {
+            // ── Hamburger ──
+            const hamburger = document.getElementById('hamburger');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+            }
+
+            hamburger.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+
+            // ── Close sidebar on link click (mobile) ──
+            document.querySelectorAll('.sidebar nav a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('open');
+                        overlay.classList.remove('active');
+                    }
+                });
+            });
+
+            // ── Active nav link ──
+            const navLinks = document.querySelectorAll('.sidebar nav a');
+            const sections = document.querySelectorAll('.section');
+
+            function updateActive() {
+                let current = '';
+                sections.forEach(section => {
+                    const top = section.offsetTop - 120;
+                    if (window.scrollY >= top) {
+                        current = section.id;
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+                });
+            }
+
+            window.addEventListener('scroll', updateActive);
+            window.addEventListener('load', updateActive);
+
+            // ── Back to top ──
+            const backTop = document.getElementById('backTop');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 600) {
+                    backTop.classList.add('visible');
+                } else {
+                    backTop.classList.remove('visible');
+                }
+            });
+            backTop.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // ── Smooth scroll for all anchor links ──
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        e.preventDefault();
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+        })();
+    </script>
+
+</body>
+</html>
