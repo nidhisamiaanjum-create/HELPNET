@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>HELPNET - Dashboard</title>
+
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+
+  <!-- =====================================================
+       HEADER
+       ===================================================== -->
+
+  <header class="site-header">
+
+    <a
+      href="../index.html"
+      class="logo"
+      data-i18n="appName">
+      হেল্পনেট
+    </a>
+
+
+    <div class="header-actions">
+
+      <!-- Language -->
+      <button
+        type="button"
+        id="langToggle"
+        class="lang-toggle">
+        English
+      </button>
+
+
+      <!-- Logout -->
+      <button
+        type="button"
+        id="logoutButton"
+        class="lang-toggle">
+        Logout
+      </button>
+
+    </div>
+
+  </header>
+
+
+
+  <!-- =====================================================
+       DASHBOARD
+       ===================================================== -->
+
+  <main class="page">
+
+    <div class="card">
+
+
+      <!-- Title -->
+
+      <h1>
+        Dashboard
+      </h1>
+
+
+      <p class="subtitle">
+        Welcome to HELPNET
+      </p>
+
+
+
+      <!-- =================================================
+           USER INFORMATION
+           ================================================= -->
+
+      <!-- Name -->
+
+      <div class="field">
+
+        <label>
+          Name
+        </label>
+
+        <div id="userName">
+          -
+        </div>
+
+      </div>
+
+
+
+      <!-- Email -->
+
+      <div class="field">
+
+        <label>
+          Email
+        </label>
+
+        <div id="userEmail">
+          -
+        </div>
+
+      </div>
+
+
+
+      <!-- Phone -->
+
+      <div class="field">
+
+        <label>
+          Phone
+        </label>
+
+        <div id="userPhone">
+          -
+        </div>
+
+      </div>
+
+
+
+      <!-- Role -->
+
+      <div class="field">
+
+        <label>
+          Role
+        </label>
+
+        <div id="userRole">
+          -
+        </div>
+
+      </div>
+
+
+
+      <!-- =================================================
+           HOME LINK
+           ================================================= -->
+
+      <div class="form-links">
+
+        <p>
+
+          <a href="../index.html">
+            Back to Home
+          </a>
+
+        </p>
+
+      </div>
+
+
+    </div>
+
+  </main>
+
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+       ===================================================== -->
+
+  <script src="../js/api.js"></script>
+
+  <script src="../js/i18n.js"></script>
+
+  <script src="../js/auth.js"></script>
+
+
+  <script>
+
+    /* =====================================================
+       DASHBOARD INITIALIZATION
+       ===================================================== */
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+
+        /*
+           Check whether the user is logged in.
+
+           If there is no JWT token,
+           requireLogin() automatically sends
+           the user to login.html.
+        */
+
+        if (!requireLogin()) {
+          return;
+        }
+
+
+        /*
+           Get the user information saved
+           during login.
+        */
+
+        const user = getStoredUser();
+
+
+        /*
+           If no user information exists,
+           stop here.
+        */
+
+        if (!user) {
+          return;
+        }
+
+
+        /*
+           Display user information.
+        */
+
+        const userName =
+          document.getElementById("userName");
+
+        const userEmail =
+          document.getElementById("userEmail");
+
+        const userPhone =
+          document.getElementById("userPhone");
+
+        const userRole =
+          document.getElementById("userRole");
+
+
+        if (userName) {
+
+          userName.textContent =
+            user.full_name || "-";
+        }
+
+
+        if (userEmail) {
+
+          userEmail.textContent =
+            user.email || "-";
+        }
+
+
+        if (userPhone) {
+
+          userPhone.textContent =
+            user.phone_number || "-";
+        }
+
+
+        if (userRole) {
+
+          userRole.textContent =
+            user.role || "-";
+        }
+
+      }
+    );
+
+  </script>
+
+
+</body>
+
+</html>
