@@ -1,98 +1,303 @@
 <!DOCTYPE html>
 <html lang="bn">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>HELPNET</title>
+
   <link rel="stylesheet" href="../css/style.css">
 </head>
+
 <body>
 
+  <!-- Header -->
   <header class="site-header">
-    <a href="../index.html" class="logo" data-i18n="appName">হেল্পনেট</a>
+
+    <a href="../index.html"
+       class="logo"
+       data-i18n="appName">
+      হেল্পনেট
+    </a>
+
     <div class="header-actions">
-      <button type="button" id="langToggle" class="lang-toggle">English</button>
+
+      <button
+        type="button"
+        id="langToggle"
+        class="lang-toggle">
+        English
+      </button>
+
     </div>
+
   </header>
 
+
+  <!-- Register -->
   <main class="page">
+
     <div class="card">
+
       <h1 data-i18n="registerTitle"></h1>
-      <p class="subtitle" data-i18n="registerSubtitle"></p>
 
-      <div id="formAlert" class="alert"></div>
+      <p
+        class="subtitle"
+        data-i18n="registerSubtitle">
+      </p>
 
-      <form id="registerForm" novalidate>
 
+      <!-- Alert -->
+      <div
+        id="formAlert"
+        class="alert">
+      </div>
+
+
+      <!-- Register Form -->
+      <form
+        id="registerForm"
+        novalidate>
+
+        <!-- Full Name -->
         <div class="field">
-          <label for="fullName" data-i18n="fullName"></label>
-          <input type="text" id="fullName" name="fullName" autocomplete="name" required>
-          <div class="field-error" id="fullNameError"></div>
-        </div>
 
-        <div class="field">
-          <label for="phoneNumber" data-i18n="phone"></label>
-          <input type="tel" id="phoneNumber" name="phoneNumber"
-                 inputmode="numeric" autocomplete="tel" required>
-          <div class="hint" data-i18n="phoneHint"></div>
-          <div class="field-error" id="phoneNumberError"></div>
-        </div>
-
-        <div class="field">
-          <label for="password" data-i18n="password"></label>
-          <input type="password" id="password" name="password"
-                 autocomplete="new-password" required>
-          <div class="hint" data-i18n="passwordHint"></div>
-          <div class="field-error" id="passwordError"></div>
-        </div>
-
-        <div class="field">
-          <label for="email">
-            <span data-i18n="email"></span>
+          <label
+            for="fullName"
+            data-i18n="fullName">
           </label>
-          <input type="email" id="email" name="email" autocomplete="email">
-          <div class="field-error" id="emailError"></div>
+
+          <input
+            type="text"
+            id="fullName"
+            name="fullName"
+            autocomplete="name"
+            required>
+
+          <div
+            class="field-error"
+            id="fullNameError">
+          </div>
+
         </div>
 
+
+        <!-- Phone -->
         <div class="field">
-          <label for="district">
-            <span data-i18n="district"></span>
-            <span class="optional" data-i18n="optional"></span>
+
+          <label
+            for="phoneNumber"
+            data-i18n="phone">
           </label>
-          <select id="district" name="district">
-            <option value="" data-i18n="selectDistrict"></option>
+
+          <input
+            type="tel"
+            id="phoneNumber"
+            name="phoneNumber"
+            inputmode="numeric"
+            autocomplete="tel"
+            required>
+
+          <div
+            class="hint"
+            data-i18n="phoneHint">
+          </div>
+
+          <div
+            class="field-error"
+            id="phoneNumberError">
+          </div>
+
+        </div>
+
+
+        <!-- Password -->
+        <div class="field">
+
+          <label
+            for="password"
+            data-i18n="password">
+          </label>
+
+          <input
+            type="password"
+            id="password"
+            name="password"
+            autocomplete="new-password"
+            required>
+
+          <div
+            class="hint"
+            data-i18n="passwordHint">
+          </div>
+
+          <div
+            class="field-error"
+            id="passwordError">
+          </div>
+
+        </div>
+
+
+        <!-- Email -->
+        <div class="field">
+
+          <label
+            for="email"
+            data-i18n="email">
+          </label>
+
+          <input
+            type="email"
+            id="email"
+            name="email"
+            autocomplete="email"
+            required>
+
+          <div
+            class="field-error"
+            id="emailError">
+          </div>
+
+        </div>
+
+
+        <!-- Role -->
+        <div class="field">
+
+          <label for="role">
+            Role
+          </label>
+
+          <select
+            id="role"
+            name="role"
+            required>
+
+            <option value="">
+              Select your role
+            </option>
+
+            <option value="Citizen">
+              Citizen
+            </option>
+
+            <option value="NGO">
+              NGO
+            </option>
+
+            <option value="Volunteer">
+              Volunteer
+            </option>
+
+            <option value="Farmer">
+              Farmer
+            </option>
+
           </select>
+
+          <div
+            class="field-error"
+            id="roleError">
+          </div>
+
         </div>
 
+
+        <!-- District -->
         <div class="field">
-          <label for="upazila">
-            <span data-i18n="upazila"></span>
-            <span class="optional" data-i18n="optional"></span>
+
+          <label for="district">
+
+            <span data-i18n="district"></span>
+
+            <span
+              class="optional"
+              data-i18n="optional">
+            </span>
+
           </label>
-          <input type="text" id="upazila" name="upazila">
+
+          <select
+            id="district"
+            name="district">
+
+            <option
+              value=""
+              data-i18n="selectDistrict">
+            </option>
+
+          </select>
+
         </div>
 
-        <button type="submit" id="registerButton" class="btn"
-                data-i18n="registerButton"></button>
+
+        <!-- Upazila -->
+        <div class="field">
+
+          <label for="upazila">
+
+            <span data-i18n="upazila"></span>
+
+            <span
+              class="optional"
+              data-i18n="optional">
+            </span>
+
+          </label>
+
+          <input
+            type="text"
+            id="upazila"
+            name="upazila">
+
+        </div>
+
+
+        <!-- Register Button -->
+        <button
+          type="submit"
+          id="registerButton"
+          class="btn"
+          data-i18n="registerButton">
+        </button>
+
       </form>
 
+
+      <!-- Login Link -->
       <div class="form-links">
+
         <p>
+
           <span data-i18n="haveAccount"></span>
-          <a href="login.html" data-i18n="loginLink"></a>
+
+          <a
+            href="login.html"
+            data-i18n="loginLink">
+          </a>
+
         </p>
+
       </div>
+
     </div>
+
   </main>
 
-  <script src="../js/api.js"></script>
-<script src="../js/i18n.js"></script>
-<script src="../js/districts.js"></script>
-<script src="../js/auth.js"></script>
 
-<script>
+  <!-- JavaScript -->
+  <script src="../js/api.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/districts.js"></script>
+  <script src="../js/auth.js"></script>
+
+  <script>
     populateDistricts("district");
-    initRegisterPage();
-</script>
+  </script>
+
 </body>
+
 </html>
+
