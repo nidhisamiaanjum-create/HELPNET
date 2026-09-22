@@ -1,4 +1,3 @@
-
 /* ============================================================
    HELPNET AUTHENTICATION
    Frontend: HTML + CSS + Vanilla JavaScript
@@ -8,15 +7,9 @@
 
 /* ============================================================
    PHONE VALIDATION
-   Bangladesh phone number format
-   Examples:
-   01712345678
-   +8801712345678
-   008801712345678
    ============================================================ */
 
 const PHONE_RE = /^(?:\+?88)?(01[3-9]\d{8})$/;
-
 
 function isValidPhone(value) {
     return PHONE_RE.test(value);
@@ -25,10 +18,6 @@ function isValidPhone(value) {
 
 /* ============================================================
    PASSWORD VALIDATION
-   Minimum 8 characters
-   Must contain:
-   - one letter
-   - one number
    ============================================================ */
 
 function isValidPassword(value) {
@@ -45,277 +34,206 @@ function isValidPassword(value) {
 
 
 /* ============================================================
-   REGISTER PAGE
+   REGISTER
    ============================================================ */
 
 function initRegisterPage() {
 
-    /*
-       Check if this is actually the register page
-       before doing anything else.
-    */
-
-    const form =
-        document.getElementById("registerForm");
+    const form = document.getElementById("registerForm");
 
     if (!form) {
         return;
     }
 
-    redirectIfLoggedIn();
-
-
     const button =
         document.getElementById("registerButton");
 
+    form.addEventListener("submit", async function (event) {
 
-    form.addEventListener(
-        "submit",
-        async function (event) {
+        event.preventDefault();
 
-            event.preventDefault();
+        /* Clear previous errors */
 
+        hideAlert("formAlert");
+        clearFieldErrors("registerForm");
 
-            /* --------------------------------------------
-               Clear previous errors
-               -------------------------------------------- */
 
-            hideAlert("formAlert");
+        /* Get values */
 
-            clearFieldErrors("registerForm");
+        const fullName =
+            document.getElementById("fullName").value.trim();
 
+        const phone =
+            document.getElementById("phoneNumber").value.trim();
 
-            /* --------------------------------------------
-               Get form values
-               -------------------------------------------- */
+        const password =
+            document.getElementById("password").value;
 
-            const fullName =
-                document
-                    .getElementById("fullName")
-                    .value
-                    .trim();
+        const email =
+            document.getElementById("email").value.trim();
 
+        const role =
+            document.getElementById("role").value;
 
-            const phone =
-                document
-                    .getElementById("phoneNumber")
-                    .value
-                    .trim();
+        const district =
+            document.getElementById("district").value;
 
+        const upazila =
+            document.getElementById("upazila").value.trim();
 
-            const password =
-                document
-                    .getElementById("password")
-                    .value;
 
+        /* Validation */
 
-            const email =
-                document
-                    .getElementById("email")
-                    .value
-                    .trim();
+        let valid = true;
 
 
-            const role =
-                document
-                    .getElementById("role")
-                    .value;
+        if (fullName.length < 2) {
 
+            showFieldError(
+                "fullName",
+                t("required")
+            );
 
-            const district =
-                document
-                    .getElementById("district")
-                    .value;
-
-
-            const upazila =
-                document
-                    .getElementById("upazila")
-                    .value
-                    .trim();
-
-
-            /* --------------------------------------------
-               Frontend validation
-               -------------------------------------------- */
-
-            let valid = true;
-
-
-            /* Full name */
-
-            if (fullName.length < 2) {
-
-                showFieldError(
-                    "fullName",
-                    t("required")
-                );
-
-                valid = false;
-            }
-
-
-            /* Phone */
-
-            if (!isValidPhone(phone)) {
-
-                showFieldError(
-                    "phoneNumber",
-                    t("phoneHint")
-                );
-
-                valid = false;
-            }
-
-
-            /* Password */
-
-            if (!isValidPassword(password)) {
-
-                showFieldError(
-                    "password",
-                    t("passwordHint")
-                );
-
-                valid = false;
-            }
-
-
-            /* Email */
-
-            if (!email) {
-
-                showFieldError(
-                    "email",
-                    t("required")
-                );
-
-                valid = false;
-            }
-
-
-            /* Role */
-
-            if (!role) {
-
-                showFieldError(
-                    "role",
-                    "Please select your role."
-                );
-
-                valid = false;
-            }
-
-
-            /* Stop if validation failed */
-
-            if (!valid) {
-                return;
-            }
-
-
-            /* --------------------------------------------
-               Create location
-               -------------------------------------------- */
-
-            const location = [
-                district,
-                upazila
-            ]
-                .filter(Boolean)
-                .join(", ");
-
-
-            /* --------------------------------------------
-               Disable register button
-               -------------------------------------------- */
-
-            setBusy(button, true);
-
-
-            try {
-
-                /* ----------------------------------------
-                   Send registration request to Django
-                   ---------------------------------------- */
-
-                const data =
-                    await apiRequest(
-                        "/api/auth/register/",
-                        "POST",
-                        {
-                            full_name: fullName,
-                            phone_number: phone,
-                            password: password,
-                            email: email,
-                            role: role,
-                            location: location
-                        }
-                    );
-
-
-                /* ----------------------------------------
-                   Registration successful
-                   ---------------------------------------- */
-
-                showAlert(
-                    "formAlert",
-                    data.message ||
-                    t("registerSuccess"),
-                    "success"
-                );
-
-
-                form.reset();
-
-
-                /* ----------------------------------------
-                   Redirect to login
-                   ---------------------------------------- */
-
-                setTimeout(
-                    function () {
-
-                        window.location.href =
-                            "login.html";
-
-                    },
-                    1200
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    "Registration error:",
-                    error
-                );
-
-                showAlert(
-                    "formAlert",
-                    error.message,
-                    "error"
-                );
-
-            } finally {
-
-                setBusy(button, false);
-            }
+            valid = false;
         }
-    );
+
+
+        if (!isValidPhone(phone)) {
+
+            showFieldError(
+                "phoneNumber",
+                t("phoneHint")
+            );
+
+            valid = false;
+        }
+
+
+        if (!isValidPassword(password)) {
+
+            showFieldError(
+                "password",
+                t("passwordHint")
+            );
+
+            valid = false;
+        }
+
+
+        if (!email) {
+
+            showFieldError(
+                "email",
+                t("required")
+            );
+
+            valid = false;
+        }
+
+
+        if (!role) {
+
+            showFieldError(
+                "role",
+                t("selectRole")
+            );
+
+            valid = false;
+        }
+
+
+        if (!valid) {
+            return;
+        }
+
+
+        /* Create location */
+
+        const location = [
+            district,
+            upazila
+        ]
+            .filter(Boolean)
+            .join(", ");
+
+
+        setBusy(button, true);
+
+
+        try {
+
+            console.log("Sending registration request...");
+
+
+            const data = await apiRequest(
+                "/api/auth/register/",
+                "POST",
+                {
+                    full_name: fullName,
+                    phone_number: phone,
+                    password: password,
+                    email: email,
+                    role: role,
+                    location: location
+                }
+            );
+
+
+            console.log("Registration response:", data);
+
+
+            /* Success */
+
+            showAlert(
+                "formAlert",
+                data.message || "Registration successful!",
+                "success"
+            );
+
+
+            form.reset();
+
+
+            /*
+               Go to login page after registration.
+            */
+
+            setTimeout(function () {
+
+                window.location.href = "/login/";
+
+            }, 1200);
+
+
+        } catch (error) {
+
+            console.error(
+                "Registration error:",
+                error
+            );
+
+
+            showAlert(
+                "formAlert",
+                error.message || "Registration failed.",
+                "error"
+            );
+
+
+        } finally {
+
+            setBusy(button, false);
+        }
+
+    });
 }
 
 
 /* ============================================================
-   LOGIN PAGE
+   LOGIN
    ============================================================ */
 
 function initLoginPage() {
-
-    /*
-       Check if this is actually the login page
-       before calling redirectIfLoggedIn().
-    */
 
     const form =
         document.getElementById("loginForm");
@@ -323,8 +241,6 @@ function initLoginPage() {
     if (!form) {
         return;
     }
-
-    redirectIfLoggedIn();
 
 
     const button =
@@ -338,18 +254,14 @@ function initLoginPage() {
             event.preventDefault();
 
 
-            /* --------------------------------------------
-               Clear previous errors
-               -------------------------------------------- */
+            /* Clear previous errors */
 
             hideAlert("formAlert");
 
             clearFieldErrors("loginForm");
 
 
-            /* --------------------------------------------
-               Get login values
-               -------------------------------------------- */
+            /* Get values */
 
             const email =
                 document
@@ -364,14 +276,10 @@ function initLoginPage() {
                     .value;
 
 
-            /* --------------------------------------------
-               Validation
-               -------------------------------------------- */
+            /* Validation */
 
             let valid = true;
 
-
-            /* Email */
 
             if (!email) {
 
@@ -384,8 +292,6 @@ function initLoginPage() {
             }
 
 
-            /* Password */
-
             if (!password) {
 
                 showFieldError(
@@ -397,25 +303,18 @@ function initLoginPage() {
             }
 
 
-            /* Stop if validation failed */
-
             if (!valid) {
                 return;
             }
 
-
-            /* --------------------------------------------
-               Disable login button
-               -------------------------------------------- */
 
             setBusy(button, true);
 
 
             try {
 
-                /* ----------------------------------------
-                   Send login request to Django
-                   ---------------------------------------- */
+                console.log("Sending login request...");
+
 
                 const response =
                     await apiRequest(
@@ -428,22 +327,46 @@ function initLoginPage() {
                     );
 
 
-                /* ----------------------------------------
-                   Get login data
-                   ---------------------------------------- */
+                console.log(
+                    "Login response:",
+                    response
+                );
+
+
+                /* Get user data */
 
                 const user =
                     response.data;
 
 
+                /*
+                   Your backend may return:
+                   {
+                       access: "...",
+                       refresh: "...",
+                       user_id: "...",
+                       full_name: "...",
+                       email: "...",
+                       phone_number: "...",
+                       role: "..."
+                   }
+
+                   Or it may wrap the user differently.
+                */
+
                 const accessToken =
                     user.access;
 
 
-                /* ----------------------------------------
-                   Store user information
-                   Role comes from backend
-                   ---------------------------------------- */
+                if (!accessToken) {
+
+                    throw new Error(
+                        "Login successful, but access token was not received."
+                    );
+                }
+
+
+                /* User information */
 
                 const userInfo = {
 
@@ -464,9 +387,7 @@ function initLoginPage() {
                 };
 
 
-                /* ----------------------------------------
-                   Save session
-                   ---------------------------------------- */
+                /* Save session */
 
                 saveSession(
                     accessToken,
@@ -474,27 +395,23 @@ function initLoginPage() {
                 );
 
 
-                /* ----------------------------------------
-                   Success message
-                   ---------------------------------------- */
+                /* Success */
 
                 showAlert(
                     "formAlert",
                     response.message ||
-                    t("loginSuccess"),
+                    "Login successful!",
                     "success"
                 );
 
 
-                /* ----------------------------------------
-                   Go to dashboard
-                   ---------------------------------------- */
+                /* Go to dashboard */
 
                 setTimeout(
                     function () {
 
                         window.location.href =
-                            "dashboard.html";
+                            "/dashboard/";
 
                     },
                     700
@@ -508,16 +425,20 @@ function initLoginPage() {
                     error
                 );
 
+
                 showAlert(
                     "formAlert",
-                    error.message,
+                    error.message ||
+                    "Login failed.",
                     "error"
                 );
+
 
             } finally {
 
                 setBusy(button, false);
             }
+
         }
     );
 }
@@ -529,14 +450,10 @@ function initLoginPage() {
 
 function logout() {
 
-    /*
-       Clear JWT and stored user information.
-    */
-
     clearSession();
 
     window.location.href =
-        "login.html";
+        "/login/";
 }
 
 
@@ -547,9 +464,7 @@ function logout() {
 function initLogout() {
 
     const button =
-        document.getElementById(
-            "logoutButton"
-        );
+        document.getElementById("logoutButton");
 
 
     if (!button) {
@@ -564,13 +479,14 @@ function initLogout() {
             event.preventDefault();
 
             logout();
+
         }
     );
 }
 
 
 /* ============================================================
-   FORGOT PASSWORD PAGE
+   FORGOT PASSWORD
    ============================================================ */
 
 function initForgotPasswordPage() {
@@ -599,10 +515,6 @@ function initForgotPasswordPage() {
             event.preventDefault();
 
 
-            /* --------------------------------------------
-               Clear previous errors
-               -------------------------------------------- */
-
             hideAlert("formAlert");
 
             clearFieldErrors(
@@ -610,20 +522,12 @@ function initForgotPasswordPage() {
             );
 
 
-            /* --------------------------------------------
-               Get phone
-               -------------------------------------------- */
-
             const phone =
                 document
                     .getElementById("phoneNumber")
                     .value
                     .trim();
 
-
-            /* --------------------------------------------
-               Validate phone
-               -------------------------------------------- */
 
             if (!isValidPhone(phone)) {
 
@@ -636,19 +540,10 @@ function initForgotPasswordPage() {
             }
 
 
-            /* --------------------------------------------
-               Disable button
-               -------------------------------------------- */
-
             setBusy(button, true);
 
 
             try {
-
-                /*
-                   Password reset endpoint will be
-                   implemented separately.
-                */
 
                 const data =
                     await apiRequest(
@@ -663,7 +558,7 @@ function initForgotPasswordPage() {
                 showAlert(
                     "formAlert",
                     data.message ||
-                    t("resetSuccess"),
+                    "Password reset request sent.",
                     "success"
                 );
 
@@ -672,9 +567,11 @@ function initForgotPasswordPage() {
 
                 showAlert(
                     "formAlert",
-                    error.message,
+                    error.message ||
+                    "Password reset failed.",
                     "error"
                 );
+
 
             } finally {
 
@@ -686,18 +583,12 @@ function initForgotPasswordPage() {
 
 
 /* ============================================================
-   INITIALIZE AUTH PAGES
+   INITIALIZE
    ============================================================ */
 
 document.addEventListener(
     "DOMContentLoaded",
     function () {
-
-        /*
-           These functions are safe to call on every page
-           because each function first checks whether its
-           required form/button exists.
-        */
 
         initRegisterPage();
 
@@ -706,5 +597,6 @@ document.addEventListener(
         initForgotPasswordPage();
 
         initLogout();
+
     }
 );
