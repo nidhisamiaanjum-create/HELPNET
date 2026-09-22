@@ -1,272 +1,242 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="bn">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>HELPNET - Dashboard</title>
+    <title>HELPNET - Dashboard</title>
 
-  <link rel="stylesheet" href="../css/style.css">
+    <!-- Django Static CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 
 <body>
 
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
 
-  <!-- =====================================================
-       HEADER
-       ===================================================== -->
+    <header class="site-header">
 
-  <header class="site-header">
+        <a href="/" class="logo" data-i18n="appName">
+            হেল্পনেট
+        </a>
 
-    <a
-      href="../index.html"
-      class="logo"
-      data-i18n="appName">
-      হেল্পনেট
-    </a>
+        <div class="header-actions">
 
+            <!-- Language -->
+            <button
+                type="button"
+                id="langToggle"
+                class="lang-toggle">
+                English
+            </button>
 
-    <div class="header-actions">
+            <!-- Logout -->
+            <button
+                type="button"
+                id="logoutButton"
+                class="lang-toggle"
+                data-i18n="logout">
+                Logout
+            </button>
 
-      <!-- Language -->
-      <button
-        type="button"
-        id="langToggle"
-        class="lang-toggle">
-        English
-      </button>
-
-
-      <!-- Logout -->
-      <button
-        type="button"
-        id="logoutButton"
-        class="lang-toggle">
-        Logout
-      </button>
-
-    </div>
-
-  </header>
-
-
-
-  <!-- =====================================================
-       DASHBOARD
-       ===================================================== -->
-
-  <main class="page">
-
-    <div class="card">
-
-
-      <!-- Title -->
-
-      <h1>
-        Dashboard
-      </h1>
-
-
-      <p class="subtitle">
-        Welcome to HELPNET
-      </p>
-
-
-
-      <!-- =================================================
-           USER INFORMATION
-           ================================================= -->
-
-      <!-- Name -->
-
-      <div class="field">
-
-        <label>
-          Name
-        </label>
-
-        <div id="userName">
-          -
         </div>
 
-      </div>
+    </header>
 
 
+    <!-- =====================================================
+         DASHBOARD
+         ===================================================== -->
 
-      <!-- Email -->
+    <main class="page">
 
-      <div class="field">
+        <div class="card">
 
-        <label>
-          Email
-        </label>
+            <!-- Title -->
+            <h1 data-i18n="dashboardTitle">
+                Dashboard
+            </h1>
 
-        <div id="userEmail">
-          -
+            <p class="subtitle" data-i18n="dashboardSubtitle">
+                Welcome to HELPNET
+            </p>
+
+
+            <!-- =================================================
+                 USER INFORMATION
+                 ================================================= -->
+
+            <!-- Name -->
+            <div class="field">
+
+                <label data-i18n="fullName">
+                    Name
+                </label>
+
+                <div id="userName">
+                    -
+                </div>
+
+            </div>
+
+
+            <!-- Email -->
+            <div class="field">
+
+                <label data-i18n="email">
+                    Email
+                </label>
+
+                <div id="userEmail">
+                    -
+                </div>
+
+            </div>
+
+
+            <!-- Phone -->
+            <div class="field">
+
+                <label data-i18n="phone">
+                    Phone
+                </label>
+
+                <div id="userPhone">
+                    -
+                </div>
+
+            </div>
+
+
+            <!-- Role -->
+            <div class="field">
+
+                <label data-i18n="role">
+                    Role
+                </label>
+
+                <div id="userRole">
+                    -
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 HOME LINK
+                 ================================================= -->
+
+            <div class="form-links">
+
+                <p>
+                    <a href="/" data-i18n="backToHome">
+                        Back to Home
+                    </a>
+                </p>
+
+            </div>
+
         </div>
 
-      </div>
+    </main>
 
 
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
 
-      <!-- Phone -->
+    <script src="{% static 'js/api.js' %}"></script>
 
-      <div class="field">
+    <script src="{% static 'js/i18n.js' %}"></script>
 
-        <label>
-          Phone
-        </label>
+    <script src="{% static 'js/auth.js' %}"></script>
 
-        <div id="userPhone">
-          -
-        </div>
 
-      </div>
+    <!-- =====================================================
+         DASHBOARD INITIALIZATION
+         ===================================================== -->
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
 
+            /*
+             * Check whether the user is logged in.
+             *
+             * If there is no JWT token,
+             * requireLogin() redirects to login.
+             */
 
-      <!-- Role -->
+            if (!requireLogin()) {
+                return;
+            }
 
-      <div class="field">
 
-        <label>
-          Role
-        </label>
+            /*
+             * Get the user information
+             * saved during login.
+             */
 
-        <div id="userRole">
-          -
-        </div>
+            const user = getStoredUser();
 
-      </div>
 
+            /*
+             * If no user information exists,
+             * stop here.
+             */
 
+            if (!user) {
+                console.error("No stored user information found.");
+                return;
+            }
 
-      <!-- =================================================
-           HOME LINK
-           ================================================= -->
 
-      <div class="form-links">
+            /*
+             * Get dashboard elements.
+             */
 
-        <p>
+            const userName =
+                document.getElementById("userName");
 
-          <a href="../index.html">
-            Back to Home
-          </a>
+            const userEmail =
+                document.getElementById("userEmail");
 
-        </p>
+            const userPhone =
+                document.getElementById("userPhone");
 
-      </div>
+            const userRole =
+                document.getElementById("userRole");
 
 
-    </div>
+            /*
+             * Display user information.
+             */
 
-  </main>
+            if (userName) {
+                userName.textContent =
+                    user.full_name || "-";
+            }
 
+            if (userEmail) {
+                userEmail.textContent =
+                    user.email || "-";
+            }
 
+            if (userPhone) {
+                userPhone.textContent =
+                    user.phone_number || "-";
+            }
 
-  <!-- =====================================================
-       JAVASCRIPT
-       ===================================================== -->
+            if (userRole) {
+                userRole.textContent =
+                    user.role || "-";
+            }
 
-  <script src="../js/api.js"></script>
-
-  <script src="../js/i18n.js"></script>
-
-  <script src="../js/auth.js"></script>
-
-
-  <script>
-
-    /* =====================================================
-       DASHBOARD INITIALIZATION
-       ===================================================== */
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      function () {
-
-        /*
-           Check whether the user is logged in.
-
-           If there is no JWT token,
-           requireLogin() automatically sends
-           the user to login.html.
-        */
-
-        if (!requireLogin()) {
-          return;
-        }
-
-
-        /*
-           Get the user information saved
-           during login.
-        */
-
-        const user = getStoredUser();
-
-
-        /*
-           If no user information exists,
-           stop here.
-        */
-
-        if (!user) {
-          return;
-        }
-
-
-        /*
-           Display user information.
-        */
-
-        const userName =
-          document.getElementById("userName");
-
-        const userEmail =
-          document.getElementById("userEmail");
-
-        const userPhone =
-          document.getElementById("userPhone");
-
-        const userRole =
-          document.getElementById("userRole");
-
-
-        if (userName) {
-
-          userName.textContent =
-            user.full_name || "-";
-        }
-
-
-        if (userEmail) {
-
-          userEmail.textContent =
-            user.email || "-";
-        }
-
-
-        if (userPhone) {
-
-          userPhone.textContent =
-            user.phone_number || "-";
-        }
-
-
-        if (userRole) {
-
-          userRole.textContent =
-            user.role || "-";
-        }
-
-      }
-    );
-
-  </script>
-
+        });
+    </script>
 
 </body>
-
 </html>
