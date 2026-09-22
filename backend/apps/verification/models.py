@@ -1,25 +1,37 @@
 import uuid
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> 17a3ceefeeadf555b9ec9c6a57e3304a6137ed5d
 from django.conf import settings
 from django.db import models
 
 
+<<<<<<< HEAD
+=======
 
 
+>>>>>>> 17a3ceefeeadf555b9ec9c6a57e3304a6137ed5d
 class VerificationRequest(models.Model):
     class DocumentType(models.TextChoices):
         NID = "nid", "National ID"
         PASSPORT = "passport", "Passport"
         BIRTH_CERTIFICATE = "birth_certificate", "Birth certificate"
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> 17a3ceefeeadf555b9ec9c6a57e3304a6137ed5d
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
         APPROVED = "approved", "Approved"
         REJECTED = "rejected", "Rejected"
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> 17a3ceefeeadf555b9ec9c6a57e3304a6137ed5d
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -40,24 +52,36 @@ class VerificationRequest(models.Model):
         related_name="verification_requests_reviewed",
     )
 
+<<<<<<< HEAD
+    class Meta:
+        ordering = ["-submitted_at"]
+
+=======
 
     class Meta:
         ordering = ["-submitted_at"]
 
 
+>>>>>>> 17a3ceefeeadf555b9ec9c6a57e3304a6137ed5d
     def __str__(self):
         return f"{self.user} — {self.get_document_type_display()} ({self.status})"
 
 
+<<<<<<< HEAD
+=======
 
 
+>>>>>>> 17a3ceefeeadf555b9ec9c6a57e3304a6137ed5d
 class AdminActionLog(models.Model):
     class Action(models.TextChoices):
         APPROVE = "approve", "Approve"
         REJECT = "reject", "Reject"
         MODERATION = "moderation", "Moderation"
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> 17a3ceefeeadf555b9ec9c6a57e3304a6137ed5d
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     admin = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -76,10 +100,16 @@ class AdminActionLog(models.Model):
     reason = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
+<<<<<<< HEAD
+    class Meta:
+        ordering = ["-timestamp"]
+
+=======
 
     class Meta:
         ordering = ["-timestamp"]
 
 
+>>>>>>> 17a3ceefeeadf555b9ec9c6a57e3304a6137ed5d
     def __str__(self):
         return f"{self.admin} {self.action} at {self.timestamp:%Y-%m-%d %H:%M}"
