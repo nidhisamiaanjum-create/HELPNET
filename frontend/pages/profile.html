@@ -1,0 +1,763 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title data-i18n="profilePageTitle">প্রোফাইল | HELPNET</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+<header class="site-header">
+
+    <a href="/dashboard/" class="logo" data-i18n="appName">
+        হেল্পনেট
+    </a>
+
+    <div class="header-actions">
+
+        <button
+            type="button"
+            id="langToggle"
+            class="lang-toggle">
+            English
+        </button>
+
+        <a
+            href="/dashboard/"
+            class="back-link"
+            data-i18n="backToDashboard">
+            ড্যাশবোর্ড
+        </a>
+
+    </div>
+
+</header>
+
+
+<main class="profile-container">
+
+    <!-- =========================
+         PROFILE HEADER
+    ========================== -->
+    <section class="profile-top">
+
+        <!-- Profile Picture -->
+        <div class="profile-picture-wrapper">
+
+            <div class="profile-avatar" id="profileAvatar">
+                🧑‍💼
+            </div>
+
+            <label
+                for="profilePictureInput"
+                class="profile-picture-upload">
+
+                📷
+                <span data-i18n="changePhoto">
+                    ছবি পরিবর্তন
+                </span>
+
+            </label>
+
+            <input
+                type="file"
+                id="profilePictureInput"
+                accept="image/jpeg,image/png,image/webp"
+                hidden>
+
+        </div>
+
+
+        <div class="profile-main-info">
+
+            <div class="profile-name-row">
+
+                <h1 id="profileName">
+                    <span data-i18n="loading">
+                        লোড হচ্ছে...
+                    </span>
+                </h1>
+
+                <span
+                    id="verifiedBadge"
+                    class="verified-badge"
+                    hidden>
+
+                    ✓
+                    <span data-i18n="verified">
+                        যাচাইকৃত
+                    </span>
+
+                </span>
+
+            </div>
+
+
+            <p id="profileContact">
+
+                <span id="profileEmail">
+                    —
+                </span>
+
+                <span> · </span>
+
+                <span id="profileLocation">
+                    —
+                </span>
+
+            </p>
+
+
+            <p
+                id="profileRole"
+                class="profile-role">
+                —
+            </p>
+
+
+            <p
+                id="profileBio"
+                class="profile-bio">
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================
+         PROFILE STATISTICS
+    ========================== -->
+    <section class="profile-stats">
+
+        <div class="profile-stat">
+
+            <strong id="helpCount">
+                0
+            </strong>
+
+            <span data-i18n="donations">
+                দান
+            </span>
+
+        </div>
+
+
+        <div class="profile-stat">
+
+            <strong id="activityCount">
+                0
+            </strong>
+
+            <span data-i18n="events">
+                ইভেন্ট
+            </span>
+
+        </div>
+
+
+        <div class="profile-stat">
+
+            <strong id="postCount">
+                0
+            </strong>
+
+            <span data-i18n="posts">
+                পোস্ট
+            </span>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================
+         MY ACTIVITIES
+    ========================== -->
+    <section class="profile-menu">
+
+        <a
+            href="#"
+            class="profile-menu-item">
+
+            <span class="menu-icon">📋</span>
+
+            <span
+                class="menu-title"
+                data-i18n="myPosts">
+                আমার পোস্ট
+            </span>
+
+            <strong id="myPostsCount">0</strong>
+
+            <span class="menu-arrow">›</span>
+
+        </a>
+
+
+        <a
+            href="#"
+            class="profile-menu-item">
+
+            <span class="menu-icon">📅</span>
+
+            <span
+                class="menu-title"
+                data-i18n="myEvents">
+                আমার ইভেন্ট
+            </span>
+
+            <strong id="myEventsCount">0</strong>
+
+            <span class="menu-arrow">›</span>
+
+        </a>
+
+
+        <a
+            href="#"
+            class="profile-menu-item">
+
+            <span class="menu-icon">🩸</span>
+
+            <span
+                class="menu-title"
+                data-i18n="myDonations">
+                আমার দান
+            </span>
+
+            <strong id="myDonationsCount">0</strong>
+
+            <span class="menu-arrow">›</span>
+
+        </a>
+
+
+        <a
+            href="#"
+            class="profile-menu-item">
+
+            <span class="menu-icon">🏷️</span>
+
+            <span
+                class="menu-title"
+                data-i18n="myListings">
+                আমার তালিকা
+            </span>
+
+            <strong id="myListingsCount">0</strong>
+
+            <span class="menu-arrow">›</span>
+
+        </a>
+
+    </section>
+
+
+
+    <!-- =========================
+         NID VERIFICATION
+    ========================== -->
+    <section class="profile-action-card">
+
+        <div class="action-icon">
+            🛡️
+        </div>
+
+
+        <div class="action-info">
+
+            <h2 data-i18n="verification">
+                পরিচয় যাচাই
+            </h2>
+
+            <p
+                id="verificationStatus"
+                class="status status-unverified"
+                data-i18n="statusUnverified">
+
+                যাচাই করা হয়নি
+
+            </p>
+
+        </div>
+
+
+        <a
+            href="/verification/"
+            class="action-button"
+            data-i18n="verifyNow">
+
+            যাচাই করুন
+
+        </a>
+
+    </section>
+
+
+
+    <!-- =========================
+         TRUST / RATING
+    ========================== -->
+    <section class="profile-trust">
+
+        <div class="trust-heading">
+
+            <div>
+
+                <h2 data-i18n="trustworthiness">
+                    বিশ্বাসযোগ্যতা
+                </h2>
+
+                <p id="ratingSummary">
+                    ★ 0.0 · 0
+                </p>
+
+            </div>
+
+        </div>
+
+        <div id="trust-component"></div>
+
+    </section>
+
+
+
+    <!-- =========================
+         PROFILE ACTIONS
+    ========================== -->
+    <section class="profile-actions">
+
+        <a
+            href="#edit-profile"
+            class="profile-action-link">
+
+            <span>✏️</span>
+
+            <span data-i18n="editProfile">
+                প্রোফাইল সম্পাদনা
+            </span>
+
+            <span>›</span>
+
+        </a>
+
+
+        <a
+            href="/settings/"
+            class="profile-action-link">
+
+            <span>⚙️</span>
+
+            <span data-i18n="settings">
+                সেটিংস
+            </span>
+
+            <span>›</span>
+
+        </a>
+
+
+        <button
+            type="button"
+            id="logoutButton"
+            class="profile-action-link logout-link">
+
+            <span>🚪</span>
+
+            <span data-i18n="logout">
+                সাইন আউট
+            </span>
+
+            <span>›</span>
+
+        </button>
+
+    </section>
+
+
+
+    <!-- =========================
+         EDIT PROFILE
+    ========================== -->
+    <section
+        id="edit-profile"
+        class="profile-edit">
+
+        <h2 data-i18n="editProfile">
+            প্রোফাইল সম্পাদনা
+        </h2>
+
+
+        <form
+            id="profileForm"
+            enctype="multipart/form-data">
+
+
+            <!-- Profile Picture -->
+            <div class="field">
+
+                <label
+                    for="profilePictureInput"
+                    data-i18n="profilePicture">
+
+                    প্রোফাইল ছবি
+
+                </label>
+
+                <input
+                    type="file"
+                    id="profilePictureInputEdit"
+                    name="profile_picture"
+                    accept="image/jpeg,image/png,image/webp">
+
+                <p class="hint">
+                    JPG, PNG অথবা WebP। সর্বোচ্চ 5 MB।
+                </p>
+
+            </div>
+
+
+
+            <!-- Full Name -->
+            <div class="field">
+
+                <label
+                    for="profileFullName"
+                    data-i18n="fullName">
+
+                    পূর্ণ নাম
+
+                </label>
+
+                <input
+                    id="profileFullName"
+                    name="full_name"
+                    type="text"
+                    autocomplete="name">
+
+            </div>
+
+
+
+            <!-- Bio -->
+            <div class="field">
+
+                <label
+                    for="profileBioInput"
+                    data-i18n="aboutMe">
+
+                    নিজের সম্পর্কে
+
+                </label>
+
+                <textarea
+                    id="profileBioInput"
+                    name="bio"
+                    rows="3"></textarea>
+
+            </div>
+
+
+
+            <!-- Location -->
+            <div class="field">
+
+                <label
+                    for="profileLocationInput"
+                    data-i18n="location">
+
+                    অবস্থান
+
+                </label>
+
+                <input
+                    id="profileLocationInput"
+                    name="location"
+                    type="text">
+
+            </div>
+
+
+
+            <!-- Date of Birth -->
+            <div class="field">
+
+                <label
+                    for="profileDobInput"
+                    data-i18n="dateOfBirth">
+
+                    জন্মতারিখ
+
+                </label>
+
+                <input
+                    id="profileDobInput"
+                    name="date_of_birth"
+                    type="date">
+
+            </div>
+
+
+
+            <!-- Gender -->
+            <div class="field">
+
+                <label
+                    for="profileGenderInput"
+                    data-i18n="gender">
+
+                    লিঙ্গ
+
+                </label>
+
+                <select
+                    id="profileGenderInput"
+                    name="gender">
+
+                    <option
+                        value=""
+                        data-i18n="selectGender">
+
+                        নির্বাচন করুন
+
+                    </option>
+
+                    <option
+                        value="male"
+                        data-i18n="male">
+
+                        পুরুষ
+
+                    </option>
+
+                    <option
+                        value="female"
+                        data-i18n="female">
+
+                        নারী
+
+                    </option>
+
+                    <option
+                        value="other"
+                        data-i18n="other">
+
+                        অন্যান্য
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- Save -->
+            <button
+                type="submit"
+                class="btn"
+                data-i18n="saveChanges">
+
+                পরিবর্তন সংরক্ষণ করুন
+
+            </button>
+
+
+            <p
+                id="profileFormMessage"
+                class="form-message"
+                aria-live="polite">
+            </p>
+
+        </form>
+
+    </section>
+
+</main>
+
+
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
+<script src="{% static 'js/i18n.js' %}"></script>
+
+<script src="{% static 'js/trust-component.js' %}"></script>
+
+<script src="{% static 'js/profile.js' %}"></script>
+
+
+<!-- =========================
+     PROFILE PICTURE PREVIEW
+========================= -->
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const pictureInput =
+        document.getElementById("profilePictureInput");
+
+    const pictureInputEdit =
+        document.getElementById("profilePictureInputEdit");
+
+    const avatar =
+        document.getElementById("profileAvatar");
+
+
+    function previewImage(file) {
+
+        if (!file || !avatar) {
+            return;
+        }
+
+
+        /*
+         * Only allow image files
+         */
+        if (!file.type.startsWith("image/")) {
+
+            alert("Please select an image file.");
+
+            return;
+        }
+
+
+        /*
+         * Maximum 5 MB
+         */
+        if (file.size > 5 * 1024 * 1024) {
+
+            alert("Profile picture must be smaller than 5 MB.");
+
+            return;
+        }
+
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload = function (event) {
+
+            avatar.innerHTML = "";
+
+            const image =
+                document.createElement("img");
+
+            image.src =
+                event.target.result;
+
+            image.alt =
+                "Profile picture";
+
+            image.className =
+                "profile-avatar-image";
+
+            avatar.appendChild(image);
+
+        };
+
+
+        reader.readAsDataURL(file);
+
+    }
+
+
+    /*
+     * Top profile-picture button
+     */
+    if (pictureInput) {
+
+        pictureInput.addEventListener(
+            "change",
+            function () {
+
+                if (this.files.length > 0) {
+
+                    previewImage(this.files[0]);
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /*
+     * Edit-profile picture input
+     */
+    if (pictureInputEdit) {
+
+        pictureInputEdit.addEventListener(
+            "change",
+            function () {
+
+                if (this.files.length > 0) {
+
+                    previewImage(this.files[0]);
+
+                }
+
+            }
+        );
+
+    }
+
+});
+
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const logoutButton =
+        document.getElementById("logoutButton");
+
+
+    if (!logoutButton) {
+        return;
+    }
+
+
+    logoutButton.addEventListener(
+        "click",
+        function () {
+
+            if (typeof logout === "function") {
+
+                logout();
+
+                return;
+            }
+
+
+            localStorage.removeItem("helpnet_token");
+            localStorage.removeItem("helpnet_user");
+
+            window.location.href = "/login/";
+
+        }
+    );
+
+});
+
+</script>
+
+
+</body>
+</html>
