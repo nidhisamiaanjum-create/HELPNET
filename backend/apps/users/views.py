@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -11,6 +12,7 @@ User = get_user_model()
 
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -44,6 +46,7 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
 
     def post(self, request):
 
@@ -69,16 +72,6 @@ class LoginView(APIView):
                 user = User.objects.get(phone_number=identifier)
         except User.DoesNotExist:
             user = None
-
-        # Temporary debugging
-        print("LOGIN DEBUG")
-        print("Identifier:", identifier)
-        print("User found:", user is not None)
-
-        if user is not None:
-            print("User email:", user.email)
-            print("User phone:", user.phone_number)
-            print("Password valid:", user.check_password(password))
 
         if user is None or not user.check_password(password):
             return Response(
