@@ -4,7 +4,7 @@ from django.core.mail import send_mail
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -108,6 +108,8 @@ class LoginView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
 class LogoutView(APIView):
     def post(self, request):
         refresh_token = request.data.get("refresh")
