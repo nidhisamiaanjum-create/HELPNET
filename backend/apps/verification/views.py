@@ -1,3 +1,10 @@
+
 from django.shortcuts import render
 
-# Create your views here.
+def nid_verification_page(request):
+    return render(request, "apps.verification/nid-verification.html")
+
+
+def nid_verification_page(request):
+    return render(request, "apps.verification/nid-verification.html")
+

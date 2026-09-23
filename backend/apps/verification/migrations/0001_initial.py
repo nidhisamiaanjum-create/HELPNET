@@ -1,0 +1,83 @@
+
+
+import django.db.models.deletion
+import uuid
+from django.conf import settings
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    initial = True
+    dependencies = [migrations.swappable_dependency(settings.AUTH_USER_MODEL)]
+
+    operations = [
+        migrations.CreateModel(
+            name="AdminActionLog",
+            fields=[
+                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ("action", models.CharField(choices=[("approve", "Approve"), ("reject", "Reject"), ("moderation", "Moderation")], max_length=20)),
+                ("target_reference", models.CharField(blank=True, max_length=255)),
+                ("reason", models.TextField(blank=True)),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("admin", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name="admin_action_logs", to=settings.AUTH_USER_MODEL)),
+                ("target_user", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name="actions_received", to=settings.AUTH_USER_MODEL)),
+            ],
+            options={"ordering": ["-timestamp"]},
+        ),
+        migrations.CreateModel(
+            name="VerificationRequest",
+            fields=[
+                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ("document_type", models.CharField(choices=[("nid", "National ID"), ("passport", "Passport"), ("birth_certificate", "Birth certificate")], max_length=30)),
+                ("document", models.FileField(upload_to="verification_documents/")),
+                ("status", models.CharField(choices=[("pending", "Pending"), ("approved", "Approved"), ("rejected", "Rejected")], default="pending", max_length=10)),
+                ("rejection_reason", models.TextField(blank=True)),
+                ("submitted_at", models.DateTimeField(auto_now_add=True)),
+                ("reviewed_at", models.DateTimeField(blank=True, null=True)),
+                ("reviewed_by", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name="verification_requests_reviewed", to=settings.AUTH_USER_MODEL)),
+                ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="verification_requests", to=settings.AUTH_USER_MODEL)),
+            ],
+            options={"ordering": ["-submitted_at"]},
+        )],
+
+    initial = True
+
+    dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='AdminActionLog',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('action', models.CharField(choices=[('approve', 'Approve'), ('reject', 'Reject'), ('moderation', 'Moderation')], max_length=20)),
+                ('target_reference', models.CharField(blank=True, max_length=255)),
+                ('reason', models.TextField(blank=True)),
+                ('timestamp', models.DateTimeField(auto_now_add=True)),
+                ('admin', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='admin_action_logs', to=settings.AUTH_USER_MODEL)),
+                ('target_user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='actions_received', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'ordering': ['-timestamp'],
+            },
+        ),
+        migrations.CreateModel(
+            name='VerificationRequest',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('document_type', models.CharField(choices=[('nid', 'National ID'), ('passport', 'Passport'), ('birth_certificate', 'Birth certificate')], max_length=30)),
+                ('document', models.FileField(upload_to='verification_documents/')),
+                ('status', models.CharField(choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending', max_length=10)),
+                ('rejection_reason', models.TextField(blank=True)),
+                ('submitted_at', models.DateTimeField(auto_now_add=True)),
+                ('reviewed_at', models.DateTimeField(blank=True, null=True)),
+                ('reviewed_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='verification_requests_reviewed', to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='verification_requests', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'ordering': ['-submitted_at'],
+            },
+        ),
+    ]

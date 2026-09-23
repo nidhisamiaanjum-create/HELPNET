@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>HELPNET</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/style.css' %}"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- Header -->
+
+    <header class="site-header">
+
+        <a
+            href="/"
+            class="logo"
+            data-i18n="appName"
+        >
+            হেল্পনেট
+        </a>
+
+
+        <div class="header-actions">
+
+            <button
+                type="button"
+                id="langToggle"
+                class="lang-toggle"
+            >
+                English
+            </button>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- Login -->
+
+    <main class="page">
+
+        <div class="card">
+
+
+            <h1 data-i18n="loginTitle"></h1>
+
+
+            <p
+                class="subtitle"
+                data-i18n="loginSubtitle"
+            ></p>
+
+
+
+            <!-- Alert -->
+
+            <div
+                id="formAlert"
+                class="alert"
+            ></div>
+
+
+
+            <!-- Login Form -->
+
+            <form
+                id="loginForm"
+                novalidate
+            >
+
+
+                <!-- Email OR Phone -->
+
+                <div class="field">
+
+                    <label
+                        for="identifier"
+                        data-i18n="emailOrPhone"
+                    >
+                        Email or Phone Number
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="identifier"
+                        name="identifier"
+                        autocomplete="username"
+                        placeholder="Email or 01XXXXXXXXX"
+                        required
+                    >
+
+
+                    <div
+                        class="field-error"
+                        id="identifierError"
+                    ></div>
+
+                </div>
+
+
+
+                <!-- Password -->
+
+                <div class="field">
+
+                    <label
+                        for="password"
+                        data-i18n="password"
+                    >
+                    </label>
+
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+
+                    <div
+                        class="field-error"
+                        id="passwordError"
+                    ></div>
+
+                </div>
+
+
+
+                <!-- Forgot Password -->
+
+                <div class="form-links">
+
+                    <p>
+
+                        <a
+                            href="/forgot-password/"
+                            data-i18n="forgotPassword"
+                        >
+                            Forgot Password?
+                        </a>
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- Login Button -->
+
+                <button
+                    type="submit"
+                    id="loginButton"
+                    class="btn"
+                    data-i18n="loginButton"
+                >
+                    Login
+                </button>
+
+
+            </form>
+
+
+
+            <!-- Register Link -->
+
+            <div class="form-links">
+
+                <p>
+
+                    <span
+                        data-i18n="noAccount"
+                    ></span>
+
+
+                    <a
+                        href="/register/"
+                        data-i18n="registerLink"
+                    ></a>
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </main>
+
+
+
+    <!-- JavaScript -->
+
+    <script src="{% static 'js/api.js' %}"></script>
+
+    <script src="{% static 'js/i18n.js' %}"></script>
+
+    <script src="{% static 'js/auth.js' %}"></script>
+
+
+</body>
+
+</html>

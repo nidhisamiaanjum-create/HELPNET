@@ -1,234 +1,884 @@
-/* =====================================================================
-   FR 1.4 - Bangla-first interface with an English toggle.
+/* ============================================================
+   HELPNET - FR 1.4
+   Bangla / English Language Toggle
+   ============================================================ */
 
-   How it works, in three steps:
-     1. Every visible piece of text in the HTML carries a data-i18n key,
-        for example  <label data-i18n="phone">
-     2. TEXT holds the Bangla and English wording for each key.
-     3. applyLanguage() walks the page and swaps the text.
-
-   Bangla is the default. A new visitor sees Bangla with no action needed.
-   ===================================================================== */
 
 const TEXT = {
-  bn: {
-    /* general */
-    appName: "হেল্পনেট",
-    tagline: "একটি সমন্বিত কমিউনিটি সেবা প্ল্যাটফর্ম",
-    langButton: "English",
-    loading: "অপেক্ষা করুন...",
-    required: "এই ঘরটি পূরণ করুন",
-    networkError: "সার্ভারের সাথে সংযোগ করা যায়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন।",
 
-    /* landing */
-    welcomeTitle: "হেল্পনেটে স্বাগতম",
-    welcomeText: "রক্তদান, স্বেচ্ছাসেবা, কৃষিপণ্য, পুরাতন জিনিস বিনিময় এবং বর্জ্য সংগ্রহ — সব একসাথে একটি অ্যাপে।",
-    goRegister: "নতুন অ্যাকাউন্ট খুলুন",
-    goLogin: "লগইন করুন",
 
-    /* register */
-    registerTitle: "নতুন অ্যাকাউন্ট খুলুন",
-    registerSubtitle: "মোবাইল নম্বর দিয়ে বিনামূল্যে নিবন্ধন করুন",
-    fullName: "পুরো নাম",
-    phone: "মোবাইল নম্বর",
-    phoneHint: "উদাহরণ: ০১৭১২৩৪৫৬৭৮",
-    password: "পাসওয়ার্ড",
-    passwordHint: "কমপক্ষে ৮ অক্ষর, অক্ষর ও সংখ্যা মিলিয়ে",
-    email: "ইমেইল",
-    optional: "(ঐচ্ছিক)",
-    district: "জেলা",
-    upazila: "উপজেলা",
-    selectDistrict: "জেলা নির্বাচন করুন",
-    registerButton: "নিবন্ধন করুন",
-    haveAccount: "আগে থেকে অ্যাকাউন্ট আছে?",
-    loginLink: "লগইন করুন",
-    registerSuccess: "নিবন্ধন সফল হয়েছে। আপনাকে ড্যাশবোর্ডে নেওয়া হচ্ছে...",
+    /* =========================
+       BANGLA
+       ========================= */
+    bn: {
 
-    /* login */
-    loginTitle: "লগইন করুন",
-    loginSubtitle: "আপনার মোবাইল নম্বর ও পাসওয়ার্ড দিন",
-    loginButton: "লগইন",
-    forgotPassword: "পাসওয়ার্ড ভুলে গেছেন?",
-    noAccount: "অ্যাকাউন্ট নেই?",
-    registerLink: "নিবন্ধন করুন",
-    loginSuccess: "লগইন সফল। অপেক্ষা করুন...",
 
-    /* forgot / reset password */
-    forgotTitle: "পাসওয়ার্ড পুনরুদ্ধার",
-    forgotSubtitle: "আপনার নিবন্ধিত মোবাইল নম্বর দিন, আমরা একটি কোড পাঠাব",
-    sendCode: "কোড পাঠান",
-    codeSent: "কোড পাঠানো হয়েছে। নিচে কোডটি লিখুন।",
-    demoNote: "পরীক্ষার সংস্করণ: কোডটি সার্ভারের কনসোলে দেখানো হচ্ছে।",
-    otpCode: "৬ সংখ্যার কোড",
-    newPassword: "নতুন পাসওয়ার্ড",
-    resetButton: "পাসওয়ার্ড পরিবর্তন করুন",
-    resetSuccess: "পাসওয়ার্ড পরিবর্তন হয়েছে। এখন লগইন করুন।",
-    backToLogin: "লগইনে ফিরে যান",
+        appName: "হেল্পনেট",
 
-    /* dashboard */
-    dashboardTitle: "ড্যাশবোর্ড",
-    welcomeUser: "স্বাগতম",
-    myProfile: "আমার তথ্য",
-    name: "নাম",
-    role: "ভূমিকা",
-    location: "এলাকা",
-    verification: "যাচাই অবস্থা",
-    notVerified: "যাচাই করা হয়নি",
-    verified: "যাচাইকৃত",
-    logout: "লগআউট",
-    services: "সেবাসমূহ",
-    comingSoon: "পরবর্তী স্প্রিন্টে আসছে",
-    modBlood: "রক্তদান",
-    modVolunteer: "স্বেচ্ছাসেবা",
-    modGoods: "পুরাতন জিনিস বিনিময়",
-    modWaste: "বর্জ্য সংগ্রহ",
-    modFarmer: "কৃষক বাজার",
-    modHealth: "স্বাস্থ্য পরামর্শ",
 
-    /* roles */
-    role_citizen: "নাগরিক",
-    role_volunteer: "স্বেচ্ছাসেবক",
-    role_ngo: "সংস্থা",
-    role_farmer: "কৃষক",
-    role_admin: "প্রশাসক"
-  },
+        /* Home */
+        homeSubtitle: "সংযুক্ত হোন। সাহায্য করুন। ভাগ করুন।",
 
-  en: {
-    appName: "HELPNET",
-    tagline: "A Unified Community Services Platform",
-    langButton: "বাংলা",
-    loading: "Please wait...",
-    required: "This field is required",
-    networkError: "Could not reach the server. Please check your connection.",
 
-    welcomeTitle: "Welcome to HELPNET",
-    welcomeText: "Blood donation, volunteering, farm produce, second-hand exchange and waste collection — all in one app.",
-    goRegister: "Create an account",
-    goLogin: "Log in",
+        welcomeText:
+            "আপনার সম্প্রদায়ের মানুষের সাথে সংযুক্ত হয়ে সাহায্য, সেবা ও সম্পদ ভাগ করে নিন।",
 
-    registerTitle: "Create an account",
-    registerSubtitle: "Register free with your mobile number",
-    fullName: "Full name",
-    phone: "Mobile number",
-    phoneHint: "Example: 01712345678",
-    password: "Password",
-    passwordHint: "At least 8 characters, mixing letters and numbers",
-    email: "Email",
-    optional: "(optional)",
-    district: "District",
-    upazila: "Upazila",
-    selectDistrict: "Select a district",
-    registerButton: "Register",
-    haveAccount: "Already have an account?",
-    loginLink: "Log in",
-    registerSuccess: "Registration successful. Taking you to your dashboard...",
 
-    loginTitle: "Log in",
-    loginSubtitle: "Enter your mobile number and password",
-    loginButton: "Log in",
-    forgotPassword: "Forgotten your password?",
-    noAccount: "No account yet?",
-    registerLink: "Register",
-    loginSuccess: "Logged in. Please wait...",
+        goLogin: "লগইন করুন",
 
-    forgotTitle: "Reset your password",
-    forgotSubtitle: "Enter your registered mobile number and we will send a code",
-    sendCode: "Send code",
-    codeSent: "Code sent. Enter it below.",
-    demoNote: "Demo build: the code is printed in the server console.",
-    otpCode: "6-digit code",
-    newPassword: "New password",
-    resetButton: "Change password",
-    resetSuccess: "Password changed. You can now log in.",
-    backToLogin: "Back to login",
 
-    dashboardTitle: "Dashboard",
-    welcomeUser: "Welcome",
-    myProfile: "My details",
-    name: "Name",
-    role: "Role",
-    location: "Area",
-    verification: "Verification",
-    notVerified: "Not verified",
-    verified: "Verified",
-    logout: "Log out",
-    services: "Services",
-    comingSoon: "Coming in a later sprint",
-    modBlood: "Blood Donation",
-    modVolunteer: "Volunteer Gathering",
-    modGoods: "Second-Hand Exchange",
-    modWaste: "Waste Collection",
-    modFarmer: "Farmer Marketplace",
-    modHealth: "Health Suggestions",
+        goRegister: "নতুন অ্যাকাউন্ট তৈরি করুন",
 
-    role_citizen: "Citizen",
-    role_volunteer: "Volunteer",
-    role_ngo: "Organization",
-    role_farmer: "Farmer",
-    role_admin: "Admin"
-  }
+
+        tagline:
+            "HELPNET — একটি সমন্বিত কমিউনিটি সেবা প্ল্যাটফর্ম",
+
+
+
+
+        /* Register */
+        registerTitle: "নতুন অ্যাকাউন্ট খুলুন",
+
+
+        registerSubtitle:
+            "মোবাইল নম্বর দিয়ে বিনামূল্যে নিবন্ধন করুন",
+
+
+        fullName: "পুরো নাম",
+
+
+        phone: "মোবাইল নম্বর",
+
+
+        phoneHint: "উদাহরণ: ০১৭১২৩৪৫৬৭৮",
+
+
+        password: "পাসওয়ার্ড",
+
+
+        passwordHint:
+            "কমপক্ষে ৮ অক্ষর, অক্ষর ও সংখ্যা মিলিয়ে",
+
+
+        email: "ইমেইল",
+
+
+        optional: "(ঐচ্ছিক)",
+
+
+        role: "ভূমিকা",
+
+
+        selectRole: "ভূমিকা নির্বাচন করুন",
+
+
+        district: "জেলা",
+
+
+        upazila: "উপজেলা",
+
+
+        selectDistrict: "জেলা নির্বাচন করুন",
+
+
+        registerButton: "নিবন্ধন করুন",
+
+
+        haveAccount: "আগে থেকে অ্যাকাউন্ট আছে?",
+
+
+        loginLink: "লগইন করুন",
+
+
+
+
+        /* Login */
+        loginTitle: "লগইন করুন",
+
+
+        loginSubtitle:
+            "আপনার মোবাইল নম্বর/ ইমেইল ও পাসওয়ার্ড দিন",
+        emailOrPhone: "মোবাইল নম্বর বা ইমেইল",
+
+
+        loginButton: "লগইন",
+        loading: "লোড হচ্ছে...",
+
+
+        forgotPassword: "পাসওয়ার্ড ভুলে গেছেন?",
+
+
+        noAccount: "অ্যাকাউন্ট নেই?",
+
+
+        registerLink: "নিবন্ধন করুন",
+
+
+
+
+        /* Dashboard */
+        dashboardTitle: "ড্যাশবোর্ড",
+
+
+        welcomeUser: "স্বাগতম",
+
+
+        myProfile: "আমার তথ্য",
+
+
+        name: "নাম",
+
+
+        location: "এলাকা",
+
+
+        verification: "যাচাই অবস্থা",
+
+
+        notVerified: "যাচাই করা হয়নি",
+
+
+        verified: "যাচাইকৃত",
+
+
+        logout: "লগআউট",
+
+
+        services: "সেবাসমূহ",
+
+
+        comingSoon: "পরবর্তী স্প্রিন্টে আসছে",
+
+
+        /* Dashboard extras */
+        logout: "লগআউট",
+        goodMorning: "শুভ সকাল,",
+        newNotifications: "নতুন বিজ্ঞপ্তি",
+        myActivities: "আমার কার্যক্রম",
+        helped: "সাহায্য করেছেন",
+        communityAlert: "সম্প্রদায় সতর্কতা",
+        urgent: "জরুরি",
+        bloodNeeded: "রক্ত প্রয়োজন",
+        dhakaMedical: "ঢাকা মেডিকেলে",
+        respond: "সাড়া দিন",
+        quickServices: "দ্রুত সেবাসমূহ",
+        bloodDonation: "রক্তদান",
+        volunteer: "স্বেচ্ছাসেবী",
+        goodsExchange: "পণ্য বিনিময়",
+        wasteManagement: "বর্জ্য ব্যবস্থাপনা",
+        farmerMarket: "কৃষক বাজার",
+        communityHealth: "সম্প্রদায় স্বাস্থ্য",
+        recentActivity: "সাম্প্রতিক কার্যক্রম",
+        donatedNearby: "কাছাকাছি রক্ত দান করেছেন",
+        volunteerSlotOpen: "স্বেচ্ছাসেবী স্লট খোলা আছে",
+        freshVegetables: "তাজা সবজি পোস্ট করেছেন",
+        loggedInAs: "লগইন করেছেন",
+        profile: "প্রোফাইল",
+
+
+        /* Time-ago labels */
+        timeTwoHoursAgo: "২ঘ আগে",
+        timeFiveHoursAgo: "৫ঘ আগে",
+        timeOneDayAgo: "১দিন আগে",
+
+
+        /* Verification + admin */
+        actionNeeded: "ব্যবস্থা প্রয়োজন",
+        verifyNidTitle: "ট্রাস্ট ব্যাজ পেতে আপনার NID যাচাই করুন",
+        verifyNidHint:
+            "যাচাইকৃত সদস্যরা দ্রুত উত্তর পান এবং অন্যকে রেট দিতে পারেন।",
+        verifyNow: "এখনই যাচাই করুন",
+        adminTools: "প্রশাসক সরঞ্জাম",
+        reviewQueue: "পর্যালোচনা সারি",
+        actionLog: "কার্যক্রম লগ",
+        noActivity: "এখনো কোনো কার্যক্রম নেই",
+        timeJustNow: "এইমাত্র",
+        timeMinutesAgo: "{n} মিনিট আগে",
+        timeHoursAgo: "{n} ঘন্টা আগে",
+        timeDaysAgo: "{n} দিন আগে",
+
+
+                /* NID verification page */
+        nidTitle: "NID যাচাই",
+        nidSubtitle: "আপনার পরিচয় যাচাই করলে কমিউনিটিতে আস্থা বাড়ে।",
+        documentType: "নথির ধরন",
+        docNid: "জাতীয় পরিচয়পত্র (NID)",
+        docPassport: "পাসপোর্ট",
+        docBirth: "জন্ম নিবন্ধন",
+        uploadLabel: "নথি আপলোড করুন",
+        uploadHint: "JPG, PNG অথবা PDF গ্রহণযোগ্য। সর্বোচ্চ ফাইল সাইজ 5 MB।",
+        submitForReview: "যাচাইয়ের জন্য পাঠান",
+        currentStatus: "বর্তমান অবস্থা",
+        statusUnverified: "যাচাই করা হয়নি",
+        statusPending: "অপেক্ষমাণ",
+        statusApproved: "যাচাইকৃত",
+        statusRejected: "প্রত্যাখ্যাত",
+        backToProfile: "← প্রোফাইলে ফিরে যান",
+        backToDashboard: "← ড্যাশবোর্ড ফিরে যান",
+        errNoFile: "অনুগ্রহ করে একটি ফাইল নির্বাচন করুন।",
+        errFileType: "শুধুমাত্র JPG, PNG অথবা PDF গ্রহণযোগ্য।",
+        errFileSize: "ফাইলের আকার ৫ MB এর বেশি।",
+        errUploadFailed: "আপলোড ব্যর্থ হয়েছে। আবার চেষ্টা করুন।",
+        submitting: "পাঠানো হচ্ছে…",
+
+
+
+
+        /* Services */
+        modBlood: "রক্তদান",
+
+
+        modVolunteer: "স্বেচ্ছাসেবা",
+
+
+        modGoods: "পুরাতন জিনিস বিনিময়",
+
+
+        modWaste: "বর্জ্য সংগ্রহ",
+
+
+        modFarmer: "কৃষক বাজার",
+
+
+        modHealth: "স্বাস্থ্য পরামর্শ",
+
+
+
+
+        /* Roles */
+        role_citizen: "নাগরিক",
+
+
+        role_volunteer: "স্বেচ্ছাসেবক",
+
+
+        role_ngo: "সংস্থা",
+
+
+        role_farmer: "কৃষক",
+
+
+        role_admin: "প্রশাসক",
+
+
+
+
+        /* Language button */
+        langButton: "English"
+    },
+
+
+
+
+    /* =========================
+       ENGLISH
+       ========================= */
+    en: {
+
+
+        appName: "HELPNET",
+         tagline: "A Unified Community Services Platform",
+
+
+        /* Home */
+        homeSubtitle: "Connect. Help. Share.",
+
+
+        welcomeText:
+            "Connect with people in your community and share help, services and resources.",
+
+
+        goLogin: "Log in",
+
+
+        goRegister: "Create an account",
+
+
+        tagline:
+            "HELPNET — A Unified Community Services Platform",
+
+
+
+
+        /* Register */
+        registerTitle: "Create an account",
+
+
+        registerSubtitle:
+            "Register free with your mobile number",
+
+
+        fullName: "Full name",
+
+
+        phone: "Mobile number",
+
+
+        phoneHint: "Example: 01712345678",
+
+
+        password: "Password",
+
+
+        passwordHint:
+            "At least 8 characters, mixing letters and numbers",
+
+
+        email: "Email",
+
+
+        optional: "(optional)",
+
+
+        role: "Role",
+
+
+        selectRole: "Select your role",
+
+
+        district: "District",
+
+
+        upazila: "Upazila",
+
+
+        selectDistrict: "Select a district",
+
+
+        registerButton: "Register",
+
+
+        haveAccount: "Already have an account?",
+
+
+        loginLink: "Log in",
+
+
+
+
+        /* Login */
+        loginTitle: "Log in",
+
+
+        loginSubtitle:
+            "Enter your mobile number/email and password",
+
+        emailOrPhone: "Mobile number or email",
+
+
+        loginButton: "Log in",
+        loading: "Loading...",
+
+
+        forgotPassword: "Forgot your password?",
+
+
+        noAccount: "Don't have an account?",
+
+
+        registerLink: "Register",
+
+
+
+
+        /* Dashboard */
+        dashboardTitle: "Dashboard",
+
+
+        welcomeUser: "Welcome",
+
+
+        myProfile: "My details",
+
+
+        name: "Name",
+
+
+        location: "Area",
+
+
+        verification: "Verification",
+
+
+        notVerified: "Not verified",
+
+
+        verified: "Verified",
+
+
+        logout: "Log out",
+
+
+        services: "Services",
+
+
+        comingSoon: "Coming in a later sprint",
+
+
+         /* Dashboard extras */
+        logout: "Log out",
+        goodMorning: "Good morning,",
+        newNotifications: "new notifications",
+        myActivities: "my activities",
+        helped: "people helped",
+        communityAlert: "Community alert",
+        urgent: "Urgent",
+        bloodNeeded: "blood needed",
+        dhakaMedical: "at Dhaka Medical",
+        respond: "Respond",
+        quickServices: "Quick services",
+        bloodDonation: "Blood Donation",
+        volunteer: "Volunteer",
+        goodsExchange: "Goods Exchange",
+        wasteManagement: "Waste Management",
+        farmerMarket: "Farmer Market",
+        communityHealth: "Community Health",
+        recentActivity: "Recent activity",
+        donatedNearby: "donated blood nearby",
+        volunteerSlotOpen: "volunteer slots are open",
+        freshVegetables: "posted fresh vegetables",
+        loggedInAs: "Logged in as",
+        profile: "Profile",
+
+
+          /* NID verification page */
+          nidTitle: "NID verification",
+        nidSubtitle: "Verifying your identity builds trust in the community.",
+        documentType: "Document type",
+        docNid: "National ID (NID)",
+        docPassport: "Passport",
+        docBirth: "Birth certificate",
+        uploadLabel: "Upload document",
+        uploadHint: "JPG, PNG or PDF accepted. Max file size 5 MB.",
+        submitForReview: "Submit for verification",
+        currentStatus: "Current status",
+        statusUnverified: "Not verified",
+        statusPending: "Pending",
+        statusApproved: "Verified",
+        statusRejected: "Rejected",
+        backToProfile: "← Back to profile",
+        backToDashboard: "← Back to dashboard",
+        errNoFile: "Please choose a file.",
+        errFileType: "Only JPG, PNG or PDF are accepted.",
+        errFileSize: "File is larger than 5 MB.",
+        errUploadFailed: "Upload failed. Please try again.",
+        submitting: "Submitting…",
+
+
+        /* Time-ago labels */
+        timeTwoHoursAgo: "2h ago",
+        timeFiveHoursAgo: "5h ago",
+        timeOneDayAgo: "1d ago",
+
+
+        /* Verification + admin */
+        actionNeeded: "Action needed",
+        verifyNidTitle: "Verify your NID to earn a trust badge",
+        verifyNidHint:
+            "Verified members get more replies and can rate others.",
+        verifyNow: "Verify now",
+        adminTools: "Admin tools",
+        reviewQueue: "Review queue",
+        actionLog: "Action log",
+          noActivity: "No activity yet",
+        timeJustNow: "just now",
+        timeMinutesAgo: "{n} min ago",
+        timeHoursAgo: "{n} h ago",
+        timeDaysAgo: "{n} d ago",
+
+
+        /* Services */
+        modBlood: "Blood Donation",
+
+
+        modVolunteer: "Volunteer Gathering",
+
+
+        modGoods: "Second-Hand Exchange",
+
+
+        modWaste: "Waste Collection",
+
+
+        modFarmer: "Farmer Marketplace",
+
+
+        modHealth: "Health Suggestions",
+
+
+
+
+        /* Roles */
+        role_citizen: "Citizen",
+
+
+        role_volunteer: "Volunteer",
+
+
+        role_ngo: "Organization",
+
+
+        role_farmer: "Farmer",
+
+
+        role_admin: "Admin",
+
+
+
+
+        /* Language button */
+        langButton: "বাংলা"
+    }
 };
+
+
+
+
+/* ============================================================
+   STORAGE
+   ============================================================ */
+
 
 const LANG_KEY = "helpnet_lang";
 
-/* Bangla is the default for anyone who has never chosen (FR 1.4). */
+
+
+
+/* ============================================================
+   GET CURRENT LANGUAGE
+   ============================================================ */
+
+
 function getLanguage() {
-  const saved = localStorage.getItem(LANG_KEY);
-  return saved === "en" ? "en" : "bn";
+
+
+    const savedLanguage = localStorage.getItem(LANG_KEY);
+
+
+    if (savedLanguage === "en") {
+        return "en";
+    }
+
+
+    return "bn";
 }
+
+
+
+
+/* ============================================================
+   GET TRANSLATION
+   ============================================================ */
+
 
 function t(key) {
-  const lang = getLanguage();
-  return (TEXT[lang] && TEXT[lang][key]) || TEXT.bn[key] || key;
+
+
+    const language = getLanguage();
+
+
+    if (
+        TEXT[language] &&
+        TEXT[language][key]
+    ) {
+        return TEXT[language][key];
+    }
+
+
+    if (TEXT.bn[key]) {
+        return TEXT.bn[key];
+    }
+
+
+    return key;
 }
 
-/* Swap every element that carries a data-i18n key. */
+
+
+
+/* ============================================================
+   APPLY LANGUAGE
+   ============================================================ */
+
+
 function applyLanguage() {
-  const lang = getLanguage();
-  document.documentElement.lang = lang;
 
-  document.querySelectorAll("[data-i18n]").forEach(function (el) {
-    const value = t(el.getAttribute("data-i18n"));
-    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-      el.placeholder = value;
+
+    const language = getLanguage();
+
+
+    console.log("HELPNET language:", language);
+
+
+    /* Change HTML language */
+    document.documentElement.lang = language;
+
+
+
+
+    /* -----------------------------------------
+       Normal text
+       ----------------------------------------- */
+
+
+    const elements = document.querySelectorAll("[data-i18n]");
+
+
+    console.log(
+        "HELPNET translation elements:",
+        elements.length
+    );
+
+
+
+
+    elements.forEach(function (element) {
+
+
+        const key = element.getAttribute("data-i18n");
+
+
+        const translation = t(key);
+
+
+        if (
+            element.tagName === "INPUT" ||
+            element.tagName === "TEXTAREA"
+        ) {
+
+
+            element.placeholder = translation;
+
+
+        } else {
+
+
+            element.textContent = translation;
+
+
+        }
+
+
+    });
+
+
+
+
+    /* -----------------------------------------
+       Placeholder translations
+       ----------------------------------------- */
+
+
+    const placeholderElements =
+        document.querySelectorAll(
+            "[data-i18n-placeholder]"
+        );
+
+
+
+
+    placeholderElements.forEach(function (element) {
+
+
+        const key =
+            element.getAttribute(
+                "data-i18n-placeholder"
+            );
+
+
+        element.placeholder = t(key);
+
+
+    });
+
+
+
+
+    /* -----------------------------------------
+       Language button
+       ----------------------------------------- */
+
+
+    const button =
+        document.getElementById("langToggle");
+
+
+
+
+    if (button) {
+
+
+        button.textContent =
+            t("langButton");
+
+
+    }
+
+
+}
+
+
+
+
+/* ============================================================
+   TOGGLE LANGUAGE
+   ============================================================ */
+
+
+function toggleLanguage() {
+
+
+    const currentLanguage = getLanguage();
+
+
+    let newLanguage;
+
+
+    if (currentLanguage === "bn") {
+
+
+        newLanguage = "en";
+
+
     } else {
-      el.textContent = value;
+
+
+        newLanguage = "bn";
+
+
     }
-  });
 
-  document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
-    el.placeholder = t(el.getAttribute("data-i18n-placeholder"));
-  });
 
-  const toggle = document.getElementById("langToggle");
-  if (toggle) toggle.textContent = t("langButton");
-}
 
-/* Save the choice, update the page, and remember it on the server too
-   if the user is logged in, so it follows them to another device. */
-async function toggleLanguage() {
-  const next = getLanguage() === "bn" ? "en" : "bn";
-  localStorage.setItem(LANG_KEY, next);
-  applyLanguage();
 
-  if (typeof isLoggedIn === "function" && isLoggedIn()) {
-    try {
-      await apiRequest("/api/auth/language", "PUT", { preferred_language: next });
-    } catch (err) {
-      /* Saving the preference is not critical - the local choice still works. */
-    }
-  }
-}
+    console.log(
+        "Changing language:",
+        currentLanguage,
+        "→",
+        newLanguage
+    );
 
-function setLanguage(lang) {
-  if (lang === "bn" || lang === "en") {
-    localStorage.setItem(LANG_KEY, lang);
+
+
+
+    /* Save language */
+    localStorage.setItem(
+        LANG_KEY,
+        newLanguage
+    );
+
+
+
+
+    /* Apply immediately */
     applyLanguage();
-  }
+
+
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  applyLanguage();
-  const toggle = document.getElementById("langToggle");
-  if (toggle) toggle.addEventListener("click", toggleLanguage);
-});
+
+
+
+/* ============================================================
+   SET LANGUAGE
+   ============================================================ */
+
+
+function setLanguage(language) {
+
+
+    if (
+        language !== "bn" &&
+        language !== "en"
+    ) {
+
+
+        return;
+
+
+    }
+
+
+
+
+    localStorage.setItem(
+        LANG_KEY,
+        language
+    );
+
+
+
+
+    applyLanguage();
+
+
+}
+
+
+
+
+/* ============================================================
+   PAGE LOAD
+   ============================================================ */
+
+
+function initializeI18n() {
+
+
+        console.log(
+            "HELPNET i18n.js loaded successfully"
+        );
+
+
+
+
+        /* Apply default language */
+        applyLanguage();
+
+
+
+
+        /* Language button */
+        const button =
+            document.getElementById(
+                "langToggle"
+            );
+
+
+
+
+        if (button) {
+
+
+            button.addEventListener(
+                "click",
+                toggleLanguage
+            );
+
+
+            console.log(
+                "HELPNET language button connected"
+            );
+
+
+        } else {
+
+
+            console.error(
+                "HELPNET: langToggle button not found"
+            );
+
+
+        }
+
+
+}
+
+
+/* The home page loads this script at the end of <body>, while other
+   pages may load it after DOMContentLoaded. Support both cases. */
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeI18n, { once: true });
+} else {
+    initializeI18n();
+}

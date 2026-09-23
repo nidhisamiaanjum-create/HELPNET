@@ -1,21 +1,6 @@
-"""
-URL configuration for helpnet project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import path, include
+from django.views.generic import TemplateView
 from django.http import JsonResponse
 
 def root_view(request):
@@ -29,7 +14,32 @@ def root_view(request):
     })
 
 urlpatterns = [
-    path("", root_view, name="api-root"),
-    path("admin/", admin.site.urls),
-    path("api/auth/", include("apps.users.urls")),
-]
+    path('admin/', admin.site.urls),
+    path('api/', root_view, name="api-root"),
+    path('api/auth/', include('apps.users.urls')),
+
+    path('',           TemplateView.as_view(template_name='pages/home.html'),       name='home'),
+    path('login/',     TemplateView.as_view(template_name='pages/login.html'),      name='login'),
+    path('register/',  TemplateView.as_view(template_name='pages/register.html'),   name='register'),
+    path('dashboard/', TemplateView.as_view(template_name='pages/dashboard.html'),  name='dashboard'),
+    path('profile/',   TemplateView.as_view(template_name='pages/profile.html'),    name='profile'),
+
+    path(
+        'nid-verification/',
+        TemplateView.as_view(template_name='pages/nid-verification.html'),
+        name='nid-verification',
+    ),
+    path(
+        'admin-verification/',
+        TemplateView.as_view(template_name='pages/admin-verification.html'),
+        name='admin-verification',
+    ),
+    path(
+        'admin-logs/',
+        TemplateView.as_view(template_name='pages/admin-logs.html'),
+        name='admin-logs',
+    ),
+
+    # API endpoints the JS will call (create later in apps/verification/urls.py)
+    path("verification/", include("apps.verification.urls")),
+]
