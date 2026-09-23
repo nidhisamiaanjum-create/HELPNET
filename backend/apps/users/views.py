@@ -1,12 +1,12 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
 
-from .serializers import RegisterSerializer
 from .permissions import IsAdminRole
+from .serializers import RegisterSerializer
 
 
 User = get_user_model()
@@ -72,16 +72,6 @@ class LoginView(APIView):
         except User.DoesNotExist:
             user = None
 
-        # Temporary debugging
-        print("LOGIN DEBUG")
-        print("Identifier:", identifier)
-        print("User found:", user is not None)
-
-        if user is not None:
-            print("User email:", user.email)
-            print("User phone:", user.phone_number)
-            print("Password valid:", user.check_password(password))
-
         if user is None or not user.check_password(password):
             return Response(
                 {
@@ -110,13 +100,18 @@ class LoginView(APIView):
             },
             status=status.HTTP_200_OK
         )
-    
+
+
+# ==========================================
+# S2-T06 SECURITY TEST
+# ==========================================
+
+# TEST 1: NO TOKEN
 class ProtectedView(APIView):
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
         return Response(
             {
                 "success": True,
@@ -126,13 +121,12 @@ class ProtectedView(APIView):
         )
 
 
-
+# TEST 2: WRONG ROLE
 class AdminOnlyView(APIView):
 
     permission_classes = [IsAdminRole]
 
     def get(self, request):
-
         return Response(
             {
                 "success": True,

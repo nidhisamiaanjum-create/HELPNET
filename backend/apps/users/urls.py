@@ -7,9 +7,7 @@ from .views import (
     AdminOnlyView,
 )
 
-
 urlpatterns = [
-
     path(
         "register/",
         RegisterView.as_view(),
@@ -35,5 +33,4 @@ urlpatterns = [
         AdminOnlyView.as_view(),
         name="admin-only"
     ),
-
 ]
