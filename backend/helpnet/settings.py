@@ -1,8 +1,10 @@
 from pathlib import Path
+from datetime import timedelta
 import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 env = environ.Env(
     DEBUG=(bool, True),
     DB_PASSWORD=(str, ''),
@@ -10,16 +12,16 @@ env = environ.Env(
 
 if (BASE_DIR / '.env').exists():
     environ.Env.read_env(BASE_DIR / '.env')
+
 if (BASE_DIR.parent / '.env').exists():
     environ.Env.read_env(BASE_DIR.parent / '.env')
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-(g@0cnvgjnwj9@mgstx031%dv!)awp+sb#w2i7+)6sn=v5-v!l'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
@@ -40,7 +42,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
-    
 
     # HELPNET apps
     'apps.users',
@@ -56,6 +57,8 @@ INSTALLED_APPS = [
     'apps.reports',
     'apps.common',
 ]
+
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -67,7 +70,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
 ROOT_URLCONF = 'helpnet.urls'
+
 
 TEMPLATES = [
     {
@@ -84,11 +89,11 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'helpnet.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -109,7 +114,6 @@ DATABASES = {
 
 
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -128,7 +132,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
@@ -139,8 +142,7 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
+# Static files
 
 STATIC_URL = '/static/'
 
@@ -150,28 +152,24 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL = 'users.User'
-CORS_ALLOW_ALL_ORIGINS = True
-# REST Framework settings
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-}
 
-# Simple JWT settings
-SIMPLE_JWT = {
-    'USER_ID_FIELD': 'user_id',
-    'USER_ID_CLAIM': 'user_id',
-    'BLACKLIST_AFTER_ROTATION': True,
-    'ROTATE_REFRESH_TOKENS': True,
-}
+
+# Custom User Model
+
+AUTH_USER_MODEL = 'users.User'
+
+
+# CORS
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 # Django REST Framework
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -181,3 +179,16 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+# Simple JWT
+
+SIMPLE_JWT = {
+    'USER_ID_FIELD': 'user_id',
+    'USER_ID_CLAIM': 'user_id',
+
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ROTATE_REFRESH_TOKENS': True,
+}

@@ -1,11 +1,11 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .permissions import IsAdminRole
 from .serializers import RegisterSerializer
 
 
@@ -102,6 +102,8 @@ class LoginView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
 class LogoutView(APIView):
     def post(self, request):
         refresh_token = request.data.get("refresh")
@@ -138,3 +140,32 @@ class LogoutView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+
+class ProtectedView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(
+            {
+                "success": True,
+                "message": "Access granted.",
+                "user": request.user.email,
+            }
+        )
+
+
+
+class AdminOnlyView(APIView):
+
+    permission_classes = [IsAdminRole]
+
+    def get(self, request):
+        return Response(
+            {
+                "success": True,
+                "message": "Admin access granted.",
+            }
+        )
