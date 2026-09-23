@@ -46,38 +46,50 @@ class RegisterView(APIView):
 class LoginView(APIView):
 
     def post(self, request):
-        email = request.data.get("email")
+
+        identifier = request.data.get("identifier")
         password = request.data.get("password")
 
-        # Check required fields
-        if not email or not password:
+        if not identifier or not password:
             return Response(
                 {
                     "success": False,
                     "data": None,
-                    "message": "Email and password are required."
+                    "message": "Email or phone number and password are required."
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Find user using email
+        identifier = identifier.strip()
+
         try:
-            user = User.objects.get(email=email)
+            if "@" in identifier:
+                user = User.objects.get(email=identifier)
+            else:
+                user = User.objects.get(phone_number=identifier)
         except User.DoesNotExist:
             user = None
 
-        # Check password
+        # Temporary debugging
+        print("LOGIN DEBUG")
+        print("Identifier:", identifier)
+        print("User found:", user is not None)
+
+        if user is not None:
+            print("User email:", user.email)
+            print("User phone:", user.phone_number)
+            print("Password valid:", user.check_password(password))
+
         if user is None or not user.check_password(password):
             return Response(
                 {
                     "success": False,
                     "data": None,
-                    "message": "Invalid email or password."
+                    "message": "Invalid email/phone number or password."
                 },
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        # Create JWT tokens
         refresh = RefreshToken.for_user(user)
 
         return Response(

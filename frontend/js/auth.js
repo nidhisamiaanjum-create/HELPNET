@@ -233,6 +233,10 @@ function initRegisterPage() {
    LOGIN
    ============================================================ */
 
+/* ============================================================
+   LOGIN
+   ============================================================ */
+
 function initLoginPage() {
 
     const form =
@@ -263,9 +267,9 @@ function initLoginPage() {
 
             /* Get values */
 
-            const email =
+            const identifier =
                 document
-                    .getElementById("email")
+                    .getElementById("identifier")
                     .value
                     .trim();
 
@@ -281,10 +285,10 @@ function initLoginPage() {
             let valid = true;
 
 
-            if (!email) {
+            if (!identifier) {
 
                 showFieldError(
-                    "email",
+                    "identifier",
                     t("required")
                 );
 
@@ -313,15 +317,33 @@ function initLoginPage() {
 
             try {
 
-                console.log("Sending login request...");
+                console.log(
+                    "Sending login request..."
+                );
 
+
+                /*
+                   Backend accepts either:
+
+                   Email:
+                   {
+                       identifier: "c@gmail.com",
+                       password: "..."
+                   }
+
+                   OR phone:
+                   {
+                       identifier: "01712345671",
+                       password: "..."
+                   }
+                */
 
                 const response =
                     await apiRequest(
                         "/api/auth/login/",
                         "POST",
                         {
-                            email: email,
+                            identifier: identifier,
                             password: password
                         }
                     );
@@ -339,23 +361,12 @@ function initLoginPage() {
                     response.data;
 
 
-                /*
-                   Your backend may return:
-                   {
-                       access: "...",
-                       refresh: "...",
-                       user_id: "...",
-                       full_name: "...",
-                       email: "...",
-                       phone_number: "...",
-                       role: "..."
-                   }
-
-                   Or it may wrap the user differently.
-                */
-
                 const accessToken =
                     user.access;
+
+
+                const refreshToken =
+                    user.refresh;
 
 
                 if (!accessToken) {
@@ -395,6 +406,19 @@ function initLoginPage() {
                 );
 
 
+                /*
+                   Save refresh token separately.
+                */
+
+                if (refreshToken) {
+
+                    localStorage.setItem(
+                        "refreshToken",
+                        refreshToken
+                    );
+                }
+
+
                 /* Success */
 
                 showAlert(
@@ -416,7 +440,6 @@ function initLoginPage() {
                     },
                     700
                 );
-
 
             } catch (error) {
 
@@ -451,6 +474,8 @@ function initLoginPage() {
 function logout() {
 
     clearSession();
+
+    localStorage.removeItem("refreshToken");
 
     window.location.href =
         "/login/";

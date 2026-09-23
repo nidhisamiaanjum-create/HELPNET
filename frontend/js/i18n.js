@@ -97,10 +97,12 @@ const TEXT = {
 
 
         loginSubtitle:
-            "আপনার মোবাইল নম্বর ও পাসওয়ার্ড দিন",
+            "আপনার মোবাইল নম্বর/ ইমেইল ও পাসওয়ার্ড দিন",
+        emailOrPhone: "মোবাইল নম্বর বা ইমেইল",
 
 
         loginButton: "লগইন",
+        loading: "লোড হচ্ছে...",
 
 
         forgotPassword: "পাসওয়ার্ড ভুলে গেছেন?",
@@ -359,10 +361,13 @@ const TEXT = {
 
 
         loginSubtitle:
-            "Enter your mobile number and password",
+            "Enter your mobile number/email and password",
+
+        emailOrPhone: "Mobile number or email",
 
 
         loginButton: "Log in",
+        loading: "Loading...",
 
 
         forgotPassword: "Forgot your password?",
@@ -877,94 +882,3 @@ if (document.readyState === "loading") {
 } else {
     initializeI18n();
 }
-/* Status -> CSS class + i18n key */
-const STATUS_MAP = {
-    unverified: { cls: "status-unverified", key: "statusUnverified" },
-    pending:    { cls: "status-pending",    key: "statusPending"    },
-    approved:   { cls: "status-approved",   key: "statusApproved"   },
-    rejected:   { cls: "status-rejected",   key: "statusRejected"   }
-};
-
-
-function validate(docType, file) {
-    if (!NID_RULES.allowedDocTypes.includes(docType)) return "errFileType";
-    if (!file) return "errNoFile";
-    if (!NID_RULES.allowedTypes.includes(file.type)) return "errFileType";
-    if (file.size > NID_RULES.maxBytes) return "errFileSize";
-    return null;
-}
-
-
-function renderStatus(state) {
-    const statusEl = document.getElementById("verificationStatus");
-    const rejectEl = document.getElementById("rejectionReason");
-    const form     = document.getElementById("nidVerificationForm");
-    if (!statusEl) return;
-
-
-    const cfg = STATUS_MAP[state.status] || STATUS_MAP.unverified;
-
-
-    statusEl.className = "status " + cfg.cls;
-    statusEl.setAttribute("data-i18n", cfg.key);
-    statusEl.textContent = t(cfg.key);
-
-
-    if (state.status === "rejected" && state.rejectionReason) {
-        rejectEl.hidden = false;
-        rejectEl.textContent = state.rejectionReason;
-    } else {
-        rejectEl.hidden = true;
-        rejectEl.textContent = "";
-    }
-
-
-    if (form) {
-        const canSubmit = state.status === "unverified" || state.status === "rejected";
-        form.hidden = !canSubmit;
-    }
-}
-
-
-/* Inside the submit handler: */
-// showError(err)  →  showError(err)   // now err is an i18n key
-function showError(key) {
-    if (!key) { errorEl.hidden = true; errorEl.textContent = ""; return; }
-    errorEl.hidden = false;
-    errorEl.textContent = t(key);
-}
-
-
-// Submitting label:
-btn.textContent = t("submitting");
-// ...
-// Error on catch:
-showError("errUploadFailed");
-
-
-/* Boot: re-render on language toggle */
-document.addEventListener("DOMContentLoaded", async function () {
-    if (typeof requireLogin === "function" && !requireLogin()) return;
-
-
-    const logoutButton = document.getElementById("logoutButton");
-    if (logoutButton) {
-        logoutButton.addEventListener("click", function () {
-            if (typeof logout === "function") logout();
-            else { localStorage.clear(); window.location.href = "/login/"; }
-        });
-    }
-
-
-    const state = await fetchVerificationStatus();
-    renderStatus(state);
-    initForm();
-
-
-    const langBtn = document.getElementById("langToggle");
-    if (langBtn) {
-        langBtn.addEventListener("click", function () {
-            setTimeout(function () { renderStatus(MOCK_STATE); }, 0);
-        });
-    }
-});
