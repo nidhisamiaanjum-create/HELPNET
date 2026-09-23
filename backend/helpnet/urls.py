@@ -1,10 +1,21 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
+from django.http import JsonResponse
 
+def root_view(request):
+    return JsonResponse({
+        "message": "Welcome to HELPNET API",
+        "status": "running",
+        "endpoints": {
+            "admin": "/admin/",
+            "auth": "/api/auth/"
+        }
+    })
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', root_view, name="api-root"),
     path('api/auth/', include('apps.users.urls')),
 
     path('',           TemplateView.as_view(template_name='pages/home.html'),       name='home'),
@@ -31,4 +42,4 @@ urlpatterns = [
 
     # API endpoints the JS will call (create later in apps/verification/urls.py)
     path("verification/", include("apps.verification.urls")),
-]
+]
