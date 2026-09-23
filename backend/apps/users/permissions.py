@@ -1,7 +1,5 @@
 from rest_framework.permissions import BasePermission
 
-
-<<<<<<< HEAD
 class IsAdminUserRole(BasePermission):
     def has_permission(self, request, view):
         return (
@@ -45,7 +43,6 @@ class IsFarmerUser(BasePermission):
             and request.user.is_authenticated
             and request.user.role == "Farmer"
         )
-=======
 class IsAdminRole(BasePermission):
 
     def has_permission(self, request, view):
@@ -53,4 +50,3 @@ class IsAdminRole(BasePermission):
             request.user.is_authenticated
             and request.user.role == "Admin"
         )
->>>>>>> annotoma
