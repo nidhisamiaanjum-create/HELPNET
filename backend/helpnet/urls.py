@@ -42,4 +42,4 @@ urlpatterns = [
 
     # API endpoints the JS will call (create later in apps/verification/urls.py)
     path("verification/", include("apps.verification.urls")),
-]
+]

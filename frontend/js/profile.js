@@ -7,6 +7,11 @@ function setText(id, value) {
     if (el) el.textContent = value || "—";
 }
 
+function setValue(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.value = value || "";
+}
+
 function renderVerificationBadge(status) {
     const badge = document.getElementById("verifiedBadge");
     if (badge) badge.hidden = status !== "approved";
@@ -53,6 +58,7 @@ async function loadProfile() {
         const payload = await res.json();
         const user = payload.data || payload;
 
+        /* --- display section --- */
         setText("profileName", user.full_name);
         setText("profileEmail", user.email);
         setText("profilePhone", user.phone_number);
@@ -62,22 +68,31 @@ async function loadProfile() {
 
         renderVerificationBadge(user.verification_status);
 
-        // Pre-fill the edit form
-        const setVal = (id, v) => {
-            const el = document.getElementById(id);
-            if (el) el.value = v || "";
-        };
-        setVal("profileFullName", user.full_name);
-        setVal("profileBioInput", user.bio);
-        setVal("profileLocationInput", user.location);
-        setVal("profileDobInput", user.date_of_birth);
-        setVal("profileGenderInput", user.gender);
+        /* --- prefill edit form --- */
+        setValue("profileFullName", user.full_name);
+        setValue("profileBioInput", user.bio);
+        setValue("profileLocationInput", user.location);
+        setValue("profileDobInput", user.date_of_birth);
+        setValue("profileGenderInput", user.gender);
+
+        /* --- profile picture, if set --- */
+        if (user.profile_picture) {
+            const avatar = document.getElementById("profileAvatar");
+            if (avatar) {
+                avatar.innerHTML = "";
+                const img = document.createElement("img");
+                img.src = user.profile_picture;
+                img.alt = "Profile picture";
+                img.className = "profile-avatar-image";
+                avatar.appendChild(img);
+            }
+        }
     } catch (err) {
         console.error("Failed to load profile:", err);
     }
 }
 
-/* ---------- PROFILE UPDATE ---------- */
+/* ---------- SAVE PROFILE ---------- */
 
 async function saveProfile(event) {
     event.preventDefault();
@@ -85,29 +100,38 @@ async function saveProfile(event) {
     const token = localStorage.getItem("helpnet_token");
     const form = event.target;
     const formData = new FormData(form);
-    const body = Object.fromEntries(formData.entries());
+    const msg = document.getElementById("profileFormMessage");
 
     try {
         const res = await fetch("/api/users/me/", {
             method: "PATCH",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,   // FormData works because of profile_picture
         });
 
         const payload = await res.json();
-        const msg = document.getElementById("profileFormMessage");
 
         if (res.ok) {
-            if (msg) msg.textContent = "প্রোফাইল সংরক্ষণ করা হয়েছে।";
+            if (msg) {
+                msg.textContent = "প্রোফাইল সংরক্ষণ করা হয়েছে।";
+                msg.style.color = "green";
+            }
             loadProfile();
         } else {
-            if (msg) msg.textContent = JSON.stringify(payload.message);
+            if (msg) {
+                msg.textContent =
+                    typeof payload.message === "string"
+                        ? payload.message
+                        : JSON.stringify(payload.message);
+                msg.style.color = "red";
+            }
         }
     } catch (err) {
         console.error(err);
+        if (msg) {
+            msg.textContent = "সংযোগ ব্যর্থ হয়েছে।";
+            msg.style.color = "red";
+        }
     }
 }
 
@@ -118,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderRatingStars();
 
     const trust = document.getElementById("trust-component");
-    if (trust) {
+    if (trust && typeof renderTrustComponent === "function") {
         renderTrustComponent(trust, {
             userId: "demo-user",
             verificationStatus: "approved",
@@ -127,8 +151,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    document.getElementById("submitRating")?.addEventListener("click", prepareRatingSubmission);
-    document.getElementById("profileForm")?.addEventListener("submit", saveProfile);
+    document.getElementById("submitRating")
+        ?.addEventListener("click", prepareRatingSubmission);
+
+    document.getElementById("profileForm")
+        ?.addEventListener("submit", saveProfile);
 });
 
 function prepareRatingSubmission() {

@@ -8,12 +8,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-
+# at the top, with other imports:
 from .serializers import (
     RegisterSerializer,
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
+    UserProfileSerializer,
 )
+
 
 User = get_user_model()
 
@@ -257,13 +259,15 @@ class PasswordResetConfirmView(APIView):
             status=status.HTTP_200_OK
         )
 
-from .serializers import UserProfileSerializer  # add to imports
+
+# remove the duplicate "from .serializers import RegisterSerializer"
 
 
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        """Return the currently logged-in user's profile."""
         serializer = UserProfileSerializer(request.user)
         return Response(
             {
@@ -275,6 +279,7 @@ class MeView(APIView):
         )
 
     def patch(self, request):
+        """Update editable fields of the profile."""
         serializer = UserProfileSerializer(
             request.user, data=request.data, partial=True
         )
