@@ -1,0 +1,499 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="bn">
+
+<head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>HELPNET - Dashboard</title>
+
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+</head>
+
+<body>
+
+<header class="site-header">
+
+<!-- Logo -->
+<a href="/dashboard/" class="logo" data-i18n="appName">
+    হেল্পনেট
+</a>
+
+<div class="header-actions">
+
+    <!-- Language -->
+    <button
+        type="button"
+        id="langToggle"
+        class="lang-toggle">
+        English
+    </button>
+
+    <!-- Logout -->
+    <button
+        type="button"
+        id="logoutButton"
+        class="lang-toggle"
+        data-i18n="logout">
+        Logout
+    </button>
+
+</div>
+
+</header>
+
+<main class="dashboard-page">
+
+<!-- =====================================================
+     GREETING + TRUST
+     ===================================================== -->
+
+<section class="dashboard-welcome">
+
+    <p
+        class="welcome-small"
+        data-i18n="goodMorning">
+        শুভ সকাল,
+    </p>
+
+    <h1 id="welcomeName">
+        HELPNET User 👋
+    </h1>
+
+
+    <!-- Trust block -->
+    <div
+        id="dashboardTrust"
+        class="trust-block"
+        data-user-id="">
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     NID VERIFICATION
+     ===================================================== -->
+
+<section
+    id="verifyCallout"
+    class="dashboard-section"
+    hidden>
+
+    <div class="alert-card">
+
+        <div class="alert-icon">
+            🛡️
+        </div>
+
+
+        <div class="alert-content">
+
+            <span
+                class="alert-label"
+                data-i18n="actionNeeded">
+                Action needed
+            </span>
+
+
+            <h3 data-i18n="verifyNidTitle">
+                Verify your NID to earn a trust badge
+            </h3>
+
+
+            <p data-i18n="verifyNidHint">
+                Verified members get more replies and can rate others.
+            </p>
+
+        </div>
+
+
+        <!-- FIXED: goes to NID verification page -->
+        <a
+            href="/nid-verification/"
+            class="alert-button"
+            data-i18n="verifyNow">
+            Verify now
+        </a>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     ADMIN TOOLS
+     ===================================================== -->
+
+<section
+    id="adminSection"
+    class="dashboard-section"
+    hidden>
+
+    <div class="section-heading">
+
+        <h2 data-i18n="adminTools">
+            Admin tools
+        </h2>
+
+    </div>
+
+
+    <div class="service-grid">
+
+        <a
+            href="/admin/review-queue/"
+            class="service-card">
+
+            <div class="service-icon">
+                📋
+            </div>
+
+            <span data-i18n="reviewQueue">
+                Review queue
+            </span>
+
+        </a>
+
+
+        <a
+            href="/admin/action-log/"
+            class="service-card">
+
+            <div class="service-icon">
+                📜
+            </div>
+
+            <span data-i18n="actionLog">
+                Action log
+            </span>
+
+        </a>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     STATISTICS
+     ===================================================== -->
+
+<section class="dashboard-stats">
+
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            🔔
+        </div>
+
+        <div>
+
+            <strong id="notificationCount">
+                0
+            </strong>
+
+            <span data-i18n="newNotifications">
+                নতুন বিজ্ঞপ্তি
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            🤝
+        </div>
+
+        <div>
+
+            <strong id="activityCount">
+                0
+            </strong>
+
+            <span data-i18n="myActivities">
+                আমার কার্যক্রম
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="stat-card">
+
+        <div class="stat-icon">
+            ❤️
+        </div>
+
+        <div>
+
+            <strong id="helpCount">
+                0
+            </strong>
+
+            <span data-i18n="helped">
+                সাহায্য করেছেন
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     COMMUNITY ALERT
+     ===================================================== -->
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+
+        <h2 data-i18n="communityAlert">
+            সম্প্রদায় সতর্কতা
+        </h2>
+
+    </div>
+
+
+    <div class="alert-card">
+
+        <div class="alert-icon">
+            🩸
+        </div>
+
+
+        <div class="alert-content">
+
+            <span
+                class="alert-label"
+                data-i18n="urgent">
+                জরুরি
+            </span>
+
+
+            <h3>
+                O+
+                <span data-i18n="bloodNeeded">
+                    রক্ত প্রয়োজন
+                </span>
+            </h3>
+
+
+            <p data-i18n="dhakaMedical">
+                ঢাকা মেডিকেলে
+            </p>
+
+        </div>
+
+
+        <a
+            href="#"
+            class="alert-button"
+            data-i18n="respond">
+            সাড়া দিন
+        </a>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     QUICK SERVICES
+     ===================================================== -->
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+
+        <h2 data-i18n="quickServices">
+            দ্রুত সেবাসমূহ
+        </h2>
+
+    </div>
+
+
+    <div class="service-grid">
+
+
+        <a href="#" class="service-card">
+
+            <div class="service-icon">
+                🩸
+            </div>
+
+            <span data-i18n="bloodDonation">
+                রক্তদান
+            </span>
+
+        </a>
+
+
+        <a href="#" class="service-card">
+
+            <div class="service-icon">
+                🤝
+            </div>
+
+            <span data-i18n="volunteer">
+                স্বেচ্ছাসেবী
+            </span>
+
+        </a>
+
+
+        <a href="#" class="service-card">
+
+            <div class="service-icon">
+                ♻️
+            </div>
+
+            <span data-i18n="goodsExchange">
+                পণ্য বিনিময়
+            </span>
+
+        </a>
+
+
+        <a href="#" class="service-card">
+
+            <div class="service-icon">
+                🗑️
+            </div>
+
+            <span data-i18n="wasteManagement">
+                বর্জ্য ব্যবস্থাপনা
+            </span>
+
+        </a>
+
+
+        <a href="#" class="service-card">
+
+            <div class="service-icon">
+                🌾
+            </div>
+
+            <span data-i18n="farmerMarket">
+                কৃষক বাজার
+            </span>
+
+        </a>
+
+
+        <a href="#" class="service-card">
+
+            <div class="service-icon">
+                🏥
+            </div>
+
+            <span data-i18n="communityHealth">
+                সম্প্রদায় স্বাস্থ্য
+            </span>
+
+        </a>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     RECENT ACTIVITY
+     ===================================================== -->
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+
+        <h2 data-i18n="recentActivity">
+            সাম্প্রতিক কার্যক্রম
+        </h2>
+
+    </div>
+
+
+    <!-- JavaScript inserts activity rows here -->
+    <div
+        class="activity-list"
+        id="activityList">
+    </div>
+
+
+    <!-- Empty state -->
+    <p
+        id="activityEmpty"
+        class="activity-empty"
+        data-i18n="noActivity"
+        hidden>
+        এখনো কোনো কার্যক্রম নেই
+    </p>
+
+</section>
+
+
+
+<!-- =====================================================
+     PROFILE SUMMARY
+     ===================================================== -->
+
+<section class="profile-summary">
+
+    <div>
+
+        <span
+            class="profile-label"
+            data-i18n="loggedInAs">
+            লগইন করেছেন
+        </span>
+
+
+        <strong id="userEmail">
+            -
+        </strong>
+
+    </div>
+
+
+    <a
+        href="/profile/"
+        class="profile-button"
+        data-i18n="profile">
+        প্রোফাইল
+    </a>
+
+</section>
+
+</main>
+
+
+
+
+<!-- ========================================================= JAVASCRIPT ========================================================= -->
+
+<script src="{% static 'js/api.js' %}"></script>
+
+<script src="{% static 'js/i18n.js' %}"></script>
+
+<script src="{% static 'js/auth.js' %}"></script>
+
+<script> document.addEventListener("DOMContentLoaded", function () { /* ===================================================== 1. LOGIN CHECK ===================================================== */ if ( typeof requireLogin === "function" && !requireLogin() ) { return; } /* ===================================================== 2. GET STORED USER ===================================================== */ const user = (typeof getStoredUser === "function") ? getStoredUser() : null; if (!user) { console.warn( "No stored user information found." ); return; } /* ===================================================== 3. USER INFORMATION ===================================================== */ const userId = user.id || user.user_id || user.pk || ""; const displayName = user.full_name || user.name || user.username || "HELPNET User"; const role = (user.role || "").toLowerCase(); /* ===================================================== 4. WELCOME NAME ===================================================== */ const welcomeName = document.getElementById("welcomeName"); if (welcomeName) { welcomeName.textContent = displayName + " 👋"; } /* ===================================================== 5. EMAIL / PHONE ===================================================== */ const userEmail = document.getElementById("userEmail"); if (userEmail) { userEmail.textContent = user.email || user.phone_number || user.phone || "-"; } /* ===================================================== 6. TRUST BLOCK ===================================================== */ const trustHost = document.getElementById("dashboardTrust"); if (trustHost) { trustHost.dataset.userId = userId; if ( typeof window.loadTrustBlock === "function" ) { window.loadTrustBlock( trustHost ); } } /* ===================================================== 7. NID VERIFICATION CALLOUT ===================================================== */ const callout = document.getElementById("verifyCallout"); if (callout) { const status = ( user.verification_status || user.nid_status || "unverified" ).toLowerCase(); /* * Show the verification card * unless the user is already approved. */ if (status !== "approved") { callout.hidden = false; } } /* ===================================================== 8. ADMIN SECTION ===================================================== */ const adminSection = document.getElementById("adminSection"); if ( adminSection && ( role === "admin" || user.is_staff === true || user.is_superuser === true ) ) { adminSection.hidden = false; } /* ===================================================== 9. LOGOUT ===================================================== */ const logoutButton = document.getElementById("logoutButton"); if (logoutButton) { logoutButton.addEventListener( "click", function () { if ( typeof logout === "function" ) { logout(); } else { try { localStorage.removeItem( "helpnet_token" ); localStorage.removeItem( "helpnet_user" ); } catch (e) { console.warn( "Could not clear local storage." ); } window.location.href = "/login/"; } } ); } }); </script>
+
+</body> </html>

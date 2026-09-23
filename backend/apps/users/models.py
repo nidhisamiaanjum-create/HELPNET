@@ -96,6 +96,34 @@ class User(AbstractUser):
         blank=True
     )
 
+    profile_picture = models.ImageField(
+        upload_to="profile_pictures/",
+        blank=True,
+        null=True,
+    )
+
+    bio = models.TextField(blank=True)
+
+    date_of_birth = models.DateField(blank=True, null=True)
+
+    class Gender(models.TextChoices):
+        FEMALE = "female", "Female"
+        MALE = "male", "Male"
+        OTHER = "other", "Other"
+        PREFER_NOT_TO_SAY = "not_specified", "Prefer not to say"
+
+    gender = models.CharField(
+        max_length=20,
+        choices=Gender.choices,
+        blank=True,
+    )
+
+    # Personal information is private until the account holder opts in.
+    is_phone_visible = models.BooleanField(default=False)
+    is_email_visible = models.BooleanField(default=False)
+    is_location_visible = models.BooleanField(default=False)
+    is_date_of_birth_visible = models.BooleanField(default=False)
+
     is_verified = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
