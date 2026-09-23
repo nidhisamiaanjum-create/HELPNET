@@ -278,7 +278,8 @@ function initLoginPage() {
                 document
                     .getElementById("password")
                     .value;
-
+		    console.log("LOGIN IDENTIFIER:", identifier);
+		    console.log("LOGIN PASSWORD LENGTH:", password.length);
 
             /* Validation */
 

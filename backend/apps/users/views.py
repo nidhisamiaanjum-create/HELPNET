@@ -256,3 +256,39 @@ class PasswordResetConfirmView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+from .serializers import UserProfileSerializer  # add to imports
+
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserProfileSerializer(request.user)
+        return Response(
+            {
+                "success": True,
+                "data": serializer.data,
+                "message": "Profile loaded.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def patch(self, request):
+        serializer = UserProfileSerializer(
+            request.user, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "data": serializer.data,
+                    "message": "Profile updated.",
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"success": False, "data": None, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
