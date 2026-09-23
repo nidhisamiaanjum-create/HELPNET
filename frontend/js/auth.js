@@ -471,7 +471,23 @@ function initLoginPage() {
    LOGOUT
    ============================================================ */
 
-function logout() {
+async function logout() {
+
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    if (refreshToken) {
+        try {
+            await apiRequest(
+                "/api/auth/logout/",
+                "POST",
+                {
+                    refresh: refreshToken
+                }
+            );
+        } catch (error) {
+            console.error("Logout API error:", error);
+        }
+    }
 
     clearSession();
 

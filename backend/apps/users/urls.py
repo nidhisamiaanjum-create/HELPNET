@@ -6,21 +6,34 @@ from .views import (
     LogoutView,
     PasswordResetRequestView,
     PasswordResetConfirmView,
+    ProtectedView,
+    AdminOnlyView,
 )
-
 
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
+
     path(
         "password-reset/",
         PasswordResetRequestView.as_view(),
-        name="password-reset"
+        name="password-reset",
     ),
     path(
         "password-reset-confirm/",
         PasswordResetConfirmView.as_view(),
-        name="password-reset-confirm"
+        name="password-reset-confirm",
+    ),
+
+    path(
+        "protected/",
+        ProtectedView.as_view(),
+        name="protected",
+    ),
+    path(
+        "admin-only/",
+        AdminOnlyView.as_view(),
+        name="admin-only",
     ),
 ]
