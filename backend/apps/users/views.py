@@ -3,8 +3,10 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
 
 from .serializers import RegisterSerializer
+from .permissions import IsAdminRole
 
 
 User = get_user_model()
@@ -107,4 +109,33 @@ class LoginView(APIView):
                 "message": "Login successful."
             },
             status=status.HTTP_200_OK
+        )
+    
+class ProtectedView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        return Response(
+            {
+                "success": True,
+                "message": "Access granted.",
+                "user": request.user.email,
+            }
+        )
+
+
+
+class AdminOnlyView(APIView):
+
+    permission_classes = [IsAdminRole]
+
+    def get(self, request):
+
+        return Response(
+            {
+                "success": True,
+                "message": "Admin access granted.",
+            }
         )
