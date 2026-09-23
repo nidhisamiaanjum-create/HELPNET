@@ -9,17 +9,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
 from .serializers import (
     RegisterSerializer,
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
 )
-
-from .permissions import IsAdminRole
-from .serializers import RegisterSerializer
-
-
 
 User = get_user_model()
 
@@ -152,7 +146,6 @@ class LogoutView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
 
@@ -262,33 +255,4 @@ class PasswordResetConfirmView(APIView):
                 "message": "Password reset successful."
             },
             status=status.HTTP_200_OK
-        )
-
-
-
-class ProtectedView(APIView):
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        return Response(
-            {
-                "success": True,
-                "message": "Access granted.",
-                "user": request.user.email,
-            }
-        )
-
-
-
-class AdminOnlyView(APIView):
-
-    permission_classes = [IsAdminRole]
-
-    def get(self, request):
-        return Response(
-            {
-                "success": True,
-                "message": "Admin access granted.",
-            }
         )
