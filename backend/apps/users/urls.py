@@ -4,40 +4,23 @@ from .views import (
     RegisterView,
     LoginView,
     LogoutView,
-    ProtectedView,
-    AdminOnlyView,
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
 )
 
+
 urlpatterns = [
+    path("register/", RegisterView.as_view(), name="register"),
+    path("login/", LoginView.as_view(), name="login"),
+    path("logout/", LogoutView.as_view(), name="logout"),
     path(
-        "register/",
-        RegisterView.as_view(),
-        name="register"
+        "password-reset/",
+        PasswordResetRequestView.as_view(),
+        name="password-reset"
     ),
-
     path(
-        "login/",
-        LoginView.as_view(),
-        name="login"
-    ),
-
-    path(
-        "logout/",
-        LogoutView.as_view(),
-        name="logout"
-    ),
-
-    # S2-T06: No Token Test
-    path(
-        "protected/",
-        ProtectedView.as_view(),
-        name="protected"
-    ),
-
-    # S2-T06: Wrong Role Test
-    path(
-        "admin-only/",
-        AdminOnlyView.as_view(),
-        name="admin-only"
+        "password-reset-confirm/",
+        PasswordResetConfirmView.as_view(),
+        name="password-reset-confirm"
     ),
 ]
