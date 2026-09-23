@@ -16,8 +16,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.http import JsonResponse
+
+def root_view(request):
+    return JsonResponse({
+        "message": "Welcome to HELPNET API",
+        "status": "running",
+        "endpoints": {
+            "admin": "/admin/",
+            "auth": "/api/auth/"
+        }
+    })
 
 urlpatterns = [
+    path("", root_view, name="api-root"),
     path("admin/", admin.site.urls),
     path("api/auth/", include("apps.users.urls")),
 ]
