@@ -54,3 +54,21 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         write_only=True,
         min_length=8
     )
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "user_id",
+            "full_name",
+            "email",
+            "phone_number",
+            "role",
+            "location",
+            "bio",
+            "profile_picture",
+            "verification_status",
+            "date_of_birth",
+            "gender",
+        ]
+        read_only_fields = ["user_id", "email", "phone_number", "role"]

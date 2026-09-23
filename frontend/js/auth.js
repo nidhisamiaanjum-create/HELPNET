@@ -278,7 +278,8 @@ function initLoginPage() {
                 document
                     .getElementById("password")
                     .value;
-
+		    console.log("LOGIN IDENTIFIER:", identifier);
+		    console.log("LOGIN PASSWORD LENGTH:", password.length);
 
             /* Validation */
 
@@ -412,10 +413,8 @@ function initLoginPage() {
 
                 if (refreshToken) {
 
-                    localStorage.setItem(
-                        "refreshToken",
-                        refreshToken
-                    );
+                    localStorage.setItem("helpnet_token", data.data.access);
+                    localStorage.setItem("helpnet_refresh", data.data.refresh);
                 }
 
 

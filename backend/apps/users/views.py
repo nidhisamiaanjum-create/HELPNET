@@ -8,12 +8,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-
+# at the top, with other imports:
 from .serializers import (
     RegisterSerializer,
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
+    UserProfileSerializer,
 )
+
 
 User = get_user_model()
 
@@ -255,4 +257,43 @@ class PasswordResetConfirmView(APIView):
                 "message": "Password reset successful."
             },
             status=status.HTTP_200_OK
+        )
+
+
+# remove the duplicate "from .serializers import RegisterSerializer"
+
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Return the currently logged-in user's profile."""
+        serializer = UserProfileSerializer(request.user)
+        return Response(
+            {
+                "success": True,
+                "data": serializer.data,
+                "message": "Profile loaded.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def patch(self, request):
+        """Update editable fields of the profile."""
+        serializer = UserProfileSerializer(
+            request.user, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "data": serializer.data,
+                    "message": "Profile updated.",
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"success": False, "data": None, "message": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST,
         )

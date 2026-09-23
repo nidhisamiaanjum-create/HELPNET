@@ -56,7 +56,7 @@
             </div>
 
             <label
-                for="profilePictureInput"
+                for="profilePictureInputTop"
                 class="profile-picture-upload">
 
                 📷
@@ -68,7 +68,7 @@
 
             <input
                 type="file"
-                id="profilePictureInput"
+                id="profilePictureInputTop"
                 accept="image/jpeg,image/png,image/webp"
                 hidden>
 
@@ -103,6 +103,12 @@
             <p id="profileContact">
 
                 <span id="profileEmail">
+                    —
+                </span>
+
+                <span> · </span>
+
+                <span id="profilePhone">
                     —
                 </span>
 
@@ -407,7 +413,7 @@
             <div class="field">
 
                 <label
-                    for="profilePictureInput"
+                    for="profilePictureInputEdit"
                     data-i18n="profilePicture">
 
                     প্রোফাইল ছবি
@@ -599,14 +605,14 @@
 
 
 <!-- =========================
-     PROFILE PICTURE PREVIEW
+     PROFILE PICTURE PREVIEW + LOGOUT
 ========================= -->
 <script>
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const pictureInput =
-        document.getElementById("profilePictureInput");
+    const pictureInputTop =
+        document.getElementById("profilePictureInputTop");
 
     const pictureInputEdit =
         document.getElementById("profilePictureInputEdit");
@@ -621,98 +627,48 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-
-        /*
-         * Only allow image files
-         */
         if (!file.type.startsWith("image/")) {
-
             alert("Please select an image file.");
-
             return;
         }
 
-
-        /*
-         * Maximum 5 MB
-         */
         if (file.size > 5 * 1024 * 1024) {
-
             alert("Profile picture must be smaller than 5 MB.");
-
             return;
         }
 
-
-        const reader =
-            new FileReader();
-
+        const reader = new FileReader();
 
         reader.onload = function (event) {
-
             avatar.innerHTML = "";
 
-            const image =
-                document.createElement("img");
-
-            image.src =
-                event.target.result;
-
-            image.alt =
-                "Profile picture";
-
-            image.className =
-                "profile-avatar-image";
+            const image = document.createElement("img");
+            image.src = event.target.result;
+            image.alt = "Profile picture";
+            image.className = "profile-avatar-image";
 
             avatar.appendChild(image);
-
         };
 
-
         reader.readAsDataURL(file);
-
     }
 
 
-    /*
-     * Top profile-picture button
-     */
-    if (pictureInput) {
-
-        pictureInput.addEventListener(
-            "change",
-            function () {
-
-                if (this.files.length > 0) {
-
-                    previewImage(this.files[0]);
-
-                }
-
+    if (pictureInputTop) {
+        pictureInputTop.addEventListener("change", function () {
+            if (this.files.length > 0) {
+                previewImage(this.files[0]);
             }
-        );
-
+        });
     }
 
 
-    /*
-     * Edit-profile picture input
-     */
     if (pictureInputEdit) {
-
-        pictureInputEdit.addEventListener(
-            "change",
-            function () {
-
-                if (this.files.length > 0) {
-
-                    previewImage(this.files[0]);
-
-                }
-
+        pictureInputEdit.addEventListener("change", function () {
+            if (this.files.length > 0) {
+                previewImage(this.files[0]);
             }
-        );
-
+        });
     }
 
 });
@@ -728,31 +684,22 @@ document.addEventListener("DOMContentLoaded", function () {
     const logoutButton =
         document.getElementById("logoutButton");
 
-
     if (!logoutButton) {
         return;
     }
 
+    logoutButton.addEventListener("click", function () {
 
-    logoutButton.addEventListener(
-        "click",
-        function () {
-
-            if (typeof logout === "function") {
-
-                logout();
-
-                return;
-            }
-
-
-            localStorage.removeItem("helpnet_token");
-            localStorage.removeItem("helpnet_user");
-
-            window.location.href = "/login/";
-
+        if (typeof logout === "function") {
+            logout();
+            return;
         }
-    );
+
+        localStorage.removeItem("helpnet_token");
+        localStorage.removeItem("helpnet_user");
+
+        window.location.href = "/login/";
+    });
 
 });
 
