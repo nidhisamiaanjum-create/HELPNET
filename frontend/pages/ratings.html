@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ratings | HELPNET</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<header class="site-header">
+    <a href="/dashboard/" class="logo">HELPNET</a>
+    <a href="/profile/" class="back-link">Back to profile</a>
+</header>
+
+<main class="ratings-page">
+    <section class="ratings-card">
+        <h1>Rate a HELPNET user</h1>
+        <p class="hint">Enter the user ID from their profile.</p>
+        <div class="field">
+            <label for="ratedUserId">User ID</label>
+            <input id="ratedUserId" type="text" autocomplete="off" required>
+        </div>
+        <button id="loadRatings" class="btn" type="button">Load ratings</button>
+        <p id="ratingsMessage" class="form-message" aria-live="polite"></p>
+    </section>
+
+    <section id="ratingsContent" class="ratings-card" hidden>
+        <h2 id="ratedUserName">Ratings</h2>
+        <p id="averageRating" class="rating-average"></p>
+        <form id="ratingForm">
+            <label>Rating</label>
+            <div id="starPicker" class="star-picker" role="radiogroup" aria-label="Choose a rating"></div>
+            <label for="ratingComment">Comment (optional)</label>
+            <textarea id="ratingComment" rows="3" maxlength="1000"></textarea>
+            <button id="submitRating" class="btn" type="submit">Submit rating</button>
+        </form>
+        <div id="existingRatings" class="existing-ratings"></div>
+    </section>
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/ratings.js' %}"></script>
+</body>
+</html>
