@@ -7,6 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.ratings.models import Rating
+from apps.notifications.models import Notification
 from .models import BloodGroup, BloodRequest, DonationHistory, DonorProfile
 
 
@@ -14,12 +16,16 @@ User = get_user_model()
 
 
 def profile_data(profile):
+	rating_queryset = profile.user.ratings_received.all()
 	return {
 		"user_id": str(profile.user.user_id),
 		"full_name": profile.user.full_name,
 		"blood_group": profile.blood_group,
 		"area": profile.area,
 		"is_available": profile.is_available,
+		"is_verified": profile.user.is_verified,
+		"average_rating": Rating.average_for_user(profile.user),
+		"rating_count": rating_queryset.count(),
 	}
 
 
@@ -76,6 +82,41 @@ class DonorProfileView(APIView):
 		return Response({"success": True, "data": profile_data(profile), "message": "Donor profile saved."})
 
 
+class DonorSearchView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	def get(self, request):
+		profiles = DonorProfile.objects.select_related("user").filter(is_available=True)
+		blood_group = request.query_params.get("blood_group")
+		area = request.query_params.get("area", "").strip()
+		search = request.query_params.get("search", "").strip()
+		available = request.query_params.get("available")
+
+		if blood_group:
+			if blood_group not in BloodGroup.values:
+				return Response(
+					{"success": False, "data": None, "message": "Select a valid blood group."},
+					status=status.HTTP_400_BAD_REQUEST,
+				)
+			profiles = profiles.filter(blood_group=blood_group)
+		if area:
+			profiles = profiles.filter(area__iexact=area)
+		if search:
+			profiles = profiles.filter(user__full_name__icontains=search)
+		if available == "false":
+			profiles = DonorProfile.objects.select_related("user").filter(is_available=False)
+			if blood_group:
+				profiles = profiles.filter(blood_group=blood_group)
+			if area:
+				profiles = profiles.filter(area__iexact=area)
+			if search:
+				profiles = profiles.filter(user__full_name__icontains=search)
+
+		return Response(
+			{"success": True, "data": [profile_data(profile) for profile in profiles], "message": "Donors loaded."}
+		)
+
+
 class BloodRequestListCreateView(APIView):
 	permission_classes = [IsAuthenticated]
 
@@ -104,6 +145,22 @@ class BloodRequestListCreateView(APIView):
 			hospital=str(request.data.get("hospital", "")).strip(),
 			details=str(request.data.get("details", "")).strip(),
 		)
+		matching_donors = DonorProfile.objects.filter(
+			blood_group=blood_request.blood_group,
+			area=blood_request.area,
+			is_available=True,
+		).exclude(user=request.user)
+		Notification.objects.bulk_create([
+			Notification(
+				user=profile.user,
+				message=(
+					f"A {blood_request.blood_group} blood request is needed in "
+					f"{blood_request.area}."
+				),
+				notification_type="blood_request",
+			)
+			for profile in matching_donors
+		])
 		return Response(
 			{"success": True, "data": request_data(blood_request), "message": "Blood request created."},
 			status=status.HTTP_201_CREATED,

@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from apps.ratings.models import Rating
 from .models import BloodRequest, DonationHistory, DonorProfile
 
 
@@ -117,6 +118,24 @@ class BloodApiTests(APITestCase):
 
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual([item["user_id"] for item in response.data["data"]], [str(self.donor.user_id)])
+
+	def test_donor_search_filters_available_group_and_area_and_includes_rating_data(self):
+		self.create_profile(self.donor, "O+", "Dhaka", True)
+		self.create_profile(self.other_donor, "A+", "Dhaka", True)
+		self.authenticate(self.donor)
+		Rating.objects.create(rater=self.requester, rated_user=self.donor, rating=5)
+
+		response = self.client.get(
+			"/api/blood/donors/",
+			{"blood_group": "O+", "area": "Dhaka"},
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(len(response.data["data"]), 1)
+		self.assertEqual(response.data["data"][0]["user_id"], str(self.donor.user_id))
+		self.assertTrue(response.data["data"][0]["is_available"])
+		self.assertEqual(response.data["data"][0]["average_rating"], 5.0)
+		self.assertEqual(response.data["data"][0]["rating_count"], 1)
 
 	def test_request_can_be_fulfilled_only_by_owner_and_history_is_unique(self):
 		self.create_profile(self.donor, "O+", "Dhaka", True)

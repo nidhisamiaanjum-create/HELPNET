@@ -107,6 +107,17 @@ class RatingApiTests(APITestCase):
 		self.assertTrue(response.data["data"]["is_verified"])
 		self.assertIn("average_rating", response.data["data"])
 		self.assertIn("rating_count", response.data["data"])
+
+	def test_public_profile_includes_verification_and_rating_aggregates(self):
+		self.authenticate()
+
+		response = self.client.get(f"/api/users/{self.rated_user.user_id}/")
+
+		self.assertEqual(response.status_code, 200)
+		self.assertTrue(response.data["data"]["is_verified"])
+		self.assertIn("average_rating", response.data["data"])
+		self.assertIn("rating_count", response.data["data"])
+		self.assertNotIn("email", response.data["data"])
 from django.test import TestCase
 
 # Create your tests here.

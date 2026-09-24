@@ -1,6 +1,13 @@
 let selectedRating = 0;
 let ratedUserId = "";
 
+function setRatingFormDisabled(disabled) {
+    document.querySelectorAll("#starPicker button, #ratingComment, #submitRating")
+        .forEach((element) => {
+            element.disabled = disabled;
+        });
+}
+
 function showRatingsMessage(message, type = "") {
     const element = document.getElementById("ratingsMessage");
     if (!element) return;
@@ -62,16 +69,26 @@ async function loadRatings() {
     }
 
     try {
-        const [average, ratings] = await Promise.all([
+        const [profile, average, ratings] = await Promise.all([
+            apiRequest(`/api/users/${ratedUserId}/`),
             apiRequest(`/api/ratings/users/${ratedUserId}/average/`),
             apiRequest(`/api/ratings/users/${ratedUserId}/`),
         ]);
         document.getElementById("ratingsContent").hidden = false;
+        document.getElementById("ratedUserName").textContent = `${profile.data.full_name}'s ratings`;
+        const verification = document.getElementById("ratedUserVerification");
+        verification.hidden = !profile.data.is_verified;
         const averageValue = average.data.average_rating;
         document.getElementById("averageRating").textContent =
             `Average: ${averageValue === null ? "0.0" : Number(averageValue).toFixed(1)} / 5 · ${average.data.rating_count} ratings`;
         renderExistingRatings(ratings.data);
-        showRatingsMessage("");
+        if (ratedUserId === getStoredUser()?.user_id) {
+            setRatingFormDisabled(true);
+            showRatingsMessage("You cannot rate yourself.", "error");
+        } else {
+            setRatingFormDisabled(false);
+            showRatingsMessage("");
+        }
     } catch (error) {
         showRatingsMessage(error.message, "error");
     }

@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications | HELPNET</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<header class="site-header">
+    <a href="/dashboard/" class="logo">HELPNET</a>
+    <div class="header-actions">
+        <a href="/dashboard/" class="back-link">Dashboard</a>
+        <a href="/profile/" class="back-link">Profile</a>
+    </div>
+</header>
+
+<main class="notifications-page">
+    <section class="notifications-card">
+        <div class="notifications-heading">
+            <div>
+                <h1>Notifications</h1>
+                <p class="hint">Blood donor alerts and account updates.</p>
+            </div>
+            <button id="refreshNotifications" class="small-btn" type="button">Refresh</button>
+        </div>
+        <p id="notificationMessage" class="form-message" aria-live="polite"></p>
+        <div id="notificationList" aria-live="polite">
+            <p class="hint">Loading notifications...</p>
+        </div>
+    </section>
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/notifications.js' %}"></script>
+</body>
+</html>

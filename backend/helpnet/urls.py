@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
 from django.http import JsonResponse
+from apps.users.views import PublicUserProfileView
 
 def root_view(request):
     return JsonResponse({
@@ -21,6 +22,8 @@ urlpatterns = [
     path('api/auth/', include('apps.users.urls')),
     path('api/ratings/', include('apps.ratings.urls')),
     path('api/blood/', include('apps.blood.urls')),
+    path('api/notifications/', include('apps.notifications.urls')),
+    path('api/users/<uuid:user_id>/', PublicUserProfileView.as_view(), name='public-user-profile'),
 
     path('',           TemplateView.as_view(template_name='pages/home.html'),       name='home'),
     path('login/',     TemplateView.as_view(template_name='pages/login.html'),      name='login'),
@@ -43,6 +46,7 @@ urlpatterns = [
     path('profile/',   TemplateView.as_view(template_name='pages/profile.html'),    name='profile'),
     path('ratings/',   TemplateView.as_view(template_name='pages/ratings.html'),    name='ratings'),
     path('blood/',     TemplateView.as_view(template_name='pages/blood.html'),      name='blood'),
+    path('notifications/', TemplateView.as_view(template_name='pages/notifications.html'), name='notifications'),
     path('blood-donor/', TemplateView.as_view(template_name='pages/blood.html'), name='blood-donor'),
     path('blood-request/', TemplateView.as_view(template_name='pages/blood.html'), name='blood-request'),
     path('blood-requests/', TemplateView.as_view(template_name='pages/blood.html'), name='blood-requests'),

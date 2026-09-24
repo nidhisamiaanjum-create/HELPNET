@@ -16,7 +16,7 @@
 <main class="blood-page">
     <p id="bloodMessage" class="form-message" aria-live="polite"></p>
 
-    <section class="blood-card">
+    <section id="donorSearchSection" class="blood-card">
         <h1>Blood donation</h1>
         <p class="hint">Register your blood group, district, and current availability.</p>
         <form id="donorProfileForm">
@@ -40,6 +40,26 @@
             </label>
             <button class="btn" type="submit">Save donor profile</button>
         </form>
+    </section>
+
+    <section class="blood-card">
+        <h2>Search blood donors</h2>
+        <form id="donorSearchForm" class="donor-search-form">
+            <div class="field">
+                <label for="searchGroup">Blood group</label>
+                <select id="searchGroup"><option value="">Any blood group</option></select>
+            </div>
+            <div class="field">
+                <label for="searchArea">Area</label>
+                <select id="searchArea"><option value="">Any district</option></select>
+            </div>
+            <div class="field">
+                <label for="donorSearch">Donor name</label>
+                <input id="donorSearch" type="search" placeholder="Search by name">
+            </div>
+            <button class="btn" type="submit">Search donors</button>
+        </form>
+        <div id="donorSearchResults"><p class="hint">Search for available donors.</p></div>
     </section>
 
     <section class="blood-card">
