@@ -412,9 +412,8 @@ function initLoginPage() {
                 */
 
                 if (refreshToken) {
-
-                    localStorage.setItem("helpnet_token", data.data.access);
-                    localStorage.setItem("helpnet_refresh", data.data.refresh);
+                      localStorage.setItem("helpnet_token", accessToken);
+                      localStorage.setItem("helpnet_refresh", refreshToken);
                 }
 
 
