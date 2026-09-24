@@ -41,9 +41,18 @@ urlpatterns = [
         TemplateView.as_view(template_name='pages/admin-logs.html'),
         name='admin-logs',
     ),
+       path(
+    'admin-dashboard/',
+    TemplateView.as_view(
+        template_name='pages/admin-dashboard.html'
+    ),
+    name='admin-dashboard',
+    ),
 
     # API endpoints the JS will call (create later in apps/verification/urls.py)
     path("verification/", include("apps.verification.urls")),
+
+ 
 ]
 
 if settings.DEBUG:
