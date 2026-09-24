@@ -67,8 +67,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "location",
             "bio",
             "profile_picture",
-            "verification_status",
+            "is_verified",
             "date_of_birth",
             "gender",
+            "is_phone_visible",
+            "is_email_visible",
+            "is_location_visible",
+            "is_date_of_birth_visible",
         ]
         read_only_fields = ["user_id", "email", "phone_number", "role"]
