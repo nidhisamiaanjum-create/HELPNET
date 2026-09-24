@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status
@@ -14,6 +15,7 @@ from .serializers import (
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
     UserProfileSerializer,
+    PublicUserProfileSerializer,
 )
 
 
@@ -296,4 +298,20 @@ class MeView(APIView):
         return Response(
             {"success": False, "data": None, "message": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class PublicUserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        user = get_object_or_404(User, user_id=user_id)
+        serializer = PublicUserProfileSerializer(user)
+        return Response(
+            {
+                "success": True,
+                "data": serializer.data,
+                "message": "User profile loaded.",
+            },
+            status=status.HTTP_200_OK,
         )

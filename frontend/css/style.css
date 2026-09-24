@@ -51,6 +51,18 @@ color: var(--text);
 
 .header-actions { display: flex; align-items: center; gap: 10px; }
 
+.notification-nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: var(--text);
+    text-decoration: none;
+    box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+}
+
 .lang-toggle {
     background: var(--bg);
     color: var(--teal-dark);
@@ -182,6 +194,51 @@ input.invalid { box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5
 }
 
 .donor-match-select { flex: 1 1 240px; }
+
+.donor-search-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.donor-search-form .btn { grid-column: 1 / -1; }
+.donor-verified { color: var(--teal-dark); font-size: 14px; }
+.donor-rate-link { display: inline-block; text-decoration: none; }
+
+.notifications-page {
+    width: min(100% - 32px, 760px);
+    margin: 32px auto 60px;
+}
+
+.notifications-card {
+    padding: 22px;
+    border-radius: 18px;
+    background: var(--bg);
+    box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+}
+
+.notifications-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.notification-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid rgba(0, 0, 0, .08);
+}
+
+.notification-item.unread { border-left: 4px solid var(--teal); padding-left: 12px; }
+.notification-item p { margin: 0 0 5px; }
+.notification-item time, .notification-status { color: var(--text-muted); font-size: 14px; }
+
+@media (max-width: 600px) {
+    .notification-item { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 650px) {
+    .donor-search-form { grid-template-columns: 1fr; }
+}
 
 /* Sprint 2: profile, verification and admin interfaces. */
 .page-wide { max-width: 960px; }

@@ -88,3 +88,29 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "rating_count",
         ]
         read_only_fields = ["user_id", "email", "phone_number", "role"]
+
+
+class PublicUserProfileSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
+
+    def get_average_rating(self, user):
+        return Rating.average_for_user(user)
+
+    def get_rating_count(self, user):
+        return user.ratings_received.count()
+
+    class Meta:
+        model = User
+        fields = [
+            "user_id",
+            "full_name",
+            "role",
+            "location",
+            "bio",
+            "profile_picture",
+            "is_verified",
+            "average_rating",
+            "rating_count",
+        ]
+        read_only_fields = fields

@@ -22,6 +22,17 @@ function populateBloodGroups() {
     });
 }
 
+function populateSearchOptions() {
+    const select = document.getElementById("searchGroup");
+    if (!select) return;
+    ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].forEach((group) => {
+        const option = document.createElement("option");
+        option.value = group;
+        option.textContent = group;
+        select.appendChild(option);
+    });
+}
+
 function addText(parent, tag, text, className = "") {
     const element = document.createElement(tag);
     element.textContent = text;
@@ -196,6 +207,51 @@ async function loadHistory() {
     }
 }
 
+function renderDonorSearchResults(donors) {
+    const list = document.getElementById("donorSearchResults");
+    list.replaceChildren();
+    if (!donors.length) {
+        addText(list, "p", "No available donors found.", "hint");
+        return;
+    }
+    donors.forEach((donor) => {
+        const card = document.createElement("article");
+        card.className = "blood-request-item donor-result";
+        const name = document.createElement("h3");
+        name.textContent = donor.full_name;
+        if (donor.is_verified) addText(name, "span", " ✓ Verified", "donor-verified");
+        addText(card, "p", `${donor.blood_group} · ${donor.area}`);
+        addText(card, "p", `★ ${donor.average_rating === null ? "0.0" : Number(donor.average_rating).toFixed(1)} · ${donor.rating_count} ratings`);
+        if (donor.user_id === bloodState.currentUserId) {
+            addText(card, "span", "This is your donor profile.", "hint");
+        } else {
+            const link = document.createElement("a");
+            link.className = "small-btn donor-rate-link";
+            link.href = `/ratings/?user_id=${encodeURIComponent(donor.user_id)}`;
+            link.textContent = "Rate donor";
+            card.appendChild(link);
+        }
+        list.appendChild(card);
+    });
+}
+
+async function searchDonors(event) {
+    event.preventDefault();
+    const params = new URLSearchParams();
+    const group = document.getElementById("searchGroup").value;
+    const area = document.getElementById("searchArea").value;
+    const search = document.getElementById("donorSearch").value.trim();
+    if (group) params.set("blood_group", group);
+    if (area) params.set("area", area);
+    if (search) params.set("search", search);
+    try {
+        const response = await apiRequest(`/api/blood/donors/?${params.toString()}`);
+        renderDonorSearchResults(response.data);
+    } catch (error) {
+        bloodMessage(error.message, "error");
+    }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     if (!getToken()) {
         window.location.href = "/login/";
@@ -204,10 +260,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     bloodState.currentUserId = getStoredUser()?.user_id || null;
     populateDistricts("donorArea");
     populateDistricts("requestArea");
+    populateDistricts("searchArea");
     populateBloodGroups();
+    populateSearchOptions();
     document.getElementById("donorProfileForm").addEventListener("submit", saveDonorProfile);
     document.getElementById("requestForm").addEventListener("submit", createBloodRequest);
     document.getElementById("refreshRequests").addEventListener("click", loadRequests);
     document.getElementById("refreshHistory").addEventListener("click", loadHistory);
+    document.getElementById("donorSearchForm").addEventListener("submit", searchDonors);
+    if (new URLSearchParams(window.location.search).get("section") === "search") {
+        const searchSection = document.getElementById("donorSearchSection");
+        searchSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+        document.getElementById("donorSearch")?.focus();
+    }
     await Promise.all([loadDonorProfile(), loadRequests(), loadHistory()]);
 });

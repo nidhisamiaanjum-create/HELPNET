@@ -57,7 +57,12 @@ async function loadProfile() {
     }
 
     try {
-        const res = await fetch("/api/auth/me/", {
+        const targetUserId = new URLSearchParams(window.location.search).get("user_id");
+        const isPublicProfile = !!targetUserId;
+        const profileUrl = isPublicProfile
+            ? `/api/users/${targetUserId}/`
+            : "/api/auth/me/";
+        const res = await fetch(profileUrl, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -86,7 +91,13 @@ async function loadProfile() {
         const ratingsResponse = await apiRequest(`/api/ratings/users/${user.user_id}/`);
         renderExistingRatings(ratingsResponse.data || []);
 
+        if (isPublicProfile) {
+            document.getElementById("edit-profile")?.setAttribute("hidden", "");
+            document.querySelector(".profile-action-card")?.setAttribute("hidden", "");
+        }
+
         /* --- prefill edit form --- */
+        if (isPublicProfile) return;
         setValue("profileFullName", user.full_name);
         setValue("profileBioInput", user.bio);
         setValue("profileLocationInput", user.location);
