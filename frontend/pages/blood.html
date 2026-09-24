@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Donation | HELPNET</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<header class="site-header">
+    <a href="/dashboard/" class="logo">HELPNET</a>
+    <a href="/profile/" class="back-link">Back to profile</a>
+</header>
+
+<main class="blood-page">
+    <p id="bloodMessage" class="form-message" aria-live="polite"></p>
+
+    <section class="blood-card">
+        <h1>Blood donation</h1>
+        <p class="hint">Register your blood group, district, and current availability.</p>
+        <form id="donorProfileForm">
+            <div class="field">
+                <label for="bloodGroup">Blood group</label>
+                <select id="bloodGroup" required>
+                    <option value="">Select blood group</option>
+                    <option>A+</option><option>A-</option>
+                    <option>B+</option><option>B-</option>
+                    <option>AB+</option><option>AB-</option>
+                    <option>O+</option><option>O-</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="donorArea">Area</label>
+                <select id="donorArea" required><option value="">Select district</option></select>
+            </div>
+            <label class="blood-toggle">
+                <input id="donorAvailable" type="checkbox">
+                Available to donate
+            </label>
+            <button class="btn" type="submit">Save donor profile</button>
+        </form>
+    </section>
+
+    <section class="blood-card">
+        <h2>Create a blood request</h2>
+        <form id="requestForm">
+            <div class="field">
+                <label for="requestGroup">Blood group</label>
+                <select id="requestGroup" required></select>
+            </div>
+            <div class="field">
+                <label for="requestArea">Area</label>
+                <select id="requestArea" required><option value="">Select district</option></select>
+            </div>
+            <div class="field">
+                <label for="hospital">Hospital</label>
+                <input id="hospital" type="text" maxlength="200" required>
+            </div>
+            <div class="field">
+                <label for="requestDetails">Details</label>
+                <textarea id="requestDetails" rows="3"></textarea>
+            </div>
+            <button class="btn" type="submit">Create request</button>
+        </form>
+    </section>
+
+    <section class="blood-card">
+        <div class="blood-section-heading">
+            <h2>Open blood requests</h2>
+            <button id="refreshRequests" class="small-btn" type="button">Refresh</button>
+        </div>
+        <div id="requestList"><p class="hint">Loading...</p></div>
+    </section>
+
+    <section class="blood-card">
+        <div class="blood-section-heading">
+            <h2>My donation history</h2>
+            <button id="refreshHistory" class="small-btn" type="button">Refresh</button>
+        </div>
+        <div id="historyList"><p class="hint">Loading...</p></div>
+    </section>
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/districts.js' %}"></script>
+<script src="{% static 'js/blood.js' %}"></script>
+</body>
+</html>

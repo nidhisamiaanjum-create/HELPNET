@@ -117,6 +117,72 @@ input.invalid { box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5
 .form-links a { color: var(--teal-dark); font-weight: 600; }
 .form-links p { margin-top: 10px; }
 
+.blood-page {
+    width: min(100% - 32px, 760px);
+    margin: 32px auto 60px;
+}
+
+.blood-card {
+    padding: 22px;
+    margin-bottom: 16px;
+    border-radius: 18px;
+    background: var(--bg);
+    box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+}
+
+.blood-card h1,
+.blood-card h2,
+.blood-card h3 { margin-top: 0; }
+
+.blood-section-heading,
+.blood-request-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.small-btn {
+    padding: 9px 13px;
+    border: 0;
+    border-radius: 10px;
+    color: white;
+    background: var(--teal);
+    font: 600 15px inherit;
+    cursor: pointer;
+}
+
+.danger-btn { background: #b33a3a; }
+
+.blood-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.blood-toggle input { width: 20px; height: 20px; }
+
+.blood-request-item,
+.history-item {
+    padding: 16px 0;
+    border-top: 1px solid rgba(0, 0, 0, .08);
+}
+
+.blood-request-item p,
+.history-item p { margin-top: 5px; }
+
+.match-panel {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.donor-match-select { flex: 1 1 240px; }
+
 /* Sprint 2: profile, verification and admin interfaces. */
 .page-wide { max-width: 960px; }
 .back-link { color: var(--teal-dark); font-weight: 600; text-decoration: none; }
@@ -1719,4 +1785,61 @@ padding: 10px;
         justify-content: center;
     }
 
+}
+
+.ratings-page {
+    width: min(100% - 32px, 720px);
+    margin: 32px auto 60px;
+}
+
+.ratings-card {
+    padding: 22px;
+    margin-bottom: 16px;
+    border-radius: 18px;
+    background: var(--bg);
+    box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+}
+
+.ratings-card h1,
+.ratings-card h2,
+.ratings-card h3 {
+    margin-top: 0;
+}
+
+.star-picker {
+    display: flex;
+    gap: 6px;
+    margin: 8px 0 18px;
+}
+
+.star-picker button {
+    border: 0;
+    padding: 0 4px;
+    color: var(--text-muted);
+    background: transparent;
+    font-size: 32px;
+    cursor: pointer;
+}
+
+.star-picker button.selected,
+.star-picker button:hover {
+    color: #e2a400;
+}
+
+.rating-average {
+    font-weight: 700;
+}
+
+.existing-ratings {
+    margin-top: 22px;
+}
+
+.rating-item {
+    padding: 12px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.rating-item p {
+    margin: 5px 0 0;
+    color: var(--text-muted);
 }

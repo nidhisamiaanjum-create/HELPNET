@@ -22,22 +22,29 @@ function renderVerificationBadge(isVerified) {
     badge.hidden = !isVerified;
 }
 
-function renderRatingStars() {
-    const picker = document.getElementById("starPicker");
-    if (!picker) return;
-    picker.replaceChildren();
-    for (let score = 1; score <= 5; score += 1) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.textContent = "★";
-        button.className = score <= selectedRating ? "selected" : "";
-        button.setAttribute("aria-label", `${score} তারকা`);
-        button.addEventListener("click", () => {
-            selectedRating = score;
-            renderRatingStars();
-        });
-        picker.appendChild(button);
+function renderExistingRatings(ratings) {
+    const container = document.getElementById("existingRatings");
+    if (!container) return;
+    container.replaceChildren();
+    const heading = document.createElement("h3");
+    heading.textContent = "Existing ratings";
+    container.appendChild(heading);
+    if (!ratings.length) {
+        const empty = document.createElement("p");
+        empty.textContent = "No ratings yet.";
+        container.appendChild(empty);
+        return;
     }
+    ratings.forEach((item) => {
+        const article = document.createElement("article");
+        article.className = "rating-item";
+        const title = document.createElement("strong");
+        title.textContent = `${item.rater_name} · ${"★".repeat(item.rating)}`;
+        const comment = document.createElement("p");
+        comment.textContent = item.comment || "No comment";
+        article.append(title, comment);
+        container.appendChild(article);
+    });
 }
 
 /* ---------- LOAD PROFILE FROM API ---------- */
@@ -72,6 +79,12 @@ async function loadProfile() {
         setText("profileBio", user.bio || "");
 
         renderVerificationBadge(user.is_verified);
+        setText(
+            "ratingSummary",
+            `★ ${user.average_rating === null ? "0.0" : Number(user.average_rating).toFixed(1)} · ${user.rating_count || 0}`
+        );
+        const ratingsResponse = await apiRequest(`/api/ratings/users/${user.user_id}/`);
+        renderExistingRatings(ratingsResponse.data || []);
 
         /* --- prefill edit form --- */
         setValue("profileFullName", user.full_name);
@@ -167,29 +180,7 @@ async function saveProfile(event) {
 
 document.addEventListener("DOMContentLoaded", () => {
     loadProfile();
-    renderRatingStars();
-
-    const trust = document.getElementById("trust-component");
-    if (trust && typeof renderTrustComponent === "function") {
-        renderTrustComponent(trust, {
-            userId: "demo-user",
-            verificationStatus: "approved",
-            averageRating: 4.5,
-            ratingCount: 12,
-        });
-    }
-
-    document.getElementById("submitRating")
-        ?.addEventListener("click", prepareRatingSubmission);
 
     document.getElementById("profileForm")
         ?.addEventListener("submit", saveProfile);
 });
-
-function prepareRatingSubmission() {
-    if (!selectedRating) {
-        alert("অনুগ্রহ করে একটি রেটিং নির্বাচন করুন। ");
-        return;
-    }
-    alert("রেটিং প্রস্তুত করা হয়েছে। API সংযোগ পরে যোগ করা হবে। ");
-}
