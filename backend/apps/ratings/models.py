@@ -23,7 +23,7 @@ class Rating(models.Model):
         on_delete=models.CASCADE,
         related_name="ratings_received",
     )
-    score = models.PositiveSmallIntegerField(
+    rating = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
     comment = models.TextField(blank=True)
@@ -41,7 +41,7 @@ class Rating(models.Model):
 
     @classmethod
     def average_for_user(cls, user):
-        return cls.objects.filter(rated_user=user).aggregate(average=Avg("score"))["average"]
+        return cls.objects.filter(rated_user=user).aggregate(average=Avg("rating"))["average"]
 
     def __str__(self):
-        return f"{self.rater} rated {self.rated_user}: {self.score}/5"
+        return f"{self.rater} rated {self.rated_user}: {self.rating}/5"
