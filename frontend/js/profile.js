@@ -45,7 +45,7 @@ async function loadProfile() {
     }
 
     try {
-        const res = await fetch("/api/users/me/", {
+        const res = await fetch("/api/auth/me/", {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -66,7 +66,7 @@ async function loadProfile() {
         setText("profileRole", user.role);
         setText("profileBio", user.bio || "");
 
-        renderVerificationBadge(user.verification_status);
+        renderVerificationBadge(user.is_verified ? "approved" : "pending");
 
         /* --- prefill edit form --- */
         setValue("profileFullName", user.full_name);
@@ -74,6 +74,10 @@ async function loadProfile() {
         setValue("profileLocationInput", user.location);
         setValue("profileDobInput", user.date_of_birth);
         setValue("profileGenderInput", user.gender);
+        document.getElementById("showPhone").checked = !!user.is_phone_visible;
+        document.getElementById("showEmail").checked = !!user.is_email_visible;
+        document.getElementById("showLocation").checked = !!user.is_location_visible;
+        document.getElementById("showDob").checked = !!user.is_date_of_birth_visible;
 
         /* --- profile picture, if set --- */
         if (user.profile_picture) {
@@ -101,9 +105,28 @@ async function saveProfile(event) {
     const form = event.target;
     const formData = new FormData(form);
     const msg = document.getElementById("profileFormMessage");
+    formData.set(
+    "is_phone_visible",
+    document.getElementById("showPhone").checked
+    );
+
+    formData.set(
+       "is_email_visible",
+      document.getElementById("showEmail").checked
+    );
+
+    formData.set(
+      "is_location_visible",
+       document.getElementById("showLocation").checked
+    );
+
+    formData.set(
+      "is_date_of_birth_visible",
+      document.getElementById("showDob").checked
+    );
 
     try {
-        const res = await fetch("/api/users/me/", {
+        const res = await fetch("/api/auth/me/", {
             method: "PATCH",
             headers: { Authorization: `Bearer ${token}` },
             body: formData,   // FormData works because of profile_picture
