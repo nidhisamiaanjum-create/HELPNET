@@ -398,6 +398,8 @@ function initLoginPage() {
                         user.role
                 };
 
+                console.log("LOGIN RESPONSE USER:", user);
+                console.log("LOGIN RESPONSE ROLE:", user.role);
 
                 /* Save session */
 
@@ -414,7 +416,7 @@ function initLoginPage() {
                 if (refreshToken) {
 
                      localStorage.setItem("helpnet_token", accessToken);
-                     localStorage.setItem("helpnet_refresh", refreshToken);
+                     localStorage.setItem("refreshToken", refreshToken);
                 }
 
 
@@ -431,14 +433,26 @@ function initLoginPage() {
                 /* Go to dashboard */
 
                 setTimeout(
-                    function () {
+    function () {
 
-                        window.location.href =
-                            "/dashboard/";
+        if (
+            user.role &&
+            user.role.toLowerCase() === "admin"
+        ) {
 
-                    },
-                    700
-                );
+            window.location.href =
+                "/admin-dashboard/";
+
+        } else {
+
+            window.location.href =
+                "/dashboard/";
+
+        }
+
+    },
+    700
+);
 
             } catch (error) {
 
