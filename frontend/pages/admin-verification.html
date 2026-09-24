@@ -1,0 +1,67 @@
+{% load static %}
+<!doctype html>
+<html lang="bn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Admin Verification | HELPNET</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+<header class="site-header">
+    <a href="/admin-dashboard/" class="logo">
+        হেল্পনেট
+    </a>
+
+    <div class="header-actions">
+        <button type="button" id="logoutButton" class="lang-toggle">
+            লগআউট
+        </button>
+    </div>
+</header>
+
+<main class="page">
+
+    <section class="card">
+        <h1>Admin Verification</h1>
+
+        <p class="subtitle">
+            Pending verification requests review করুন।
+        </p>
+    </section>
+
+    <section class="card">
+
+        <h2>Pending Requests</h2>
+
+        <div id="verificationList">
+            <p id="loadingMessage">
+                Loading verification requests...
+            </p>
+        </div>
+
+    </section>
+
+    <p class="back-row">
+        <a href="/admin-dashboard/" class="back-link">
+            ← Admin Dashboard
+        </a>
+    </p>
+
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/admin-verification.js' %}"></script>
+
+</body>
+</html>

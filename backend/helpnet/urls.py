@@ -22,6 +22,20 @@ urlpatterns = [
 
     path('',           TemplateView.as_view(template_name='pages/home.html'),       name='home'),
     path('login/',     TemplateView.as_view(template_name='pages/login.html'),      name='login'),
+    path(
+    'forgot-password/',
+    TemplateView.as_view(
+        template_name='pages/forgot-password.html'
+    ),
+    name='forgot-password',
+),
+    path(
+    'reset-password/',
+    TemplateView.as_view(
+        template_name='pages/reset-password.html'
+    ),
+    name='reset-password',
+),
     path('register/',  TemplateView.as_view(template_name='pages/register.html'),   name='register'),
     path('dashboard/', TemplateView.as_view(template_name='pages/dashboard.html'),  name='dashboard'),
     path('profile/',   TemplateView.as_view(template_name='pages/profile.html'),    name='profile'),
@@ -50,7 +64,9 @@ urlpatterns = [
     ),
 
     # API endpoints the JS will call (create later in apps/verification/urls.py)
-    path("verification/", include("apps.verification.urls")),
+    path("api/verification/", include("apps.verification.urls")),
+
+    
 
  
 ]

@@ -12,9 +12,14 @@ function setValue(id, value) {
     if (el) el.value = value || "";
 }
 
-function renderVerificationBadge(status) {
+function renderVerificationBadge(isVerified) {
     const badge = document.getElementById("verifiedBadge");
-    if (badge) badge.hidden = status !== "approved";
+
+    if (!badge) {
+        return;
+    }
+
+    badge.hidden = !isVerified;
 }
 
 function renderRatingStars() {
@@ -66,7 +71,7 @@ async function loadProfile() {
         setText("profileRole", user.role);
         setText("profileBio", user.bio || "");
 
-        renderVerificationBadge(user.is_verified ? "approved" : "pending");
+        renderVerificationBadge(user.is_verified);
 
         /* --- prefill edit form --- */
         setValue("profileFullName", user.full_name);

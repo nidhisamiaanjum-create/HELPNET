@@ -33,35 +33,70 @@ let MOCK_STATE = {
    API STUBS
    ------------------------------------------------------------ */
 async function fetchVerificationStatus() {
-    // LATER:
-    // const res = await fetch("/api/verification/status/", {
-    //     headers: { Authorization: "Bearer " + localStorage.getItem("helpnet_token") }
-    // });
-    // return res.json();
-    return { ...MOCK_STATE };
+    const token = localStorage.getItem("helpnet_token");
+
+    if (!token) {
+        return {
+            status: "unverified",
+            documentType: null,
+            rejectionReason: "",
+            submittedAt: null
+        };
+    }
+
+    const response = await fetch("/api/verification/status/", {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.message || "Could not load verification status."
+        );
+    }
+
+    return {
+        status: data.data.status,
+        documentType: data.data.document_type,
+        rejectionReason: data.data.rejection_reason || "",
+        submittedAt: data.data.submitted_at
+    };
 }
 
 async function submitVerification(docType, file) {
-    // LATER:
-    // const fd = new FormData();
-    // fd.append("document_type", docType);
-    // fd.append("document", file);
-    // const res = await fetch("/api/verification/submit/", {
-    //     method: "POST",
-    //     headers: { Authorization: "Bearer " + localStorage.getItem("helpnet_token") },
-    //     body: fd
-    // });
-    // if (!res.ok) throw new Error("upload_failed");
-    // return res.json();
+    const formData = new FormData();
 
-    // Mock success:
-    MOCK_STATE = {
-        status: "pending",
-        documentType: docType,
+    formData.append("document_type", docType);
+    formData.append("document", file);
+
+    const token = localStorage.getItem("helpnet_token");
+
+    const response = await fetch("/api/verification/submit/", {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`
+        },
+        body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.message || "Verification submission failed."
+        );
+    }
+
+    return {
+        status: data.data.status,
+        documentType: data.data.document_type,
         rejectionReason: "",
-        submittedAt: new Date().toISOString()
+        submittedAt: data.data.submitted_at
     };
-    return { ...MOCK_STATE };
 }
 
 /* ------------------------------------------------------------
