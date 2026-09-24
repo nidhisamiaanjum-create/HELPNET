@@ -67,7 +67,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "location",
             "bio",
             "profile_picture",
-            "verification_status",
+            "is_verified",
             "date_of_birth",
             "gender",
         ]
