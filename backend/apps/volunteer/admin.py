@@ -1,3 +1,4 @@
 from django.contrib import admin
+from .models import VolunteerProfile, VolunteerOpportunity, VolunteerSignup, VolunteerAttendance, VolunteerMessage, VolunteerCertificate
 
-# Register your models here.
+admin.site.register([VolunteerProfile, VolunteerOpportunity, VolunteerSignup, VolunteerAttendance, VolunteerMessage, VolunteerCertificate])
