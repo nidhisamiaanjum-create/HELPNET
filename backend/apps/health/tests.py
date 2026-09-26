@@ -52,6 +52,7 @@ class HealthCommunityApiTests(APITestCase):
         self.assertTrue(reply.data["data"]["author_is_verified"])
         self.assertEqual(float(reply.data["data"]["author_average_rating"]), 5.0)
         self.assertEqual(reply.data["data"]["author_rating_count"], 1)
+        self.assertTrue(HealthQuestion.objects.get(pk=question_id).replies.filter(pk=reply.data["data"]["id"]).exists())
 
         replies = self.client.get(reverse("health-question-replies", args=[question_id]))
         self.assertEqual(replies.status_code, 200)

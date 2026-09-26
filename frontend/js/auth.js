@@ -250,6 +250,7 @@ function initLoginPage() {
     const button =
         document.getElementById("loginButton");
 
+    let loginRequestInFlight = false;
 
     form.addEventListener(
         "submit",
@@ -312,6 +313,8 @@ function initLoginPage() {
                 return;
             }
 
+            if (loginRequestInFlight) return;
+            loginRequestInFlight = true;
 
             setBusy(button, true);
 
@@ -432,27 +435,9 @@ function initLoginPage() {
 
                 /* Go to dashboard */
 
-                setTimeout(
-    function () {
-
-        if (
-            user.role &&
-            user.role.toLowerCase() === "admin"
-        ) {
-
-            window.location.href =
-                "/admin-dashboard/";
-
-        } else {
-
-            window.location.href =
-                "/dashboard/";
-
-        }
-
-    },
-    700
-);
+                window.location.href = user.role && user.role.toLowerCase() === "admin"
+                    ? "/admin-dashboard/"
+                    : "/dashboard/";
 
             } catch (error) {
 
@@ -473,6 +458,7 @@ function initLoginPage() {
             } finally {
 
                 setBusy(button, false);
+                loginRequestInFlight = false;
             }
 
         }

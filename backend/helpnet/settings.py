@@ -109,6 +109,9 @@ DATABASES = {
                 'ssl_mode': 'REQUIRED',
             },
         },
+        # Keep TLS connections to the remote MySQL database alive between requests.
+        'CONN_MAX_AGE': 60,
+        'CONN_HEALTH_CHECKS': True,
     }
 }
 
