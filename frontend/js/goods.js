@@ -71,7 +71,7 @@ async function loadGoodsList() {
             const details = document.createElement("a");
             details.className = "small-btn";
             details.href = `/goods-details/?listing_id=${encodeURIComponent(listing.id)}`;
-            details.textContent = "View details";
+            details.textContent = "Details";
             card.appendChild(details);
             target.appendChild(card);
         });
@@ -151,7 +151,9 @@ async function expressGoodsInterest() {
     try {
         const response = await goodsRequest(`/api/goods/listings/${encodeURIComponent(listingId)}/interest/`, "POST", {});
         goodsShowMessage("goodsMessage", response.message || "Interest sent.", "success");
-        document.getElementById("goodsInterestButton").disabled = true;
+        const button = document.getElementById("goodsInterestButton");
+        button.disabled = true;
+        button.textContent = "Interest sent";
     } catch (error) {
         goodsShowMessage("goodsMessage", error.message, "error");
     }
