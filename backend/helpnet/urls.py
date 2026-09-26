@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/blood/', include('apps.blood.urls')),
     path('api/notifications/', include('apps.notifications.urls')),
     path('api/goods/', include('apps.goods.urls')),
+    path('api/health/', include('apps.health.urls')),
     path('api/volunteer/', include('apps.volunteer.urls')),
     path('api/users/<uuid:user_id>/', PublicUserProfileView.as_view(), name='public-user-profile'),
 
@@ -52,6 +53,10 @@ urlpatterns = [
     path('goods-list/', TemplateView.as_view(template_name='pages/goods-list.html'), name='goods-list-page'),
     path('create-goods/', TemplateView.as_view(template_name='pages/create-goods.html'), name='create-goods-page'),
     path('goods-details/', TemplateView.as_view(template_name='pages/goods-details.html'), name='goods-details-page'),
+    path('health-questions/', TemplateView.as_view(template_name='pages/health-questions.html'), name='health-questions-page'),
+    path('create-health-question/', TemplateView.as_view(template_name='pages/create-health-question.html'), name='create-health-question-page'),
+    path('health-question-details/', TemplateView.as_view(template_name='pages/health-question-details.html'), name='health-question-details-page'),
+    path('health-professionals/', TemplateView.as_view(template_name='pages/health-professionals.html'), name='health-professionals-page'),
     path('volunteer-opportunities/', TemplateView.as_view(template_name='pages/volunteer-opportunities.html'), name='volunteer-opportunities-page'),
     path('create-opportunity/', TemplateView.as_view(template_name='pages/create-opportunity.html'), name='create-opportunity-page'),
     path('volunteer-profile/', TemplateView.as_view(template_name='pages/volunteer-profile.html'), name='volunteer-profile-page'),
