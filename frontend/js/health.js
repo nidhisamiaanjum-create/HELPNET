@@ -118,7 +118,12 @@ async function loadHealthReplies(id = healthQuestionId()) {
 
 async function submitHealthReply(event) {
     event.preventDefault();
-    const questionId = event.currentTarget.dataset.questionId || healthQuestionId();
+    const form = event.currentTarget;
+    if (form.dataset.submitting === "true") return;
+    form.dataset.submitting = "true";
+    const submitButton = form.querySelector("[type=submit]");
+    if (submitButton) submitButton.disabled = true;
+    const questionId = form.dataset.questionId || healthQuestionId();
     try {
         const response = await apiRequest(`/api/health/questions/${encodeURIComponent(questionId)}/replies/`, "POST", {
             reply: document.getElementById("healthReply").value.trim(),
@@ -128,6 +133,9 @@ async function submitHealthReply(event) {
         await loadHealthReplies(questionId);
     } catch (error) {
         healthMessage(error.message, "error");
+    } finally {
+        form.dataset.submitting = "false";
+        if (submitButton) submitButton.disabled = false;
     }
 }
 

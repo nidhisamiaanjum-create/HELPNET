@@ -54,6 +54,20 @@ class AuthPermissionTests(APITestCase):
             status.HTTP_401_UNAUTHORIZED,
         )
 
+    def test_login_returns_tokens_for_valid_credentials(self):
+        response = self.client.post(
+            "/api/auth/login/",
+            {
+                "identifier": self.user.email,
+                "password": "TestPassword123",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["data"]["access"])
+        self.assertTrue(response.data["data"]["refresh"])
+
     def test_me_requires_authentication(self):
         response = self.client.get("/api/auth/me/")
 
