@@ -1,0 +1,462 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>HELPNET - Admin Dashboard</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+<header class="site-header">
+
+    <a href="/admin-dashboard/" class="logo" data-i18n="appName">
+        হেল্পনেট
+    </a>
+
+    <div class="header-actions">
+
+        <button
+            type="button"
+            id="langToggle"
+            class="lang-toggle">
+            English
+        </button>
+
+        <button
+            type="button"
+            id="logoutButton"
+            class="lang-toggle"
+            data-i18n="logout">
+            Logout
+        </button>
+
+    </div>
+
+</header>
+
+
+<main class="dashboard-page">
+
+    <!-- =====================================================
+         ADMIN WELCOME
+         ===================================================== -->
+
+    <section class="dashboard-welcome">
+
+        <p class="welcome-small">
+            Admin Panel
+        </p>
+
+        <h1 id="adminWelcomeName">
+            HELPNET Admin 👋
+        </h1>
+
+        <p>
+            Manage verification, users, reports and platform activity.
+        </p>
+
+    </section>
+
+
+    <!-- =====================================================
+         ADMIN STATISTICS
+         ===================================================== -->
+
+    <section class="dashboard-stats">
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                🛡️
+            </div>
+
+            <div>
+                <strong id="pendingVerificationCount">
+                    0
+                </strong>
+
+                <span>
+                    Pending Verification
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                👥
+            </div>
+
+            <div>
+                <strong id="userCount">
+                    0
+                </strong>
+
+                <span>
+                    Users
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                🚩
+            </div>
+
+            <div>
+                <strong id="reportCount">
+                    0
+                </strong>
+
+                <span>
+                    Reports
+                </span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ADMIN TOOLS
+         ===================================================== -->
+
+    <section class="dashboard-section">
+
+        <div class="section-heading">
+
+            <h2>
+                Admin Tools
+            </h2>
+
+        </div>
+
+
+        <div class="service-grid">
+
+            <!-- NID VERIFICATION -->
+
+            <a
+                href="/admin-verification/"
+                class="service-card">
+
+                <div class="service-icon">
+                    🛡️
+                </div>
+
+                <span>
+                    NID Verification
+                </span>
+
+            </a>
+
+
+            <!-- USERS -->
+
+            <a
+                href="#"
+                class="service-card">
+
+                <div class="service-icon">
+                    👥
+                </div>
+
+                <span>
+                    Users
+                </span>
+
+            </a>
+
+
+            <!-- REPORTS -->
+
+            <a
+                href="#"
+                class="service-card">
+
+                <div class="service-icon">
+                    🚩
+                </div>
+
+                <span>
+                    Reports
+                </span>
+
+            </a>
+
+
+            <!-- MODERATION -->
+
+            <a
+                href="#"
+                class="service-card">
+
+                <div class="service-icon">
+                    🛡️
+                </div>
+
+                <span>
+                    Moderation
+                </span>
+
+            </a>
+
+
+            <!-- AUDIT LOGS -->
+
+            <a
+                href="/admin-logs/"
+                class="service-card">
+
+                <div class="service-icon">
+                    📜
+                </div>
+
+                <span>
+                    Audit Logs
+                </span>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ADMIN NOTICE
+         ===================================================== -->
+
+    <section class="dashboard-section">
+
+        <div class="alert-card">
+
+            <div class="alert-icon">
+                ℹ️
+            </div>
+
+            <div class="alert-content">
+
+                <span class="alert-label">
+                    Admin Notice
+                </span>
+
+                <h3>
+                    Verification requests require review
+                </h3>
+
+                <p>
+                    Review submitted documents carefully before
+                    approving or rejecting a verification request.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         PROFILE / ACCOUNT
+         ===================================================== -->
+
+    <section class="profile-summary">
+
+        <div>
+
+            <span class="profile-label">
+                Logged in as
+            </span>
+
+            <strong id="adminEmail">
+                -
+            </strong>
+
+        </div>
+
+
+        <a
+            href="/profile/"
+            class="profile-button">
+            Profile
+        </a>
+
+    </section>
+
+</main>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+
+<script src="{% static 'js/api.js' %}"></script>
+
+<script src="{% static 'js/i18n.js' %}"></script>
+
+<script src="{% static 'js/auth.js' %}"></script>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    /*
+     * Get logged-in user.
+     */
+
+    const user =
+        typeof getStoredUser === "function"
+            ? getStoredUser()
+            : null;
+
+
+    /*
+     * If no user is logged in,
+     * send them to login.
+     */
+
+    if (!user) {
+
+        window.location.href = "/login/";
+
+        return;
+    }
+
+
+    /*
+     * Check Admin role.
+     */
+
+    const role =
+        (user.role || "").toLowerCase();
+
+
+    /*
+     * This page is only for Admin.
+     *
+     * Do not rely on this check for backend security.
+     * Backend APIs will also use IsAdminUserRole.
+     */
+
+    if (
+        role !== "admin" &&
+        user.is_staff !== true &&
+        user.is_superuser !== true
+    ) {
+
+        alert("Admin access required.");
+
+        window.location.href = "/dashboard/";
+
+        return;
+    }
+
+
+    /*
+     * Admin name.
+     */
+
+    const name =
+        user.full_name ||
+        user.name ||
+        "HELPNET Admin";
+
+
+    const welcomeName =
+        document.getElementById(
+            "adminWelcomeName"
+        );
+
+
+    if (welcomeName) {
+
+        welcomeName.textContent =
+            name + " 👋";
+
+    }
+
+
+    /*
+     * Admin email / phone.
+     */
+
+    const adminEmail =
+        document.getElementById(
+            "adminEmail"
+        );
+
+
+    if (adminEmail) {
+
+        adminEmail.textContent =
+            user.email ||
+            user.phone_number ||
+            "-";
+
+    }
+
+
+    /*
+     * Logout.
+     */
+
+    const logoutButton =
+        document.getElementById(
+            "logoutButton"
+        );
+
+
+    if (logoutButton) {
+
+        logoutButton.addEventListener(
+            "click",
+            function () {
+
+                if (
+                    typeof logout === "function"
+                ) {
+
+                    logout();
+
+                } else {
+
+                    localStorage.removeItem(
+                        "helpnet_token"
+                    );
+
+                    localStorage.removeItem(
+                        "helpnet_user"
+                    );
+
+                    window.location.href =
+                        "/login/";
+
+                }
+
+            }
+        );
+
+    }
+
+});
+
+</script>
+
+</body>
+
+</html>

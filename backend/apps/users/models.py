@@ -66,6 +66,7 @@ class User(AbstractUser):
         NGO = "NGO", "NGO"
         VOLUNTEER = "Volunteer", "Volunteer"
         FARMER = "Farmer", "Farmer"
+        BLOOD_DONOR = "Blood Donor", "Blood Donor"
         ADMIN = "Admin", "Admin"
 
     user_id = models.UUIDField(

@@ -51,6 +51,18 @@ color: var(--text);
 
 .header-actions { display: flex; align-items: center; gap: 10px; }
 
+.notification-nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: var(--text);
+    text-decoration: none;
+    box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+}
+
 .lang-toggle {
     background: var(--bg);
     color: var(--teal-dark);
@@ -116,6 +128,118 @@ input.invalid { box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5
 .form-links { margin-top: 22px; text-align: center; font-size: 17px; }
 .form-links a { color: var(--teal-dark); font-weight: 600; }
 .form-links p { margin-top: 10px; }
+
+.blood-page {
+    width: min(100% - 32px, 760px);
+    margin: 32px auto 60px;
+}
+
+.blood-card {
+    padding: 22px;
+    margin-bottom: 16px;
+    border-radius: 18px;
+    background: var(--bg);
+    box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+}
+
+.blood-card h1,
+.blood-card h2,
+.blood-card h3 { margin-top: 0; }
+
+.blood-section-heading,
+.blood-request-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.small-btn {
+    padding: 9px 13px;
+    border: 0;
+    border-radius: 10px;
+    color: white;
+    background: var(--teal);
+    font: 600 15px inherit;
+    cursor: pointer;
+}
+
+.danger-btn { background: #b33a3a; }
+
+.blood-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.blood-toggle input { width: 20px; height: 20px; }
+
+.blood-request-item,
+.history-item {
+    padding: 16px 0;
+    border-top: 1px solid rgba(0, 0, 0, .08);
+}
+
+.blood-request-item p,
+.history-item p { margin-top: 5px; }
+
+.match-panel {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.donor-match-select { flex: 1 1 240px; }
+
+.donor-search-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.donor-search-form .btn { grid-column: 1 / -1; }
+.donor-verified { color: var(--teal-dark); font-size: 14px; }
+.donor-rate-link { display: inline-block; text-decoration: none; }
+.badge { display: inline-block; margin-left: 6px; padding: 3px 8px; border-radius: 999px; color: #075e54; background: #d8f3ec; font-size: 12px; font-weight: 700; }
+
+.notifications-page {
+    width: min(100% - 32px, 760px);
+    margin: 32px auto 60px;
+}
+
+.notifications-card {
+    padding: 22px;
+    border-radius: 18px;
+    background: var(--bg);
+    box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+}
+
+.notifications-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.notification-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid rgba(0, 0, 0, .08);
+}
+
+.notification-item.unread { border-left: 4px solid var(--teal); padding-left: 12px; }
+.notification-item p { margin: 0 0 5px; }
+.notification-item time, .notification-status { color: var(--text-muted); font-size: 14px; }
+
+@media (max-width: 600px) {
+    .notification-item { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 650px) {
+    .donor-search-form { grid-template-columns: 1fr; }
+}
 
 /* Sprint 2: profile, verification and admin interfaces. */
 .page-wide { max-width: 960px; }
@@ -1989,4 +2113,61 @@ padding: 10px;
 
 .produce-card-footer {
     margin-top: auto;
+}
+
+.ratings-page {
+    width: min(100% - 32px, 720px);
+    margin: 32px auto 60px;
+}
+
+.ratings-card {
+    padding: 22px;
+    margin-bottom: 16px;
+    border-radius: 18px;
+    background: var(--bg);
+    box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+}
+
+.ratings-card h1,
+.ratings-card h2,
+.ratings-card h3 {
+    margin-top: 0;
+}
+
+.star-picker {
+    display: flex;
+    gap: 6px;
+    margin: 8px 0 18px;
+}
+
+.star-picker button {
+    border: 0;
+    padding: 0 4px;
+    color: var(--text-muted);
+    background: transparent;
+    font-size: 32px;
+    cursor: pointer;
+}
+
+.star-picker button.selected,
+.star-picker button:hover {
+    color: #e2a400;
+}
+
+.rating-average {
+    font-weight: 700;
+}
+
+.existing-ratings {
+    margin-top: 22px;
+}
+
+.rating-item {
+    padding: 12px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.rating-item p {
+    margin: 5px 0 0;
+    color: var(--text-muted);
 }

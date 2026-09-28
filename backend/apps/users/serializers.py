@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import User
+from apps.ratings.models import Rating
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -42,3 +43,74 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
 
         return user
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(
+        write_only=True,
+        min_length=8
+    )
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
+
+    def get_average_rating(self, user):
+        return Rating.average_for_user(user)
+
+    def get_rating_count(self, user):
+        return user.ratings_received.count()
+
+    class Meta:
+        model = User
+        fields = [
+            "user_id",
+            "full_name",
+            "email",
+            "phone_number",
+            "role",
+            "location",
+            "bio",
+            "profile_picture",
+            "is_verified",
+            "date_of_birth",
+            "gender",
+            "is_phone_visible",
+            "is_email_visible",
+            "is_location_visible",
+            "is_date_of_birth_visible",
+            "average_rating",
+            "rating_count",
+        ]
+        read_only_fields = ["user_id", "email", "phone_number", "role"]
+
+
+class PublicUserProfileSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
+
+    def get_average_rating(self, user):
+        return Rating.average_for_user(user)
+
+    def get_rating_count(self, user):
+        return user.ratings_received.count()
+
+    class Meta:
+        model = User
+        fields = [
+            "user_id",
+            "full_name",
+            "role",
+            "location",
+            "bio",
+            "profile_picture",
+            "is_verified",
+            "average_rating",
+            "rating_count",
+        ]
+        read_only_fields = fields

@@ -250,6 +250,7 @@ function initLoginPage() {
     const button =
         document.getElementById("loginButton");
 
+    let loginRequestInFlight = false;
 
     form.addEventListener(
         "submit",
@@ -278,7 +279,8 @@ function initLoginPage() {
                 document
                     .getElementById("password")
                     .value;
-
+		    console.log("LOGIN IDENTIFIER:", identifier);
+		    console.log("LOGIN PASSWORD LENGTH:", password.length);
 
             /* Validation */
 
@@ -311,6 +313,8 @@ function initLoginPage() {
                 return;
             }
 
+            if (loginRequestInFlight) return;
+            loginRequestInFlight = true;
 
             setBusy(button, true);
 
@@ -397,6 +401,8 @@ function initLoginPage() {
                         user.role
                 };
 
+                console.log("LOGIN RESPONSE USER:", user);
+                console.log("LOGIN RESPONSE ROLE:", user.role);
 
                 /* Save session */
 
@@ -412,10 +418,8 @@ function initLoginPage() {
 
                 if (refreshToken) {
 
-                    localStorage.setItem(
-                        "refreshToken",
-                        refreshToken
-                    );
+                     localStorage.setItem("helpnet_token", accessToken);
+                     localStorage.setItem("refreshToken", refreshToken);
                 }
 
 
@@ -431,15 +435,9 @@ function initLoginPage() {
 
                 /* Go to dashboard */
 
-                setTimeout(
-                    function () {
-
-                        window.location.href =
-                            "/dashboard/";
-
-                    },
-                    700
-                );
+                window.location.href = user.role && user.role.toLowerCase() === "admin"
+                    ? "/admin-dashboard/"
+                    : "/dashboard/";
 
             } catch (error) {
 
@@ -460,6 +458,7 @@ function initLoginPage() {
             } finally {
 
                 setBusy(button, false);
+                loginRequestInFlight = false;
             }
 
         }

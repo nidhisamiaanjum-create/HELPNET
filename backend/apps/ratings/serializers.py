@@ -5,6 +5,8 @@ from .models import Rating
 class RatingSerializer(serializers.ModelSerializer):
     rater_name = serializers.CharField(source="rater.full_name", read_only=True)
     rated_user_name = serializers.CharField(source="rated_user.full_name", read_only=True)
+    score = serializers.IntegerField(source="rating", min_value=1, max_value=5, required=False)
+    rating = serializers.IntegerField(min_value=1, max_value=5, required=False)
 
     class Meta:
         model = Rating
@@ -14,6 +16,7 @@ class RatingSerializer(serializers.ModelSerializer):
             "rater_name",
             "rated_user",
             "rated_user_name",
+            "rating",
             "score",
             "comment",
             "created_at",
@@ -28,13 +31,19 @@ class RatingSerializer(serializers.ModelSerializer):
         if rater == rated_user:
             raise serializers.ValidationError({"detail": "You cannot rate yourself."})
 
-        # Update existing rating or create new
-        rating, created = Rating.objects.update_or_create(
+        rating_val = validated_data.get("rating")
+        if rating_val is None:
+            rating_val = validated_data.get("score")
+
+        if rating_val is None:
+            raise serializers.ValidationError({"detail": "Rating value is required."})
+
+        rating_obj, created = Rating.objects.update_or_create(
             rater=rater,
             rated_user=rated_user,
             defaults={
-                "score": validated_data["score"],
+                "rating": rating_val,
                 "comment": validated_data.get("comment", ""),
             }
         )
-        return rating
+        return rating_obj

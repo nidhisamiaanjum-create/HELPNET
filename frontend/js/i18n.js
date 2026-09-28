@@ -302,6 +302,7 @@ const TEXT = {
 
 
         role_farmer: "কৃষক",
+        role_blood_donor: "রক্তদাতা",
 
 
         role_admin: "প্রশাসক",
@@ -611,6 +612,7 @@ const TEXT = {
 
 
         role_farmer: "Farmer",
+        role_blood_donor: "Blood Donor",
 
 
         role_admin: "Admin",
