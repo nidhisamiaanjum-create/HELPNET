@@ -1,10 +1,12 @@
-from django.contrib import admin
-from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import TemplateView
+from django.contrib import admin
 from django.http import JsonResponse
+from django.urls import include, path
+from django.views.generic import TemplateView
+
 from apps.users.views import PublicUserProfileView
+
 
 def root_view(request):
     return JsonResponse({
@@ -16,39 +18,32 @@ def root_view(request):
         }
     })
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', root_view, name="api-root"),
     path('api/auth/', include('apps.users.urls')),
+    path('api/waste/', include('apps.waste.urls')),
+    path('api/farmer/', include('apps.farmer.urls')),
     path('api/ratings/', include('apps.ratings.urls')),
+    path('api/reports/', include('apps.reports.urls')),
     path('api/blood/', include('apps.blood.urls')),
     path('api/notifications/', include('apps.notifications.urls')),
     path('api/goods/', include('apps.goods.urls')),
     path('api/health/', include('apps.health.urls')),
     path('api/volunteer/', include('apps.volunteer.urls')),
+    path('api/verification/', include('apps.verification.urls')),
     path('api/users/<uuid:user_id>/', PublicUserProfileView.as_view(), name='public-user-profile'),
 
-    path('',           TemplateView.as_view(template_name='pages/home.html'),       name='home'),
-    path('login/',     TemplateView.as_view(template_name='pages/login.html'),      name='login'),
-    path(
-    'forgot-password/',
-    TemplateView.as_view(
-        template_name='pages/forgot-password.html'
-    ),
-    name='forgot-password',
-),
-    path(
-    'reset-password/',
-    TemplateView.as_view(
-        template_name='pages/reset-password.html'
-    ),
-    name='reset-password',
-),
-    path('register/',  TemplateView.as_view(template_name='pages/register.html'),   name='register'),
-    path('dashboard/', TemplateView.as_view(template_name='pages/dashboard.html'),  name='dashboard'),
-    path('profile/',   TemplateView.as_view(template_name='pages/profile.html'),    name='profile'),
-    path('ratings/',   TemplateView.as_view(template_name='pages/ratings.html'),    name='ratings'),
-    path('blood/',     TemplateView.as_view(template_name='pages/blood.html'),      name='blood'),
+    path('', TemplateView.as_view(template_name='pages/home.html'), name='home'),
+    path('login/', TemplateView.as_view(template_name='pages/login.html'), name='login'),
+    path('forgot-password/', TemplateView.as_view(template_name='pages/forgot-password.html'), name='forgot-password'),
+    path('reset-password/', TemplateView.as_view(template_name='pages/reset-password.html'), name='reset-password'),
+    path('register/', TemplateView.as_view(template_name='pages/register.html'), name='register'),
+    path('dashboard/', TemplateView.as_view(template_name='pages/dashboard.html'), name='dashboard'),
+    path('profile/', TemplateView.as_view(template_name='pages/profile.html'), name='profile'),
+    path('ratings/', TemplateView.as_view(template_name='pages/ratings.html'), name='ratings'),
+    path('blood/', TemplateView.as_view(template_name='pages/blood.html'), name='blood'),
     path('notifications/', TemplateView.as_view(template_name='pages/notifications.html'), name='notifications'),
     path('goods-list/', TemplateView.as_view(template_name='pages/goods-list.html'), name='goods-list-page'),
     path('create-goods/', TemplateView.as_view(template_name='pages/create-goods.html'), name='create-goods-page'),
@@ -71,35 +66,19 @@ urlpatterns = [
     path('matching-donors/', TemplateView.as_view(template_name='pages/blood.html'), name='matching-donors'),
     path('donation-history/', TemplateView.as_view(template_name='pages/blood.html'), name='donation-history'),
 
-    path(
-        'nid-verification/',
-        TemplateView.as_view(template_name='pages/nid-verification.html'),
-        name='nid-verification',
-    ),
-    path(
-        'admin-verification/',
-        TemplateView.as_view(template_name='pages/admin-verification.html'),
-        name='admin-verification',
-    ),
-    path(
-        'admin-logs/',
-        TemplateView.as_view(template_name='pages/admin-logs.html'),
-        name='admin-logs',
-    ),
-       path(
-    'admin-dashboard/',
-    TemplateView.as_view(
-        template_name='pages/admin-dashboard.html'
-    ),
-    name='admin-dashboard',
-    ),
+    # Waste Pickup & Collector pages
+    path('waste-pickup/', TemplateView.as_view(template_name='pages/waste-pickup.html'), name='waste-pickup'),
+    path('collector-details/', TemplateView.as_view(template_name='pages/collector-details.html'), name='collector-details'),
 
-    # API endpoints the JS will call (create later in apps/verification/urls.py)
-    path("api/verification/", include("apps.verification.urls")),
+    # Farmer Marketplace pages
+    path('farmer-market/', TemplateView.as_view(template_name='pages/farmer-market.html'), name='farmer-market'),
+    path('create-produce/', TemplateView.as_view(template_name='pages/create-produce.html'), name='create-produce'),
+    path('produce-details/', TemplateView.as_view(template_name='pages/produce-details.html'), name='produce-details'),
 
-    
-
- 
+    path('nid-verification/', TemplateView.as_view(template_name='pages/nid-verification.html'), name='nid-verification'),
+    path('admin-verification/', TemplateView.as_view(template_name='pages/admin-verification.html'), name='admin-verification'),
+    path('admin-logs/', TemplateView.as_view(template_name='pages/admin-logs.html'), name='admin-logs'),
+    path('admin-dashboard/', TemplateView.as_view(template_name='pages/admin-dashboard.html'), name='admin-dashboard'),
 ]
 
 if settings.DEBUG:

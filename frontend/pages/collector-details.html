@@ -1,0 +1,332 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HELPNET - Collector Details</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header class="site-header">
+    <a href="/dashboard/" class="logo" data-i18n="appName">
+        হেল্পনেট
+    </a>
+
+    <div class="header-actions">
+        <a href="/waste-pickup/" class="back-link">← Back to Waste Pickup</a>
+        <button type="button" id="langToggle" class="lang-toggle">English</button>
+        <button type="button" id="logoutButton" class="lang-toggle" data-i18n="logout">Logout</button>
+    </div>
+</header>
+
+<main class="page profile-page">
+    
+    <div id="collectorAlert" class="alert"></div>
+
+    <!-- Collector Profile Hero Card -->
+    <div class="card">
+        <div class="profile-hero">
+            <div class="avatar" id="collectorAvatar">♻️</div>
+            <div style="flex: 1;">
+                <div class="profile-name-row">
+                    <h1 id="collectorName">Collector</h1>
+                    <span id="collectorBadge" class="verified-badge">Collector</span>
+                </div>
+                <p id="collectorMeta">📍 Loading area...</p>
+                <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px;">
+                    <span id="collectorScore" style="font-size: 20px; font-weight: 700; color: #efa926;">⭐ 5.0</span>
+                    <span id="collectorRatingCount" class="text-muted" style="font-size: 15px;">(0 reviews)</span>
+                </div>
+                <div id="collectorPhoneContainer" style="margin-top: 10px;">
+                    <!-- Phone call link -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating Section Card -->
+    <div class="card">
+        <h2 style="font-size: 22px; color: var(--teal-dark); margin-bottom: 6px;">
+            Rate this Collector
+        </h2>
+        <p class="subtitle" style="margin-bottom: 16px;">
+            Share your experience with this collector to help keep the community trusted and reliable.
+        </p>
+
+        <form id="ratingForm" novalidate>
+            <div class="field">
+                <label>Your Rating Score</label>
+                <div class="star-picker" id="starPicker">
+                    <button type="button" data-score="1" aria-label="1 star">★</button>
+                    <button type="button" data-score="2" aria-label="2 stars">★</button>
+                    <button type="button" data-score="3" aria-label="3 stars">★</button>
+                    <button type="button" data-score="4" aria-label="4 stars">★</button>
+                    <button type="button" data-score="5" aria-label="5 stars">★</button>
+                </div>
+                <input type="hidden" id="ratingScore" value="5">
+            </div>
+
+            <div class="field">
+                <label for="ratingComment">Comments / Feedback (Optional)</label>
+                <textarea id="ratingComment" rows="3" placeholder="Punctual, friendly service, well collected..."></textarea>
+            </div>
+
+            <button type="submit" id="submitRatingBtn" class="btn">
+                Submit Rating
+            </button>
+        </form>
+    </div>
+
+    <!-- Report Section Card -->
+    <div class="card">
+        <div class="section-title" style="margin-bottom: 10px;">
+            <h2 style="font-size: 20px; color: #ba3838;">
+                Report an Issue
+            </h2>
+            <span class="status status-rejected">Moderation</span>
+        </div>
+        <p class="subtitle" style="margin-bottom: 16px;">
+            If you experienced a no-show, improper behavior, or false information, report it directly.
+        </p>
+
+        <form id="reportForm" novalidate>
+            <div class="field">
+                <label for="reportCategory">Issue Category</label>
+                <select id="reportCategory" required>
+                    <option value="no_show">No show / Did not arrive</option>
+                    <option value="unprofessional">Unprofessional / Rude behavior</option>
+                    <option value="overcharging">Overcharging / Payment dispute</option>
+                    <option value="harassment">Inappropriate behavior / Harassment</option>
+                    <option value="fraud">False profile / Fraudulent activity</option>
+                    <option value="other">Other issue</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="reportDescription">Details</label>
+                <textarea id="reportDescription" rows="3" placeholder="Describe what happened in detail..." required></textarea>
+                <span id="reportDescriptionError" class="field-error"></span>
+            </div>
+
+            <button type="submit" id="submitReportBtn" class="btn btn-danger" style="background: linear-gradient(145deg, #df5c5c, #ba3838);">
+                Submit Report
+            </button>
+        </form>
+    </div>
+
+    <!-- Recent Reviews Card -->
+    <div class="card">
+        <h2 style="font-size: 20px; color: var(--teal-dark); margin-bottom: 14px;">
+            Recent Reviews
+        </h2>
+        <div id="reviewsList" style="display: grid; gap: 12px;">
+            <!-- Loaded via JS -->
+        </div>
+        <p id="reviewsEmpty" class="activity-empty" hidden style="margin-top: 10px;">
+            No reviews yet for this collector.
+        </p>
+    </div>
+
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/i18n.js' %}"></script>
+<script src="{% static 'js/auth.js' %}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    if (typeof requireLogin === "function" && !requireLogin()) {
+        return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const collectorId = params.get("id");
+
+    if (!collectorId) {
+        showAlert("collectorAlert", "No collector specified.", "error");
+        return;
+    }
+
+    initStarPicker();
+    loadCollectorData(collectorId);
+    setupRatingForm(collectorId);
+    setupReportForm(collectorId);
+});
+
+let selectedRatingScore = 5;
+
+function initStarPicker() {
+    const buttons = document.querySelectorAll("#starPicker button");
+    updateStarUI(5);
+
+    buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const val = parseInt(btn.dataset.score, 10);
+            selectedRatingScore = val;
+            document.getElementById("ratingScore").value = val;
+            updateStarUI(val);
+        });
+    });
+}
+
+function updateStarUI(score) {
+    const buttons = document.querySelectorAll("#starPicker button");
+    buttons.forEach(btn => {
+        const val = parseInt(btn.dataset.score, 10);
+        if (val <= score) {
+            btn.classList.add("selected");
+        } else {
+            btn.classList.remove("selected");
+        }
+    });
+}
+
+async function loadCollectorData(collectorId) {
+    try {
+        const res = await apiRequest(`/api/ratings/summary/${collectorId}/`, "GET");
+        if (res && res.data) {
+            const data = res.data;
+            document.getElementById("collectorName").textContent = data.full_name || "Collector";
+            document.getElementById("collectorMeta").textContent = "📍 " + (data.location || "Area Collector") + " • " + (data.role || "Collector");
+            document.getElementById("collectorScore").textContent = "⭐ " + (data.average_rating || 5.0);
+            document.getElementById("collectorRatingCount").textContent = `(${data.total_ratings || 0} reviews)`;
+
+            if (data.user_has_rated && data.user_rating_score) {
+                selectedRatingScore = data.user_rating_score;
+                document.getElementById("ratingScore").value = data.user_rating_score;
+                updateStarUI(data.user_rating_score);
+                if (data.user_rating_comment) {
+                    document.getElementById("ratingComment").value = data.user_rating_comment;
+                }
+                const btn = document.getElementById("submitRatingBtn");
+                if (btn) btn.textContent = "Update My Rating";
+            }
+
+            renderReviews(data.recent_reviews);
+        }
+    } catch (err) {
+        console.error("Error loading collector summary:", err);
+    }
+
+    // Also get phone number if available from collector profile
+    try {
+        const colRes = await apiRequest(`/api/waste/collectors/${collectorId}/`, "GET");
+        if (colRes && colRes.data && colRes.data.phone_number) {
+            const phoneDiv = document.getElementById("collectorPhoneContainer");
+            if (phoneDiv) {
+                phoneDiv.innerHTML = `<a href="tel:${colRes.data.phone_number}" class="btn-sm btn-call" style="display:inline-block; margin-top:8px;">📞 Call ${colRes.data.phone_number}</a>`;
+            }
+        }
+    } catch (e) {
+        // Ignored
+    }
+}
+
+function renderReviews(reviews) {
+    const container = document.getElementById("reviewsList");
+    const emptyNotice = document.getElementById("reviewsEmpty");
+    if (!container) return;
+
+    container.innerHTML = "";
+    if (!reviews || reviews.length === 0) {
+        if (emptyNotice) emptyNotice.hidden = false;
+        return;
+    }
+    if (emptyNotice) emptyNotice.hidden = true;
+
+    reviews.forEach(r => {
+        const item = document.createElement("div");
+        item.className = "admin-item";
+        item.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>${escapeHtml(r.rater_name || "Community Member")}</strong>
+                <span style="color:#efa926; font-weight:700;">★ ${r.score}/5</span>
+            </div>
+            ${r.comment ? `<p style="margin-top:6px; color:var(--text);">${escapeHtml(r.comment)}</p>` : `<p class="hint">No comment provided.</p>`}
+            <span class="hint">${r.created_at ? r.created_at.split("T")[0] : ""}</span>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function setupRatingForm(collectorId) {
+    const form = document.getElementById("ratingForm");
+    if (!form) return;
+
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        hideAlert("collectorAlert");
+
+        const score = parseInt(document.getElementById("ratingScore").value, 10) || selectedRatingScore;
+        const comment = document.getElementById("ratingComment").value.trim();
+        const submitBtn = document.getElementById("submitRatingBtn");
+
+        setBusy(submitBtn, true);
+
+        try {
+            await apiRequest("/api/ratings/", "POST", {
+                rated_user: collectorId,
+                score: score,
+                comment: comment,
+            });
+            showAlert("collectorAlert", "Thank you! Your rating has been submitted.", "success");
+            loadCollectorData(collectorId);
+        } catch (err) {
+            showAlert("collectorAlert", err.message || "Failed to submit rating.", "error");
+        } finally {
+            setBusy(submitBtn, false);
+        }
+    });
+}
+
+function setupReportForm(collectorId) {
+    const form = document.getElementById("reportForm");
+    if (!form) return;
+
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        hideAlert("collectorAlert");
+        clearFieldErrors("reportForm");
+
+        const category = document.getElementById("reportCategory").value;
+        const description = document.getElementById("reportDescription").value.trim();
+        const submitBtn = document.getElementById("submitReportBtn");
+
+        if (!description) {
+            showFieldError("reportDescription", "Please provide details of the issue.");
+            return;
+        }
+
+        setBusy(submitBtn, true);
+
+        try {
+            await apiRequest("/api/reports/", "POST", {
+                reported_user: collectorId,
+                category: category,
+                description: description,
+            });
+            showAlert("collectorAlert", "Report submitted successfully. Our team will review this.", "success");
+            form.reset();
+        } catch (err) {
+            showAlert("collectorAlert", err.message || "Failed to submit report.", "error");
+        } finally {
+            setBusy(submitBtn, false);
+        }
+    });
+}
+
+function escapeHtml(text) {
+    if (!text) return "";
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+</script>
+
+</body>
+</html>
