@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HELPNET - Farmer Marketplace</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header class="site-header">
+    <a href="/dashboard/" class="logo" data-i18n="appName">
+        হেল্পনেট
+    </a>
+
+    <div class="header-actions">
+        <a href="/dashboard/" class="back-link" data-i18n="backToDashboard">← Back to dashboard</a>
+        <button type="button" id="langToggle" class="lang-toggle">English</button>
+        <button type="button" id="logoutButton" class="lang-toggle" data-i18n="logout">Logout</button>
+    </div>
+</header>
+
+<main class="page page-wide">
+
+    <!-- ST 47: Prominent Disclaimer Banner -->
+    <div class="alert-card" style="margin-bottom: 20px; border-left: 4px solid var(--teal);">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+            <span class="alert-label">Marketplace Disclaimer</span>
+            <p style="font-weight: 600; color: var(--text); margin-top: 4px;">
+                HELPNET does not handle payment or delivery. All arrangements are made directly between the farmer and consumer.
+            </p>
+        </div>
+    </div>
+
+    <!-- Marketplace Header & Quick Action -->
+    <div class="card">
+        <div class="section-title">
+            <div>
+                <h1 data-i18n="farmerMarketTitle">কৃষক বাজার</h1>
+                <p class="subtitle" data-i18n="farmerMarketSubtitle">
+                    স্থানীয় কৃষকদের কাছ থেকে সরাসরি তাজা পণ্য কিনুন ও বিক্রি করুন।
+                </p>
+            </div>
+            <div id="farmerActionSection">
+                <a href="/create-produce/" class="btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; padding: 0 24px; min-width: 180px; height: 50px;" data-i18n="postNewProduce">
+                    ➕ নতুন পণ্য যোগ করুন
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Farmer's Own Listings (Shown if logged in farmer has listings) -->
+    <section id="myProduceSection" class="card" hidden>
+        <div class="section-title" style="margin-bottom: 14px;">
+            <h2 style="font-size: 20px; color: var(--teal-dark);" data-i18n="myProduceListings">
+                আমার প্রকাশিত পণ্যসমূহ
+            </h2>
+            <a href="/create-produce/" class="back-link">+ Post another</a>
+        </div>
+        <div id="myProduceList" class="admin-list">
+            <!-- Loaded via JS -->
+        </div>
+        <p id="myProduceEmpty" class="activity-empty" hidden style="margin-top: 10px;">
+            You have not posted any produce yet.
+        </p>
+    </section>
+
+    <!-- Marketplace Search and Filters -->
+    <div class="card">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; align-items: center;">
+            <div class="field" style="margin: 0;">
+                <input type="text" id="marketSearchInput" placeholder="🔍 Search produce, location, or farmer...">
+            </div>
+            <div class="field" style="margin: 0;">
+                <select id="marketCategorySelect">
+                    <option value="">All Categories (সকল ক্যাটাগরি)</option>
+                    <option value="Vegetables">Vegetables (সবজি)</option>
+                    <option value="Fruits">Fruits (ফল)</option>
+                    <option value="Grains">Grains & Rice (চাল/ধান/শস্য)</option>
+                    <option value="Dairy">Dairy & Eggs (দুগ্ধ ও ডিম)</option>
+                    <option value="Spices">Spices (মসলা)</option>
+                    <option value="Other">Other Farm Products (অন্যান্য)</option>
+                </select>
+            </div>
+            <div class="field" style="margin: 0;">
+                <select id="marketAvailabilitySelect">
+                    <option value="">All Availability</option>
+                    <option value="Available">Available Only (শুধুমাত্র স্টক আছে)</option>
+                    <option value="Unavailable">Unavailable</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Produce Listings Grid -->
+    <div class="section-heading" style="margin: 24px 0 16px;">
+        <h2 data-i18n="allProduceListings">সকল পণ্যের তালিকা</h2>
+    </div>
+
+    <div id="produceGrid" class="produce-grid">
+        <!-- Loaded via JS -->
+    </div>
+
+    <p id="produceEmpty" class="activity-empty" hidden style="margin-top: 24px;">
+        No produce listings found matching your search.
+    </p>
+
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/i18n.js' %}"></script>
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/farmer.js' %}"></script>
+
+</body>
+</html>

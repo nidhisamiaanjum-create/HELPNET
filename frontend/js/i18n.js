@@ -226,21 +226,67 @@ const TEXT = {
 
         /* Services */
         modBlood: "রক্তদান",
-
-
         modVolunteer: "স্বেচ্ছাসেবা",
-
-
         modGoods: "পুরাতন জিনিস বিনিময়",
-
-
         modWaste: "বর্জ্য সংগ্রহ",
-
-
         modFarmer: "কৃষক বাজার",
-
-
         modHealth: "স্বাস্থ্য পরামর্শ",
+
+        /* Waste Pickup */
+        wastePickupTitle: "বর্জ্য সংগ্রহ সেবা",
+        wastePickupSubtitle: "আপনার এলাকায় বর্জ্য সংগ্রহের অনুরোধ জানান এবং সংগ্রাহকের সাথে সহজে যোগাযোগ করুন।",
+        requestWastePickup: "বর্জ্য সংগ্রহের অনুরোধ",
+        wasteType: "বর্জ্যের ধরন",
+        pickupArea: "এলাকা",
+        pickupLocation: "ঠিকানা / বিস্তারিত অবস্থান",
+        preferredDate: "পছন্দের তারিখ",
+        preferredTime: "পছন্দের সময়",
+        additionalNotes: "অতিরিক্ত তথ্য / নোট (ঐচ্ছিক)",
+        submitPickupRequest: "অনুরোধ জমা দিন",
+        myWasteRequests: "আমার অনুরোধসমূহ",
+        availableCollectors: "কাছাকাছি বর্জ্য সংগ্রাহক",
+        noRequestsYet: "এখনো কোনো বর্জ্য সংগ্রহের অনুরোধ নেই।",
+        noCollectorsFound: "এই এলাকায় কোনো সংগ্রাহক পাওয়া যায়নি।",
+        statusRequested: "অনুরোধকৃত",
+        statusContacted: "যোগাযোগ হয়েছে",
+        statusCompleted: "সম্পন্ন",
+        statusCancelled: "বাতিল",
+        rateOrReport: "রেটিং / অভিযোগ",
+        rateCollector: "সংগ্রাহককে রেট দিন",
+        reportCollector: "অভিযোগ করুন",
+        collectorProfile: "সংগ্রাহকের প্রোফাইল",
+        wasteOrganic: "জৈব / রান্নাঘরের বর্জ্য",
+        wasteRecyclable: "পুনর্ব্যবহারযোগ্য / প্লাস্টিক ও কাগজ",
+        wasteElectronic: "ইলেকট্রনিক / ই-বর্জ্য",
+        wasteHazardous: "বিপজ্জনক / মেডিকেল বর্জ্য",
+        wasteBulk: "ভারী / নির্মাণ বর্জ্য",
+        wasteGeneral: "সাধারণ বর্জ্য",
+
+        /* Farmer Marketplace */
+        farmerMarketTitle: "কৃষক বাজার",
+        farmerMarketSubtitle: "স্থানীয় কৃষকদের কাছ থেকে সরাসরি তাজা পণ্য কিনুন ও বিক্রি করুন।",
+        farmerDisclaimer: "HELPNET does not handle payment or delivery. All arrangements are made directly between the farmer and consumer.",
+        postNewProduce: "➕ নতুন পণ্য যোগ করুন",
+        allProduceListings: "সকল পণ্যের তালিকা",
+        myProduceListings: "আমার প্রকাশিত পণ্যসমূহ",
+        searchProduce: "পণ্য খুঁজুন...",
+        filterByArea: "এলাকা দিয়ে ফিল্টার",
+        produceName: "পণ্যের নাম",
+        produceCategory: "ক্যাটাগরি",
+        producePrice: "দাম (টাকা)",
+        produceUnit: "একক",
+        produceQuantity: "পরিমাণ",
+        farmLocation: "খামার / অবস্থান",
+        produceDescription: "পণ্যের বিবরণ",
+        produceAvailability: "লভ্যতা",
+        statusAvailable: "উপলব্ধ",
+        statusUnavailable: "অনুপলব্ধ",
+        farmerContactInfo: "কৃষকের যোগাযোগের তথ্য",
+        callFarmer: "কল করুন",
+        publishProduce: "পণ্য প্রকাশ করুন",
+        editProduce: "পণ্য সম্পাদনা করুন",
+        deleteProduce: "মুছে ফেলুন",
+        viewDetails: "বিস্তারিত দেখুন",
 
 
 
@@ -489,21 +535,67 @@ const TEXT = {
 
         /* Services */
         modBlood: "Blood Donation",
-
-
         modVolunteer: "Volunteer Gathering",
-
-
         modGoods: "Second-Hand Exchange",
-
-
         modWaste: "Waste Collection",
-
-
         modFarmer: "Farmer Marketplace",
-
-
         modHealth: "Health Suggestions",
+
+        /* Waste Pickup */
+        wastePickupTitle: "Waste Pickup Request",
+        wastePickupSubtitle: "Request waste pickup in your area and connect directly with available collectors.",
+        requestWastePickup: "Request Waste Pickup",
+        wasteType: "Waste Type",
+        pickupArea: "Area / Neighborhood",
+        pickupLocation: "Address / Detailed Location",
+        preferredDate: "Preferred Date",
+        preferredTime: "Preferred Time",
+        additionalNotes: "Additional Notes (Optional)",
+        submitPickupRequest: "Submit Request",
+        myWasteRequests: "My Waste Pickup Requests",
+        availableCollectors: "Available Waste Collectors",
+        noRequestsYet: "No waste pickup requests found.",
+        noCollectorsFound: "No collectors found for this area.",
+        statusRequested: "Requested",
+        statusContacted: "Contacted",
+        statusCompleted: "Completed",
+        statusCancelled: "Cancelled",
+        rateOrReport: "Rate / Report",
+        rateCollector: "Rate Collector",
+        reportCollector: "Report Collector",
+        collectorProfile: "Collector Profile",
+        wasteOrganic: "Organic / Kitchen Waste",
+        wasteRecyclable: "Recyclable / Plastic & Paper",
+        wasteElectronic: "Electronic / E-Waste",
+        wasteHazardous: "Hazardous / Medical Waste",
+        wasteBulk: "Bulk / Construction Waste",
+        wasteGeneral: "General / Other Waste",
+
+        /* Farmer Marketplace */
+        farmerMarketTitle: "Farmer Marketplace",
+        farmerMarketSubtitle: "Buy and sell fresh farm produce directly from local farmers.",
+        farmerDisclaimer: "HELPNET does not handle payment or delivery. All arrangements are made directly between the farmer and consumer.",
+        postNewProduce: "➕ Post New Produce",
+        allProduceListings: "All Produce Listings",
+        myProduceListings: "My Produce Listings",
+        searchProduce: "Search produce...",
+        filterByArea: "Filter by location",
+        produceName: "Produce Name",
+        produceCategory: "Category",
+        producePrice: "Price (BDT)",
+        produceUnit: "Unit",
+        produceQuantity: "Quantity",
+        farmLocation: "Farm / Location",
+        produceDescription: "Produce Description",
+        produceAvailability: "Availability",
+        statusAvailable: "Available",
+        statusUnavailable: "Unavailable",
+        farmerContactInfo: "Farmer Contact Information",
+        callFarmer: "Call Farmer",
+        publishProduce: "Publish Produce",
+        editProduce: "Edit Produce",
+        deleteProduce: "Delete Produce",
+        viewDetails: "View Details",
 
 
 

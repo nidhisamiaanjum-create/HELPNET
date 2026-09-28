@@ -1,0 +1,145 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HELPNET - Waste Pickup</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header class="site-header">
+    <a href="/dashboard/" class="logo" data-i18n="appName">
+        হেল্পনেট
+    </a>
+
+    <div class="header-actions">
+        <a href="/dashboard/" class="back-link" data-i18n="backToDashboard">← Back to dashboard</a>
+        <button type="button" id="langToggle" class="lang-toggle">English</button>
+        <button type="button" id="logoutButton" class="lang-toggle" data-i18n="logout">Logout</button>
+    </div>
+</header>
+
+<main class="page page-wide">
+    <!-- Header banner -->
+    <div class="card">
+        <div class="section-title">
+            <div>
+                <h1 data-i18n="wastePickupTitle">বর্জ্য সংগ্রহ সেবা</h1>
+                <p class="subtitle" data-i18n="wastePickupSubtitle">
+                    আপনার এলাকায় বর্জ্য সংগ্রহের অনুরোধ জানান এবং সংগ্রাহকের সাথে সহজে যোগাযোগ করুন।
+                </p>
+            </div>
+            <span class="count-badge" style="font-size: 28px; padding: 12px 18px; border-radius: 16px;">🗑️</span>
+        </div>
+    </div>
+
+    <div id="wasteAlert" class="alert"></div>
+
+    <!-- 2 Column Layout: Request Form & Available Collectors -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+        
+        <!-- Request Form Card -->
+        <div class="card">
+            <h2 style="font-size: 22px; color: var(--teal-dark); margin-bottom: 16px;" data-i18n="requestWastePickup">
+                বর্জ্য সংগ্রহের অনুরোধ
+            </h2>
+
+            <form id="wastePickupForm" novalidate>
+                <div class="field">
+                    <label for="wasteType" data-i18n="wasteType">বর্জ্যের ধরন</label>
+                    <select id="wasteType" required>
+                        <option value="" data-i18n="selectRole">নির্বাচন করুন</option>
+                        <option value="Organic" data-i18n="wasteOrganic">Organic / Kitchen Waste (জৈব বর্জ্য)</option>
+                        <option value="Recyclable" data-i18n="wasteRecyclable">Recyclable / Plastic & Paper (পুনর্ব্যবহারযোগ্য)</option>
+                        <option value="Electronic" data-i18n="wasteElectronic">Electronic / E-Waste (ই-বর্জ্য)</option>
+                        <option value="Hazardous" data-i18n="wasteHazardous">Hazardous / Medical Waste (মেডিকেল/বিপজ্জনক)</option>
+                        <option value="Bulk" data-i18n="wasteBulk">Bulk / Construction Waste (ভারী বর্জ্য)</option>
+                        <option value="General" data-i18n="wasteGeneral">General Waste (সাধারণ বর্জ্য)</option>
+                    </select>
+                    <span id="wasteTypeError" class="field-error"></span>
+                </div>
+
+                <div class="field">
+                    <label for="pickupArea" data-i18n="pickupArea">এলাকা / জেলা</label>
+                    <input type="text" id="pickupArea" placeholder="যেমন: Dhanmondi, Dhaka বা Mirpur" required>
+                    <span id="pickupAreaError" class="field-error"></span>
+                    <p class="hint">Type area name to see matching local collectors automatically.</p>
+                </div>
+
+                <div class="field">
+                    <label for="pickupLocation" data-i18n="pickupLocation">ঠিকানা / বিস্তারিত অবস্থান</label>
+                    <input type="text" id="pickupLocation" placeholder="রোড নং, বাড়ি নং, ল্যান্ডমার্ক" required>
+                    <span id="pickupLocationError" class="field-error"></span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="field">
+                        <label for="preferredDate" data-i18n="preferredDate">পছন্দের তারিখ</label>
+                        <input type="date" id="preferredDate">
+                    </div>
+                    <div class="field">
+                        <label for="preferredTime" data-i18n="preferredTime">পছন্দের সময়</label>
+                        <input type="text" id="preferredTime" placeholder="যেমন: সকাল ১০টা / 10 AM">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="notes" data-i18n="additionalNotes">অতিরিক্ত তথ্য / নোট (ঐচ্ছিক)</label>
+                    <textarea id="notes" rows="3" placeholder="বর্জ্যের পরিমাণ বা কোনো বিশেষ নির্দেশনা থাকলে লিখুন..."></textarea>
+                </div>
+
+                <button type="submit" id="submitWasteBtn" class="btn" data-i18n="submitPickupRequest">
+                    অনুরোধ জমা দিন
+                </button>
+            </form>
+        </div>
+
+        <!-- Available Collectors Card -->
+        <div class="card">
+            <div class="section-title" style="margin-bottom: 16px;">
+                <h2 style="font-size: 22px; color: var(--teal-dark);" data-i18n="availableCollectors">
+                    কাছাকাছি বর্জ্য সংগ্রাহক
+                </h2>
+                <span class="status status-approved">Area Match</span>
+            </div>
+            <p class="section-help">Showing verified collectors & volunteers in the selected area.</p>
+
+            <div id="collectorsList" class="admin-list" style="margin-top: 10px;">
+                <!-- Collectors loaded dynamically via JS -->
+            </div>
+
+            <p id="collectorsEmpty" class="activity-empty" data-i18n="noCollectorsFound" hidden style="margin-top: 20px;">
+                এই এলাকায় কোনো সংগ্রাহক পাওয়া যায়নি। অন্য এলাকা লিখে দেখুন।
+            </p>
+        </div>
+
+    </div>
+
+    <!-- My Requests Section -->
+    <div class="card" style="margin-top: 24px;">
+        <div class="section-title" style="margin-bottom: 16px;">
+            <h2 style="font-size: 22px; color: var(--teal-dark);" data-i18n="myWasteRequests">
+                আমার অনুরোধসমূহ
+            </h2>
+        </div>
+
+        <div id="requestsList" style="display: grid; gap: 16px;">
+            <!-- Requests loaded dynamically via JS -->
+        </div>
+
+        <p id="requestsEmpty" class="activity-empty" data-i18n="noRequestsYet" hidden style="margin-top: 14px;">
+            এখনো কোনো বর্জ্য সংগ্রহের অনুরোধ নেই।
+        </p>
+    </div>
+
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/i18n.js' %}"></script>
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/waste.js' %}"></script>
+
+</body>
+</html>
