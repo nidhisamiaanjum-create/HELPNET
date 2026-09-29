@@ -404,24 +404,31 @@ function initLoginPage() {
                 console.log("LOGIN RESPONSE USER:", user);
                 console.log("LOGIN RESPONSE ROLE:", user.role);
 
-                /* Save session */
+               /* =====================================================
+   SAVE NEW LOGIN SESSION
+===================================================== */
 
-                saveSession(
-                    accessToken,
-                    userInfo
-                );
+localStorage.setItem(
+    "helpnet_token",
+    accessToken
+);
 
+localStorage.setItem(
+    "helpnet_user",
+    JSON.stringify(userInfo)
+);
 
-                /*
-                   Save refresh token separately.
-                */
+if (refreshToken) {
+    localStorage.setItem(
+        "refreshToken",
+        refreshToken
+    );
+}
 
-                if (refreshToken) {
-
-                     localStorage.setItem("helpnet_token", accessToken);
-                     localStorage.setItem("refreshToken", refreshToken);
-                }
-
+console.log(
+    "SESSION SAVED:",
+    JSON.parse(localStorage.getItem("helpnet_user"))
+);
 
                 /* Success */
 

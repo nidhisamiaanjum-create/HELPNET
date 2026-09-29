@@ -15,13 +15,33 @@
 
 <main class="ratings-page">
     <section class="ratings-card">
-        <h1>Rate a HELPNET user</h1>
-        <p class="hint">Enter the user ID from their profile.</p>
-        <div class="field">
-            <label for="ratedUserId">User ID</label>
-            <input id="ratedUserId" type="text" autocomplete="off" required>
-        </div>
-        <button id="loadRatings" class="btn" type="button">Load ratings</button>
+        <h1>Rate HELPNET User</h1>
+
+<section id="userSummary">
+    <h2 id="ratedUserName"></h2>
+    <p id="ratedUserRole"></p>
+    <p id="ratedUserArea"></p>
+    <p id="averageRating"></p>
+</section>
+
+<form id="ratingForm">
+    <label>Rating</label>
+
+    <div id="starPicker"
+         class="star-picker"
+         role="radiogroup"
+         aria-label="Choose a rating">
+    </div>
+
+    <label for="ratingComment">Comment (optional)</label>
+    <textarea id="ratingComment" rows="3" maxlength="1000"></textarea>
+
+    <button id="submitRating" class="btn" type="submit">
+        Submit rating
+    </button>
+</form>
+
+<div id="existingRatings" class="existing-ratings"></div>
         <p id="ratingsMessage" class="form-message" aria-live="polite"></p>
     </section>
 

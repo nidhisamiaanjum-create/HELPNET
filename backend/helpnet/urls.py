@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.urls import include, path
 from django.views.generic import TemplateView
 
-from apps.users.views import PublicUserProfileView
+from apps.users.views import PublicUserProfileView,UserSearchView
 
 
 def root_view(request):
@@ -33,6 +33,17 @@ urlpatterns = [
     path('api/health/', include('apps.health.urls')),
     path('api/volunteer/', include('apps.volunteer.urls')),
     path('api/verification/', include('apps.verification.urls')),
+    path(
+    "user-search/",
+    TemplateView.as_view(template_name="pages/user-search.html"),
+    name="user-search",
+),
+
+path(
+    "api/users/search/",
+    UserSearchView.as_view(),
+    name="user-search-api",
+),
     path('api/users/<uuid:user_id>/', PublicUserProfileView.as_view(), name='public-user-profile'),
 
     path('', TemplateView.as_view(template_name='pages/home.html'), name='home'),
