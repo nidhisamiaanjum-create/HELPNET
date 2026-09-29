@@ -82,6 +82,12 @@ async function loadProfile() {
         setText("profileLocation", user.location);
         setText("profileRole", user.role);
         setText("profileBio", user.bio || "");
+        setText("infoFullName", user.full_name);
+setText("infoEmail", user.email);
+setText("infoPhone", user.phone_number);
+setText("infoLocation", user.location);
+setText("infoDob", user.date_of_birth);
+setText("infoGender", user.gender);
 
         renderVerificationBadge(user.is_verified);
         setText(

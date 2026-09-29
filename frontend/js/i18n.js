@@ -608,7 +608,7 @@ const TEXT = {
         role_volunteer: "Volunteer",
 
 
-        role_ngo: "Organization",
+        role_ngo: "NGO/Organization",
 
 
         role_farmer: "Farmer",

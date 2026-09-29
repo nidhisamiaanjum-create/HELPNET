@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db.models import Q
 # at the top, with other imports:
 from .serializers import (
     RegisterSerializer,
@@ -312,6 +313,53 @@ class PublicUserProfileView(APIView):
                 "success": True,
                 "data": serializer.data,
                 "message": "User profile loaded.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+class UserSearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = request.query_params.get("q", "").strip()
+
+        if not query:
+            return Response(
+                {
+                    "success": True,
+                    "data": [],
+                    "message": "Enter a name, role, or area to search.",
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        users = (
+            User.objects
+            .filter(
+                Q(full_name__icontains=query)
+                | Q(role__icontains=query)
+                | Q(location__icontains=query)
+            )
+            .exclude(user_id=request.user.user_id)
+            .filter(is_active=True)
+            .order_by("full_name")[:20]
+        )
+
+        results = []
+
+        for user in users:
+            results.append({
+                "user_id": str(user.user_id),
+                "full_name": user.full_name,
+                "role": user.role,
+                "location": user.location or "",
+            })
+
+        return Response(
+            {
+                "success": True,
+                "data": results,
+                "message": f"{len(results)} user(s) found.",
             },
             status=status.HTTP_200_OK,
         )
