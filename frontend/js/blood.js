@@ -274,5 +274,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         searchSection?.scrollIntoView({ behavior: "smooth", block: "start" });
         document.getElementById("donorSearch")?.focus();
     }
-    await Promise.all([loadDonorProfile(), loadRequests(), loadHistory()]);
+    await loadDonorProfile();
+    await loadRequests();
+    await loadHistory();
 });

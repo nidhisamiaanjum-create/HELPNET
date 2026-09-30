@@ -69,11 +69,9 @@ async function loadRatings() {
     }
 
     try {
-        const [profile, average, ratings] = await Promise.all([
-            apiRequest(`/api/users/${ratedUserId}/`),
-            apiRequest(`/api/ratings/users/${ratedUserId}/average/`),
-            apiRequest(`/api/ratings/users/${ratedUserId}/`),
-        ]);
+        const profile = await apiRequest(`/api/users/${ratedUserId}/`);
+        const average = await apiRequest(`/api/ratings/users/${ratedUserId}/average/`);
+        const ratings = await apiRequest(`/api/ratings/users/${ratedUserId}/`);
         document.getElementById("ratingsContent").hidden = false;
         document.getElementById("ratedUserName").textContent = `${profile.data.full_name}'s ratings`;
         document.getElementById("ratedUserRole").textContent = profile.data.role || "";

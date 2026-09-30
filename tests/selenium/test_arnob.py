@@ -149,7 +149,14 @@ class ArnobSeleniumTests(StaticLiveServerTestCase):
 		rated_user = self.make_user("Rated Donor")
 		self.open_as(rater, f"/ratings/?user_id={rated_user.user_id}")
 
-		self.wait.until(expected.visibility_of_element_located((By.ID, "ratingsContent")))
+		self.wait.until(
+			lambda browser: browser.find_element(By.ID, "ratingsContent").is_displayed()
+			or bool(browser.find_element(By.ID, "ratingsMessage").text)
+		)
+		self.assertTrue(
+			self.browser.find_element(By.ID, "ratingsContent").is_displayed(),
+			self.browser.find_element(By.ID, "ratingsMessage").text,
+		)
 		self.wait.until(
 			lambda browser: "No ratings yet."
 			in browser.find_element(By.ID, "existingRatings").text
