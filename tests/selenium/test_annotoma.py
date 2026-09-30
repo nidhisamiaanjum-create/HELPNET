@@ -626,3 +626,344 @@ def test_admin_volunteers():
 
     finally:
         driver.quit()
+
+def test_goods_list():
+    driver = create_driver()
+
+    try:
+        login(driver)
+
+        print("\nGOODS LIST")
+
+        driver.get(
+            BASE_URL + "/goods-list/"
+        )
+
+        time.sleep(2)
+
+        print(
+            "GOODS LIST URL:",
+            driver.current_url
+        )
+
+        assert (
+            "/goods-list/"
+            in driver.current_url
+        )
+
+        page_text = driver.find_element(
+            By.TAG_NAME,
+            "body"
+        ).text
+
+        print("\nGOODS LIST PAGE:")
+        print(page_text)
+
+        inputs = driver.find_elements(
+            By.TAG_NAME,
+            "input"
+        )
+
+        buttons = driver.find_elements(
+            By.TAG_NAME,
+            "button"
+        )
+
+        print(
+            "\nINPUTS FOUND:",
+            len(inputs)
+        )
+
+        for item in inputs:
+            print(
+                "INPUT:",
+                item.get_attribute("name"),
+                "|",
+                item.get_attribute("id"),
+                "|",
+                item.get_attribute("placeholder")
+            )
+
+        print(
+            "\nBUTTONS FOUND:",
+            len(buttons)
+        )
+
+        for button in buttons:
+            print(
+                "BUTTON:",
+                button.text
+            )
+
+        print(
+            "\nGOODS LIST PAGE: FOUND"
+        )
+
+    finally:
+        driver.quit()
+
+
+def test_create_goods():
+    driver = create_driver()
+
+    try:
+        login(driver)
+
+        print("\nCREATE GOODS")
+
+        driver.get(
+            BASE_URL + "/create-goods/"
+        )
+
+        time.sleep(2)
+
+        print(
+            "CREATE GOODS URL:",
+            driver.current_url
+        )
+
+        assert (
+            "/create-goods/"
+            in driver.current_url
+        )
+
+        page_text = driver.find_element(
+            By.TAG_NAME,
+            "body"
+        ).text
+
+        print("\nCREATE GOODS PAGE:")
+        print(page_text)
+
+        inputs = driver.find_elements(
+            By.TAG_NAME,
+            "input"
+        )
+
+        textareas = driver.find_elements(
+            By.TAG_NAME,
+            "textarea"
+        )
+
+        selects = driver.find_elements(
+            By.TAG_NAME,
+            "select"
+        )
+
+        buttons = driver.find_elements(
+            By.TAG_NAME,
+            "button"
+        )
+
+        print(
+            "\nINPUTS FOUND:",
+            len(inputs)
+        )
+
+        for item in inputs:
+            print(
+                "INPUT:",
+                item.get_attribute("name"),
+                "|",
+                item.get_attribute("id"),
+                "|",
+                item.get_attribute("placeholder")
+            )
+
+        print(
+            "\nTEXTAREAS FOUND:",
+            len(textareas)
+        )
+
+        for item in textareas:
+            print(
+                "TEXTAREA:",
+                item.get_attribute("name"),
+                "|",
+                item.get_attribute("id")
+            )
+
+        print(
+            "\nSELECTS FOUND:",
+            len(selects)
+        )
+
+        for item in selects:
+            print(
+                "SELECT:",
+                item.get_attribute("name"),
+                "|",
+                item.get_attribute("id")
+            )
+
+        print(
+            "\nBUTTONS FOUND:",
+            len(buttons)
+        )
+
+        for button in buttons:
+            print(
+                "BUTTON:",
+                button.text
+            )
+
+        print(
+            "\nCREATE GOODS PAGE: FOUND"
+        )
+
+    finally:
+        driver.quit()
+
+
+def test_goods_details():
+    driver = create_driver()
+
+    try:
+        login(driver)
+
+        print("\nGOODS DETAILS")
+
+        driver.get(
+            BASE_URL + "/goods-details/"
+        )
+
+        time.sleep(2)
+
+        print(
+            "GOODS DETAILS URL:",
+            driver.current_url
+        )
+
+        page_text = driver.find_element(
+            By.TAG_NAME,
+            "body"
+        ).text
+
+        print("\nGOODS DETAILS PAGE:")
+        print(page_text)
+
+        print(
+            "\nGOODS DETAILS PAGE: FOUND"
+        )
+
+    finally:
+        driver.quit()
+
+
+def test_goods_interest_contact():
+    driver = create_driver()
+
+    try:
+        login(driver)
+
+        print("\nGOODS INTEREST / CONTACT")
+
+        driver.get(
+            BASE_URL + "/goods-list/"
+        )
+
+        time.sleep(2)
+
+        print(
+            "GOODS LIST URL:",
+            driver.current_url
+        )
+
+        page_text = driver.find_element(
+            By.TAG_NAME,
+            "body"
+        ).text
+
+        print("\nGOODS PAGE:")
+        print(page_text)
+
+        buttons = driver.find_elements(
+            By.TAG_NAME,
+            "button"
+        )
+
+        print(
+            "\nBUTTONS FOUND:",
+            len(buttons)
+        )
+
+        for button in buttons:
+            print(
+                "BUTTON:",
+                button.text
+            )
+
+        print(
+            "\nGOODS INTEREST / CONTACT PAGE: FOUND"
+        )
+
+    finally:
+        driver.quit()
+
+
+def test_goods_report_and_disclaimer():
+    driver = create_driver()
+
+    try:
+        login(driver)
+
+        print("\nGOODS REPORT / DISCLAIMER")
+
+        driver.get(
+            BASE_URL + "/goods-list/"
+        )
+
+        time.sleep(2)
+
+        page_text = driver.find_element(
+            By.TAG_NAME,
+            "body"
+        ).text
+
+        print("\nGOODS PAGE:")
+        print(page_text)
+
+        print(
+            "\nREPORT / DISCLAIMER ELEMENTS"
+        )
+
+        buttons = driver.find_elements(
+            By.TAG_NAME,
+            "button"
+        )
+
+        links = driver.find_elements(
+            By.TAG_NAME,
+            "a"
+        )
+
+        print(
+            "BUTTONS FOUND:",
+            len(buttons)
+        )
+
+        for button in buttons:
+            print(
+                "BUTTON:",
+                button.text
+            )
+
+        print(
+            "LINKS FOUND:",
+            len(links)
+        )
+
+        for link in links:
+            print(
+                "LINK:",
+                link.text,
+                "|",
+                link.get_attribute("href")
+            )
+
+        print(
+            "\nGOODS REPORT / DISCLAIMER PAGE: FOUND"
+        )
+
+    finally:
+        driver.quit()
