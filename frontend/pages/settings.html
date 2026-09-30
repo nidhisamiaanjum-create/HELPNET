@@ -1,0 +1,253 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Settings | HELPNET</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+<header class="site-header">
+
+    <a href="/dashboard/" class="logo">
+        হেল্পনেট
+    </a>
+
+    <div class="header-actions">
+
+        <button
+            type="button"
+            id="langToggle"
+            class="lang-toggle">
+            English
+        </button>
+
+        <a
+            href="/profile/"
+            class="back-link">
+            ← Profile
+        </a>
+
+    </div>
+
+</header>
+
+
+<main class="profile-container">
+
+    <section class="profile-card">
+
+        <h1>Settings</h1>
+
+        <p>
+            Manage your account and privacy settings.
+        </p>
+
+        <form id="settingsForm">
+
+            <div class="privacy-settings">
+
+                <h2>Privacy Settings</h2>
+
+                <p>
+                    Choose which information other users can see.
+                </p>
+
+
+                <label>
+                    <input
+                        type="checkbox"
+                        id="showPhone"
+                        name="is_phone_visible">
+                    Show my phone number
+                </label>
+
+
+                <label>
+                    <input
+                        type="checkbox"
+                        id="showEmail"
+                        name="is_email_visible">
+                    Show my email address
+                </label>
+
+
+                <label>
+                    <input
+                        type="checkbox"
+                        id="showLocation"
+                        name="is_location_visible">
+                    Show my location
+                </label>
+
+
+                <label>
+                    <input
+                        type="checkbox"
+                        id="showDob"
+                        name="is_date_of_birth_visible">
+                    Show my date of birth
+                </label>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn">
+                Save Settings
+            </button>
+
+            <p
+                id="settingsMessage"
+                class="form-message"
+                aria-live="polite">
+            </p>
+
+        </form>
+
+    </section>
+
+</main>
+
+
+<script src="{% static 'js/api.js' %}"></script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", async function () {
+
+    const form = document.getElementById("settingsForm");
+    const message = document.getElementById("settingsMessage");
+
+    const token = localStorage.getItem("helpnet_token");
+
+    if (!token) {
+        window.location.href = "/login/";
+        return;
+    }
+
+
+    /* =========================
+       LOAD CURRENT SETTINGS
+    ========================= */
+
+    try {
+
+        const response = await fetch("/api/auth/me/", {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            window.location.href = "/login/";
+            return;
+        }
+
+        const user = result.data || result;
+
+        document.getElementById("showPhone").checked =
+            user.is_phone_visible ?? true;
+
+        document.getElementById("showEmail").checked =
+            user.is_email_visible ?? true;
+
+        document.getElementById("showLocation").checked =
+            user.is_location_visible ?? true;
+
+        document.getElementById("showDob").checked =
+            user.is_date_of_birth_visible ?? true;
+
+    } catch (error) {
+
+        console.error("Failed to load settings:", error);
+
+        message.textContent =
+            "Unable to load your settings.";
+
+    }
+
+
+    /* =========================
+       SAVE SETTINGS
+    ========================= */
+
+    form.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+        const payload = {
+
+            is_phone_visible:
+                document.getElementById("showPhone").checked,
+
+            is_email_visible:
+                document.getElementById("showEmail").checked,
+
+            is_location_visible:
+                document.getElementById("showLocation").checked,
+
+            is_date_of_birth_visible:
+                document.getElementById("showDob").checked
+        };
+
+
+        try {
+
+            const response = await fetch("/api/auth/me/", {
+
+                method: "PATCH",
+
+                headers: {
+                    "Authorization": "Bearer " + token,
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(payload)
+
+            });
+
+
+            const result = await response.json();
+
+
+            if (!response.ok) {
+
+                message.textContent =
+                    result.message ||
+                    "Failed to save settings.";
+
+                return;
+            }
+
+
+            message.textContent =
+                "Settings saved successfully.";
+
+        } catch (error) {
+
+            console.error("Failed to save settings:", error);
+
+            message.textContent =
+                "Unable to save settings.";
+
+        }
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>

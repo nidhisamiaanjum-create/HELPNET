@@ -1,51 +1,134 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from .models import WastePickupRequest
 
-User = get_user_model()
+from .models import (
+    WasteCollector,
+    WasteCollectorRating,
+    WastePickupRequest,
+)
 
 
-class CollectorUserSerializer(serializers.ModelSerializer):
-    average_rating = serializers.SerializerMethodField()
-    rating_count = serializers.SerializerMethodField()
+class WasteCollectorRatingSerializer(
+    serializers.ModelSerializer
+):
+    user_name = serializers.CharField(
+        source="user.full_name",
+        read_only=True,
+    )
 
     class Meta:
-        model = User
+        model = WasteCollectorRating
+
         fields = [
-            "user_id",
-            "full_name",
-            "phone_number",
-            "email",
-            "role",
-            "location",
-            "average_rating",
-            "rating_count",
+            "id",
+            "collector",
+            "user",
+            "user_name",
+            "rating",
+            "review",
+            "created_at",
         ]
 
-    def get_average_rating(self, obj):
-        # Using Rating model if exists
-        try:
-            from apps.ratings.models import Rating
-            avg = Rating.average_for_user(obj)
-            return round(avg, 1) if avg is not None else 5.0
-        except Exception:
-            return 5.0
+        read_only_fields = [
+            "id",
+            "collector",
+            "user",
+            "user_name",
+            "created_at",
+        ]
 
-    def get_rating_count(self, obj):
-        try:
-            from apps.ratings.models import Rating
-            return Rating.objects.filter(rated_user=obj).count()
-        except Exception:
-            return 0
+    def validate_rating(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError(
+                "Rating must be between 1 and 5."
+            )
+
+        return value
 
 
-class WastePickupRequestSerializer(serializers.ModelSerializer):
-    requester_name = serializers.CharField(source="requester.full_name", read_only=True)
-    requester_phone = serializers.CharField(source="requester.phone_number", read_only=True)
-    collector_details = CollectorUserSerializer(source="collector", read_only=True)
+class WasteCollectorSerializer(
+    serializers.ModelSerializer
+):
+    shared_by_name = serializers.CharField(
+        source="shared_by.full_name",
+        read_only=True,
+    )
+
+    average_rating = serializers.FloatField(
+        read_only=True,
+    )
+
+    rating_count = serializers.IntegerField(
+        read_only=True,
+    )
+
+    user_rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WasteCollector
+
+        fields = [
+            "id",
+            "name",
+            "phone",
+            "area",
+            "waste_types",
+            "notes",
+            "shared_by_name",
+            "created_at",
+            "average_rating",
+            "rating_count",
+            "user_rating",
+        ]
+
+        read_only_fields = [
+            "id",
+            "shared_by_name",
+            "created_at",
+            "average_rating",
+            "rating_count",
+            "user_rating",
+        ]
+
+    def get_user_rating(self, obj):
+        request = self.context.get("request")
+
+        if not request or not request.user.is_authenticated:
+            return None
+
+        rating = obj.ratings.filter(
+            user=request.user
+        ).first()
+
+        if not rating:
+            return None
+
+        return {
+            "rating": rating.rating,
+            "review": rating.review,
+        }
+
+
+class WastePickupRequestSerializer(
+    serializers.ModelSerializer
+):
+    requester_name = serializers.CharField(
+        source="requester.full_name",
+        read_only=True,
+    )
+
+    requester_phone = serializers.CharField(
+        source="requester.phone_number",
+        read_only=True,
+    )
+
+    collector_details = WasteCollectorSerializer(
+        source="collector",
+        read_only=True,
+    )
 
     class Meta:
         model = WastePickupRequest
+
         fields = [
             "id",
             "requester",
@@ -64,8 +147,17 @@ class WastePickupRequestSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "requester", "created_at", "updated_at"]
+
+        read_only_fields = [
+            "id",
+            "requester",
+            "created_at",
+            "updated_at",
+        ]
 
     def create(self, validated_data):
-        validated_data["requester"] = self.context["request"].user
+        validated_data["requester"] = (
+            self.context["request"].user
+        )
+
         return super().create(validated_data)

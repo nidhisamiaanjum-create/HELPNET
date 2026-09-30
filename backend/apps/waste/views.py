@@ -1,109 +1,232 @@
-from django.contrib.auth import get_user_model
 from django.db.models import Q
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import WastePickupRequest
-from .serializers import CollectorUserSerializer, WastePickupRequestSerializer
+from .models import (
+    WasteCollector,
+    WasteCollectorRating,
+    WastePickupRequest,
+)
+from .serializers import (
+    WasteCollectorRatingSerializer,
+    WasteCollectorSerializer,
+    WastePickupRequestSerializer,
+)
 
-User = get_user_model()
 
-
-class WastePickupRequestListCreateView(generics.ListCreateAPIView):
+class WastePickupRequestListCreateView(
+    generics.ListCreateAPIView
+):
     serializer_class = WastePickupRequestSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
 
     def get_queryset(self):
         user = self.request.user
+
         queryset = WastePickupRequest.objects.all()
 
-        # If citizen, only view their own requests
-        if user.role == "Citizen" and not (user.is_staff or user.is_superuser):
-            return queryset.filter(requester=user)
+        if user.role == "Citizen" and not (
+            user.is_staff or user.is_superuser
+        ):
+            return queryset.filter(
+                requester=user
+            )
 
-        # For volunteers, collectors, admins - can view all or filter by area / status
-        area = self.request.query_params.get("area")
-        status_param = self.request.query_params.get("status")
+        area = self.request.query_params.get(
+            "area"
+        )
+
+        status_param = self.request.query_params.get(
+            "status"
+        )
 
         if area:
-            queryset = queryset.filter(area__icontains=area)
+            queryset = queryset.filter(
+                area__icontains=area
+            )
+
         if status_param:
-            queryset = queryset.filter(status__iexact=status_param)
+            queryset = queryset.filter(
+                status__iexact=status_param
+            )
 
         return queryset
 
     def perform_create(self, serializer):
-        serializer.save(requester=self.request.user)
+        serializer.save(
+            requester=self.request.user
+        )
 
 
-class WastePickupRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
+class WastePickupRequestDetailView(
+    generics.RetrieveUpdateDestroyAPIView
+):
     serializer_class = WastePickupRequestSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+
     queryset = WastePickupRequest.objects.all()
+
     lookup_field = "id"
 
-    def update(self, request, *args, **kwargs):
+    def update(
+        self,
+        request,
+        *args,
+        **kwargs
+    ):
         instance = self.get_object()
         user = request.user
 
-        # Ensure citizen can update their own request, or volunteers/staff can update status
-        if instance.requester != user and user.role not in ["Volunteer", "NGO", "Admin"] and not user.is_staff:
+        if (
+            instance.requester != user
+            and user.role
+            not in ["Volunteer", "NGO", "Admin"]
+            and not user.is_staff
+        ):
             return Response(
-                {"success": False, "message": "You do not have permission to modify this request."},
+                {
+                    "success": False,
+                    "message": (
+                        "You do not have permission "
+                        "to modify this request."
+                    ),
+                },
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        return super().update(request, *args, **kwargs)
-
-
-class AvailableCollectorsView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        area = request.query_params.get("area", "").strip()
-
-        # Target collectors (Volunteers, NGOs, or all non-citizen service providers if specified)
-        collectors_qs = User.objects.filter(
-            Q(role__in=["Volunteer", "NGO"]) | Q(role="Admin")
+        return super().update(
+            request,
+            *args,
+            **kwargs
         )
 
-        if area:
-            # Simple area matching by location field (case-insensitive substring match)
-            matched = collectors_qs.filter(
-                Q(location__icontains=area) | Q(full_name__icontains=area)
-            )
-            # If matches found, use them; if none found, return general area collectors
-            if matched.exists():
-                collectors = matched
-            else:
-                collectors = collectors_qs
-        else:
-            collectors = collectors_qs
 
-        serializer = CollectorUserSerializer(collectors, many=True)
-        return Response({
-            "success": True,
-            "data": serializer.data,
-            "area_queried": area,
-            "count": len(serializer.data),
-        })
+class WasteCollectorListCreateView(
+    generics.ListCreateAPIView
+):
+    serializer_class = WasteCollectorSerializer
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+
+    def get_queryset(self):
+        area = self.request.query_params.get(
+            "area",
+            "",
+        ).strip()
+
+        queryset = WasteCollector.objects.all()
+
+        if area:
+            queryset = queryset.filter(
+                Q(area__icontains=area)
+                | Q(name__icontains=area)
+            )
+
+        return queryset
+
+    def get_serializer_context(self):
+        return {
+            **super().get_serializer_context(),
+            "request": self.request,
+        }
+
+    def perform_create(self, serializer):
+        serializer.save(
+            shared_by=self.request.user
+        )
 
 
 class CollectorProfileView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
 
-    def get(self, request, user_id):
+    def get(self, request, collector_id):
         try:
-            collector = User.objects.get(user_id=user_id)
-        except (User.DoesNotExist, ValueError):
+            collector = (
+                WasteCollector.objects.get(
+                    id=collector_id
+                )
+            )
+
+        except WasteCollector.DoesNotExist:
             return Response(
-                {"success": False, "message": "Collector not found."},
+                {
+                    "success": False,
+                    "message": "Collector not found.",
+                },
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = CollectorUserSerializer(collector)
-        return Response({
-            "success": True,
-            "data": serializer.data,
-        })
+        serializer = WasteCollectorSerializer(
+            collector,
+            context={"request": request},
+        )
+
+        return Response(
+            {
+                "success": True,
+                "data": serializer.data,
+            }
+        )
+
+
+class WasteCollectorRatingListCreateView(
+    generics.ListCreateAPIView
+):
+    serializer_class = (
+        WasteCollectorRatingSerializer
+    )
+
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+
+    def get_queryset(self):
+        collector_id = self.kwargs[
+            "collector_id"
+        ]
+
+        return WasteCollectorRating.objects.filter(
+            collector_id=collector_id
+        )
+
+    def perform_create(self, serializer):
+        collector_id = self.kwargs[
+            "collector_id"
+        ]
+
+        try:
+            collector = (
+                WasteCollector.objects.get(
+                    id=collector_id
+                )
+            )
+
+        except WasteCollector.DoesNotExist:
+            raise serializers.ValidationError(
+                "Waste collector not found."
+            )
+
+        already_rated = (
+            WasteCollectorRating.objects.filter(
+                collector=collector,
+                user=self.request.user,
+            ).exists()
+        )
+
+        if already_rated:
+            raise serializers.ValidationError(
+                "You have already rated this collector."
+            )
+
+        serializer.save(
+            collector=collector,
+            user=self.request.user,
+        )
