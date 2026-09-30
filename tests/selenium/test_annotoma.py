@@ -967,3 +967,376 @@ def test_goods_report_and_disclaimer():
 
     finally:
         driver.quit()
+
+
+
+def test_health_questions():
+    driver = create_driver()
+
+    try:
+        login(driver)
+
+        print("\n================ HEALTH QUESTIONS ================")
+
+        print("LOGIN URL:", driver.current_url)
+
+        driver.get(
+            BASE_URL + "/health-questions/"
+        )
+
+        time.sleep(2)
+
+        print(
+            "HEALTH QUESTIONS URL:",
+            driver.current_url
+        )
+
+        assert (
+            "/health-questions/"
+            in driver.current_url
+        )
+
+        page_text = driver.find_element(
+            By.TAG_NAME,
+            "body"
+        ).text
+
+        print("\nHEALTH QUESTIONS PAGE:")
+        print(page_text)
+
+        inputs = driver.find_elements(
+            By.TAG_NAME,
+            "input"
+        )
+
+        textareas = driver.find_elements(
+            By.TAG_NAME,
+            "textarea"
+        )
+
+        buttons = driver.find_elements(
+            By.TAG_NAME,
+            "button"
+        )
+
+        print(
+            "\nINPUTS FOUND:",
+            len(inputs)
+        )
+
+        for item in inputs:
+            print(
+                "INPUT:",
+                item.get_attribute("name"),
+                "|",
+                item.get_attribute("id"),
+                "|",
+                item.get_attribute("placeholder")
+            )
+
+        print(
+            "\nTEXTAREAS FOUND:",
+            len(textareas)
+        )
+
+        for item in textareas:
+            print(
+                "TEXTAREA:",
+                item.get_attribute("name"),
+                "|",
+                item.get_attribute("id")
+            )
+
+        print(
+            "\nBUTTONS FOUND:",
+            len(buttons)
+        )
+
+        for button in buttons:
+            print(
+                "BUTTON:",
+                button.text
+            )
+
+        assert len(page_text.strip()) > 0
+
+        print(
+            "\nHEALTH QUESTIONS PAGE: FOUND"
+        )
+
+    finally:
+        driver.quit()
+
+
+
+
+def test_health_question_details():
+    driver = create_driver()
+
+    try:
+        login(driver)
+
+        print(
+            "\n================ HEALTH QUESTION DETAILS ================"
+        )
+
+        print(
+            "LOGIN URL:",
+            driver.current_url
+        )
+
+        driver.get(
+            BASE_URL + "/health-question-details/"
+        )
+
+        time.sleep(2)
+
+        print(
+            "HEALTH QUESTION DETAILS URL:",
+            driver.current_url
+        )
+
+        assert (
+            "/health-question-details/"
+            in driver.current_url
+        )
+
+        page_text = driver.find_element(
+            By.TAG_NAME,
+            "body"
+        ).text
+
+        print("\nHEALTH QUESTION DETAILS PAGE:")
+        print(page_text)
+
+        inputs = driver.find_elements(
+            By.TAG_NAME,
+            "input"
+        )
+
+        textareas = driver.find_elements(
+            By.TAG_NAME,
+            "textarea"
+        )
+
+        buttons = driver.find_elements(
+            By.TAG_NAME,
+            "button"
+        )
+
+        print(
+            "\nINPUTS FOUND:",
+            len(inputs)
+        )
+
+        for item in inputs:
+            print(
+                "INPUT:",
+                item.get_attribute("name"),
+                "|",
+                item.get_attribute("id"),
+                "|",
+                item.get_attribute("placeholder")
+            )
+
+        print(
+            "\nTEXTAREAS FOUND:",
+            len(textareas)
+        )
+
+        for item in textareas:
+            print(
+                "TEXTAREA:",
+                item.get_attribute("name"),
+                "|",
+                item.get_attribute("id")
+            )
+
+        print(
+            "\nBUTTONS FOUND:",
+            len(buttons)
+        )
+
+        for button in buttons:
+            print(
+                "BUTTON:",
+                button.text
+            )
+
+        assert len(page_text.strip()) > 0
+
+        print(
+            "\nHEALTH QUESTION DETAILS PAGE: FOUND"
+        )
+
+    finally:
+        driver.quit()
+
+def test_health_verification_reputation():
+    driver = create_driver()
+
+    try:
+        login(driver)
+
+        print("\n================ HEALTH VERIFICATION / REPUTATION ================")
+
+        print("LOGIN URL:", driver.current_url)
+
+        driver.get(
+            BASE_URL + "/health-professionals/"
+        )
+
+        time.sleep(2)
+
+        print(
+            "HEALTH PROFESSIONALS URL:",
+            driver.current_url
+        )
+
+        assert "/health-professionals/" in driver.current_url
+
+        page_text = driver.find_element(
+            By.TAG_NAME,
+            "body"
+        ).text
+
+        print("\nHEALTH PROFESSIONALS PAGE:")
+        print(page_text)
+
+        inputs = driver.find_elements(
+            By.TAG_NAME,
+            "input"
+        )
+
+        buttons = driver.find_elements(
+            By.TAG_NAME,
+            "button"
+        )
+
+        links = driver.find_elements(
+            By.TAG_NAME,
+            "a"
+        )
+
+        print("\nINPUTS FOUND:", len(inputs))
+
+        for item in inputs:
+            print(
+                "INPUT:",
+                item.get_attribute("name"),
+                "|",
+                item.get_attribute("id"),
+                "|",
+                item.get_attribute("placeholder")
+            )
+
+        print("\nBUTTONS FOUND:", len(buttons))
+
+        for button in buttons:
+            print(
+                "BUTTON:",
+                button.text
+            )
+
+        print("\nLINKS FOUND:", len(links))
+
+        for link in links:
+            print(
+                "LINK:",
+                link.text,
+                "|",
+                link.get_attribute("href")
+            )
+
+        assert len(page_text.strip()) > 0
+
+        print("\nHEALTH VERIFICATION / REPUTATION PAGE: FOUND")
+
+    finally:
+        driver.quit()
+
+
+def test_health_professionals_directory():
+    driver = create_driver()
+
+    try:
+        login(driver)
+
+        print("\n================ HEALTH PROFESSIONAL DIRECTORY ================")
+
+        print("LOGIN URL:", driver.current_url)
+
+        driver.get(
+            BASE_URL + "/health-professionals/"
+        )
+
+        time.sleep(2)
+
+        print(
+            "HEALTH PROFESSIONALS URL:",
+            driver.current_url
+        )
+
+        assert "/health-professionals/" in driver.current_url
+
+        page_text = driver.find_element(
+            By.TAG_NAME,
+            "body"
+        ).text
+
+        print("\nHEALTH PROFESSIONAL DIRECTORY PAGE:")
+        print(page_text)
+
+        inputs = driver.find_elements(
+            By.TAG_NAME,
+            "input"
+        )
+
+        buttons = driver.find_elements(
+            By.TAG_NAME,
+            "button"
+        )
+
+        links = driver.find_elements(
+            By.TAG_NAME,
+            "a"
+        )
+
+        print("\nINPUTS FOUND:", len(inputs))
+
+        for item in inputs:
+            print(
+                "INPUT:",
+                item.get_attribute("name"),
+                "|",
+                item.get_attribute("id"),
+                "|",
+                item.get_attribute("placeholder")
+            )
+
+        print("\nBUTTONS FOUND:", len(buttons))
+
+        for button in buttons:
+            print(
+                "BUTTON:",
+                button.text
+            )
+
+        print("\nLINKS FOUND:", len(links))
+
+        for link in links:
+            print(
+                "LINK:",
+                link.text,
+                "|",
+                link.get_attribute("href")
+            )
+
+        assert len(page_text.strip()) > 0
+
+        print(
+            "\nHEALTH PROFESSIONAL DIRECTORY: FOUND"
+        )
+
+    finally:
+        driver.quit()
