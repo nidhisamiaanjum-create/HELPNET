@@ -76,6 +76,8 @@ async function loadRatings() {
         ]);
         document.getElementById("ratingsContent").hidden = false;
         document.getElementById("ratedUserName").textContent = `${profile.data.full_name}'s ratings`;
+        document.getElementById("ratedUserRole").textContent = profile.data.role || "";
+        document.getElementById("ratedUserArea").textContent = profile.data.location || "";
         const verification = document.getElementById("ratedUserVerification");
         verification.hidden = !profile.data.is_verified;
         const averageValue = average.data.average_rating;

@@ -220,6 +220,7 @@ function renderDonorSearchResults(donors) {
         const name = document.createElement("h3");
         name.textContent = donor.full_name;
         if (donor.is_verified) addText(name, "span", " ✓ Verified", "donor-verified");
+        card.appendChild(name);
         addText(card, "p", `${donor.blood_group} · ${donor.area}`);
         addText(card, "p", `★ ${donor.average_rating === null ? "0.0" : Number(donor.average_rating).toFixed(1)} · ${donor.rating_count} ratings`);
         if (donor.user_id === bloodState.currentUserId) {
