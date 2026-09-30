@@ -1,3 +1,4 @@
+console.log("🔥 NEW PROFILE.JS LOADED 🔥");
 let selectedRating = 0;
 
 /* ---------- RENDER HELPERS ---------- */
@@ -44,6 +45,165 @@ function renderExistingRatings(ratings) {
         comment.textContent = item.comment || "No comment";
         article.append(title, comment);
         container.appendChild(article);
+    });
+}
+
+
+function setupProfileMode(isPublicProfile) {
+     document.body.classList.toggle("public-profile", isPublicProfile);
+    if (!isPublicProfile) {
+        return;
+    }
+
+    console.log("PUBLIC PROFILE MODE");
+
+    // Hide NID Verification / Verify Now
+    const verification = document.getElementById("verificationAction");
+    if (verification) {
+        verification.hidden = true;
+    }
+
+    // Hide Edit Profile section
+    const editProfile = document.getElementById("edit-profile");
+    if (editProfile) {
+        editProfile.hidden = true;
+    }
+
+    // Hide Edit Profile button/link
+    const editLink = document.getElementById("editProfileLink");
+    if (editLink) {
+        editLink.hidden = true;
+    }
+
+    // Hide Settings
+    document.querySelectorAll('a[href="/settings/"]').forEach((el) => {
+        el.hidden = true;
+    });
+
+    // Hide profile picture upload/change
+    const uploadLabel = document.querySelector(".profile-picture-upload");
+    if (uploadLabel) {
+        uploadLabel.hidden = true;
+    }
+
+    const uploadInput = document.getElementById("profilePictureInputTop");
+    if (uploadInput) {
+        uploadInput.disabled = true;
+    }
+
+    // Hide ALL "My Activities"
+    const activities = document.querySelector(".profile-menu");
+    if (activities) {
+        activities.hidden = true;
+    }
+
+    // Hide entire profile actions EXCEPT logout
+    const profileActions = document.getElementById("profileActions");
+
+    if (profileActions) {
+        profileActions.querySelectorAll("a, button").forEach((element) => {
+            if (element.id === "logoutButton") {
+                element.hidden = false;
+            } else {
+                element.hidden = true;
+            }
+        });
+    }
+
+    // Make sure logout stays visible
+    const logoutButton = document.getElementById("logoutButton");
+    if (logoutButton) {
+        logoutButton.hidden = false;
+    }
+}
+
+function setupRatingForm(isPublicProfile, targetUserId) {
+    const section = document.getElementById("rateUserSection");
+    const picker = document.getElementById("profileStarPicker");
+    const submitButton = document.getElementById("submitProfileRating");
+    const commentInput = document.getElementById("profileRatingComment");
+    const message = document.getElementById("ratingMessage");
+
+    if (!section || !picker || !submitButton) {
+        return;
+    }
+
+    // Only show rating form on another user's profile
+    section.hidden = !isPublicProfile;
+
+    if (!isPublicProfile) {
+        return;
+    }
+
+    // Star selection
+    picker.querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+            selectedRating = Number(button.dataset.rating);
+
+            picker.querySelectorAll("button").forEach((star) => {
+                star.classList.toggle(
+                    "selected",
+                    Number(star.dataset.rating) <= selectedRating
+                );
+            });
+        });
+    });
+
+    // Submit rating
+    submitButton.addEventListener("click", async () => {
+        if (!selectedRating) {
+            message.textContent = "Please select a rating.";
+            return;
+        }
+
+        submitButton.disabled = true;
+        message.textContent = "Submitting...";
+
+        try {
+            const response = await fetch("/api/ratings/create/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("helpnet_token")}`,
+                },
+                body: JSON.stringify({
+                    rated_user: targetUserId,
+                    rating: selectedRating,
+                    comment: commentInput.value.trim(),
+                }),
+            });
+
+            const payload = await response.json();
+
+            if (!response.ok) {
+                message.textContent =
+                    payload.message || "Failed to submit rating.";
+                return;
+            }
+
+            message.textContent = "Rating submitted successfully.";
+
+            // Reset form
+            selectedRating = 0;
+            commentInput.value = "";
+
+            picker.querySelectorAll("button").forEach((star) => {
+                star.classList.remove("selected");
+            });
+
+            // Reload ratings
+            const ratingsResponse = await apiRequest(
+                `/api/ratings/users/${targetUserId}/`
+            );
+
+            renderExistingRatings(ratingsResponse.data || []);
+
+        } catch (error) {
+            console.error("Rating error:", error);
+            message.textContent = "Connection failed.";
+        } finally {
+            submitButton.disabled = false;
+        }
     });
 }
 
@@ -97,10 +257,8 @@ setText("infoGender", user.gender);
         const ratingsResponse = await apiRequest(`/api/ratings/users/${user.user_id}/`);
         renderExistingRatings(ratingsResponse.data || []);
 
-        if (isPublicProfile) {
-            document.getElementById("edit-profile")?.setAttribute("hidden", "");
-            document.querySelector(".profile-action-card")?.setAttribute("hidden", "");
-        }
+        setupProfileMode(isPublicProfile);
+        setupRatingForm(isPublicProfile, targetUserId);
 
         /* --- prefill edit form --- */
         if (isPublicProfile) return;
