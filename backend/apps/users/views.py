@@ -62,6 +62,10 @@ class LoginView(APIView):
 
     def post(self, request):
 
+        import time
+
+        total_start = time.perf_counter()
+
         identifier = request.data.get("identifier")
         password = request.data.get("password")
 
@@ -77,6 +81,9 @@ class LoginView(APIView):
 
         identifier = identifier.strip()
 
+        # 1. Database lookup
+        start = time.perf_counter()
+
         try:
             if "@" in identifier:
                 user = User.objects.get(email=identifier)
@@ -85,7 +92,40 @@ class LoginView(APIView):
         except User.DoesNotExist:
             user = None
 
-        if user is None or not user.check_password(password):
+        print(
+            "LOGIN - USER LOOKUP:",
+            round((time.perf_counter() - start) * 1000, 2),
+            "ms"
+        )
+
+        # 2. Password check
+        user_exists = user is not None
+
+        print(
+            "LOGIN - USER EXISTS:",
+            user_exists
+        )
+
+        # 2. Password check
+        print("LOGIN - PASSWORD START")
+
+        start = time.perf_counter()
+
+        password_valid = user.check_password(password) if user else False
+
+        end = time.perf_counter()
+
+        print(
+               "LOGIN - PASSWORD END"
+                )
+
+        print(
+               "LOGIN - PASSWORD ONLY:",
+               round((end - start) * 1000, 2),
+               "ms"
+                )
+
+        if not password_valid:
             return Response(
                 {
                     "success": False,
@@ -95,7 +135,23 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
+        # 3. JWT generation
+        start = time.perf_counter()
+
         refresh = RefreshToken.for_user(user)
+
+        print(
+            "LOGIN - JWT GENERATION:",
+            round((time.perf_counter() - start) * 1000, 2),
+            "ms"
+        )
+
+        # 4. Total
+        print(
+            "LOGIN - TOTAL:",
+            round((time.perf_counter() - total_start) * 1000, 2),
+            "ms"
+        )
 
         return Response(
             {
@@ -117,6 +173,10 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     def post(self, request):
+        import time
+
+        total_start = time.perf_counter()
+
         refresh_token = request.data.get("refresh")
 
         if not refresh_token:
@@ -130,8 +190,31 @@ class LogoutView(APIView):
             )
 
         try:
+            start = time.perf_counter()
+
             token = RefreshToken(refresh_token)
+
+            print(
+                "LOGOUT - TOKEN PARSE:",
+                round((time.perf_counter() - start) * 1000, 2),
+                "ms"
+            )
+
+            start = time.perf_counter()
+
             token.blacklist()
+
+            print(
+                "LOGOUT - BLACKLIST:",
+                round((time.perf_counter() - start) * 1000, 2),
+                "ms"
+            )
+
+            print(
+                "LOGOUT - TOTAL:",
+                round((time.perf_counter() - total_start) * 1000, 2),
+                "ms"
+            )
 
             return Response(
                 {
@@ -151,6 +234,9 @@ class LogoutView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+            
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
 

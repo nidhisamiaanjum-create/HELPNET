@@ -10,9 +10,28 @@
     <title data-i18n="profilePageTitle">প্রোফাইল | HELPNET</title>
 
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+    /* Public profile starts in public mode.
+       JavaScript will remove this restriction for /profile/ without user_id. */
+    body.public-profile .profile-picture-upload,
+    body.public-profile #verificationAction,
+    body.public-profile .profile-menu,
+    body.public-profile #editProfileLink,
+    body.public-profile #edit-profile,
+    body.public-profile a[href="/settings/"] {
+        display: none !important;
+    }
+</style>
+
+
 </head>
 
 <body>
+    <script>
+    if (new URLSearchParams(window.location.search).has("user_id")) {
+        document.body.classList.add("public-profile");
+    }
+</script>
 
 <header class="site-header">
 
@@ -311,7 +330,7 @@
     <!-- =========================
          NID VERIFICATION
     ========================== -->
-    <section class="profile-action-card">
+    <section class="profile-action-card" id="verificationAction">
 
         <div class="action-icon">
             🛡️
@@ -353,27 +372,45 @@
          TRUST / RATING
     ========================== -->
     <section class="profile-trust">
-
+    
         <div class="trust-heading">
-
+    
             <div>
-
+    
                 <h2 data-i18n="trustworthiness">
                     বিশ্বাসযোগ্যতা
                 </h2>
-
+    
                 <p id="ratingSummary">
                     ★ 0.0 · 0
                 </p>
-
+    
             </div>
-
+    
         </div>
-
+    
         <div id="trust-component"></div>
-
+    
         <div id="existingRatings" class="existing-ratings"></div>
-
+        <div id="rateUserSection" class="rate-user-section" hidden>
+            <h3>Rate this user</h3>
+    
+            <div class="star-picker" id="profileStarPicker">
+                <button type="button" data-rating="1">★</button>
+                <button type="button" data-rating="2">★</button>
+                <button type="button" data-rating="3">★</button>
+                <button type="button" data-rating="4">★</button>
+                <button type="button" data-rating="5">★</button>
+            </div>
+    
+            <textarea id="profileRatingComment" placeholder="Write a comment..." rows="3"></textarea>
+    
+            <button type="button" class="btn" id="submitProfileRating">
+                Submit Rating
+            </button>
+    
+            <p id="ratingMessage"></p>
+        </div>
     </section>
 
 
@@ -381,11 +418,12 @@
     <!-- =========================
          PROFILE ACTIONS
     ========================== -->
-    <section class="profile-actions">
+    <section class="profile-actions" id="profileActions">
 
         <a
-            href="#edit-profile"
-            class="profile-action-link">
+    href="#edit-profile"
+    class="profile-action-link"
+    id="editProfileLink">
 
             <span>✏️</span>
 

@@ -117,7 +117,7 @@ else:
             'HOST': env('DB_HOST'),
             'PORT': env('DB_PORT'),
 
-            'CONN_MAX_AGE': 60,
+            'CONN_MAX_AGE': 600,
             'CONN_HEALTH_CHECKS': True,
         }
     }

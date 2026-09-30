@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
 
                 <a
-                    class="btn"
+                    class="btn user-profile-btn"
                     href="/profile/?user_id=${encodeURIComponent(user.user_id)}">
                     View Profile
                 </a>
