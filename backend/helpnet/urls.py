@@ -53,6 +53,7 @@ path(
     path('register/', TemplateView.as_view(template_name='pages/register.html'), name='register'),
     path('dashboard/', TemplateView.as_view(template_name='pages/dashboard.html'), name='dashboard'),
     path('profile/', TemplateView.as_view(template_name='pages/profile.html'), name='profile'),
+    path('settings/', TemplateView.as_view(template_name='pages/settings.html'), name='settings'),
     path('ratings/', TemplateView.as_view(template_name='pages/ratings.html'), name='ratings'),
     path('blood/', TemplateView.as_view(template_name='pages/blood.html'), name='blood'),
     path('notifications/', TemplateView.as_view(template_name='pages/notifications.html'), name='notifications'),
