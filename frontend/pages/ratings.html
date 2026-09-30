@@ -17,46 +17,30 @@
     <section class="ratings-card">
         <h1>Rate HELPNET User</h1>
 
-<section id="userSummary">
-    <h2 id="ratedUserName"></h2>
-    <p id="ratedUserRole"></p>
-    <p id="ratedUserArea"></p>
-    <p id="averageRating"></p>
-</section>
+        <section id="ratingsContent" hidden>
+            <h2 id="ratedUserName"></h2>
+            <p id="ratedUserVerification" class="verified-badge" hidden>✓ Verified</p>
+            <p id="ratedUserRole"></p>
+            <p id="ratedUserArea"></p>
+            <p id="averageRating"></p>
+        </section>
 
-<form id="ratingForm">
-    <label>Rating</label>
+        <div class="field">
+            <label for="ratedUserId">User ID</label>
+            <input id="ratedUserId" type="text" autocomplete="off">
+            <button id="loadRatings" class="small-btn" type="button">Load ratings</button>
+        </div>
 
-    <div id="starPicker"
-         class="star-picker"
-         role="radiogroup"
-         aria-label="Choose a rating">
-    </div>
-
-    <label for="ratingComment">Comment (optional)</label>
-    <textarea id="ratingComment" rows="3" maxlength="1000"></textarea>
-
-    <button id="submitRating" class="btn" type="submit">
-        Submit rating
-    </button>
-</form>
-
-<div id="existingRatings" class="existing-ratings"></div>
-        <p id="ratingsMessage" class="form-message" aria-live="polite"></p>
-    </section>
-
-    <section id="ratingsContent" class="ratings-card" hidden>
-        <h2 id="ratedUserName">Ratings</h2>
-        <p id="ratedUserVerification" class="verified-badge" hidden>✓ Verified</p>
-        <p id="averageRating" class="rating-average"></p>
         <form id="ratingForm">
-            <label>Rating</label>
+            <label for="starPicker">Rating</label>
             <div id="starPicker" class="star-picker" role="radiogroup" aria-label="Choose a rating"></div>
             <label for="ratingComment">Comment (optional)</label>
             <textarea id="ratingComment" rows="3" maxlength="1000"></textarea>
             <button id="submitRating" class="btn" type="submit">Submit rating</button>
         </form>
+
         <div id="existingRatings" class="existing-ratings"></div>
+        <p id="ratingsMessage" class="form-message" aria-live="polite"></p>
     </section>
 </main>
 
