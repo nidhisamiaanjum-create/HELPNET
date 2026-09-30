@@ -97,7 +97,8 @@ WSGI_APPLICATION = 'helpnet.wsgi.application'
 
 import sys
 
-if 'test' in sys.argv:
+IS_TESTING = any('pytest' in arg or 'test' in arg for arg in sys.argv)
+if IS_TESTING:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
