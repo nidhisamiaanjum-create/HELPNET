@@ -1,29 +1,30 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blood Donation | HELPNET</title>
+    <title data-i18n="bloodPageTitle">Blood Donation | HELPNET</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
 <header class="site-header">
-    <a href="/dashboard/" class="logo">HELPNET</a>
-    <a href="/profile/" class="back-link">Back to profile</a>
+    <a href="/dashboard/" class="logo" data-i18n="appName">HELPNET</a>
+    <a href="/profile/" class="back-link" data-i18n="backToProfile">Back to profile</a>
+    <button type="button" id="langToggle" class="lang-toggle" data-i18n="langButton">English</button>
 </header>
 
 <main class="blood-page">
     <p id="bloodMessage" class="form-message" aria-live="polite"></p>
 
     <section id="donorSearchSection" class="blood-card">
-        <h1>Blood donation</h1>
-        <p class="hint">Register your blood group, district, and current availability.</p>
+        <h1 data-i18n="bloodPageTitle">Blood donation</h1>
+        <p class="hint" data-i18n="donorProfileHint">Register your blood group, district, and current availability.</p>
         <form id="donorProfileForm">
             <div class="field">
-                <label for="bloodGroup">Blood group</label>
+                <label for="bloodGroup" data-i18n="bloodGroup">Blood group</label>
                 <select id="bloodGroup" required>
-                    <option value="">Select blood group</option>
+                    <option value="" data-i18n="selectBloodGroup">Select blood group</option>
                     <option>A+</option><option>A-</option>
                     <option>B+</option><option>B-</option>
                     <option>AB+</option><option>AB-</option>
@@ -31,80 +32,81 @@
                 </select>
             </div>
             <div class="field">
-                <label for="donorArea">Area</label>
-                <select id="donorArea" required><option value="">Select district</option></select>
+                <label for="donorArea" data-i18n="location">Area</label>
+                <select id="donorArea" required><option value="" data-i18n="selectDistrict">Select district</option></select>
             </div>
             <label class="blood-toggle">
                 <input id="donorAvailable" type="checkbox">
-                Available to donate
+                <span data-i18n="donorAvailability">Available to donate</span>
             </label>
-            <button class="btn" type="submit">Save donor profile</button>
+            <button class="btn" type="submit" data-i18n="saveDonorProfile">Save donor profile</button>
         </form>
     </section>
 
     <section class="blood-card">
-        <h2>Search blood donors</h2>
+        <h2 data-i18n="searchBloodDonors">Search blood donors</h2>
         <form id="donorSearchForm" class="donor-search-form">
             <div class="field">
-                <label for="searchGroup">Blood group</label>
-                <select id="searchGroup"><option value="">Any blood group</option></select>
+                <label for="searchGroup" data-i18n="bloodGroup">Blood group</label>
+                <select id="searchGroup"><option value="" data-i18n="anyBloodGroup">Any blood group</option></select>
             </div>
             <div class="field">
-                <label for="searchArea">Area</label>
-                <select id="searchArea"><option value="">Any district</option></select>
+                <label for="searchArea" data-i18n="location">Area</label>
+                <select id="searchArea"><option value="" data-i18n="anyDistrict">Any district</option></select>
             </div>
             <div class="field">
-                <label for="donorSearch">Donor name</label>
-                <input id="donorSearch" type="search" placeholder="Search by name">
+                <label for="donorSearch" data-i18n="donorName">Donor name</label>
+                <input id="donorSearch" type="search" placeholder="Search by name" data-i18n-placeholder="searchByName">
             </div>
-            <button class="btn" type="submit">Search donors</button>
+            <button class="btn" type="submit" data-i18n="searchDonors">Search donors</button>
         </form>
-        <div id="donorSearchResults"><p class="hint">Search for available donors.</p></div>
+        <div id="donorSearchResults"><p class="hint" data-i18n="searchAvailableDonors">Search for available donors.</p></div>
     </section>
 
     <section class="blood-card">
-        <h2>Create a blood request</h2>
+        <h2 data-i18n="createBloodRequest">Create a blood request</h2>
         <form id="requestForm">
             <div class="field">
-                <label for="requestGroup">Blood group</label>
-                <select id="requestGroup" required></select>
+                <label for="requestGroup" data-i18n="bloodGroup">Blood group</label>
+                <select id="requestGroup" required><option value="" data-i18n="selectBloodGroup">Select blood group</option></select>
             </div>
             <div class="field">
-                <label for="requestArea">Area</label>
-                <select id="requestArea" required><option value="">Select district</option></select>
+                <label for="requestArea" data-i18n="location">Area</label>
+                <select id="requestArea" required><option value="" data-i18n="selectDistrict">Select district</option></select>
             </div>
             <div class="field">
-                <label for="hospital">Hospital</label>
+                <label for="hospital" data-i18n="hospital">Hospital</label>
                 <input id="hospital" type="text" maxlength="200" required>
             </div>
             <div class="field">
-                <label for="requestDetails">Details</label>
+                <label for="requestDetails" data-i18n="details">Details</label>
                 <textarea id="requestDetails" rows="3"></textarea>
             </div>
-            <button class="btn" type="submit">Create request</button>
+            <button class="btn" type="submit" data-i18n="createRequest">Create request</button>
         </form>
     </section>
 
     <section class="blood-card">
         <div class="blood-section-heading">
-            <h2>Open blood requests</h2>
-            <button id="refreshRequests" class="small-btn" type="button">Refresh</button>
+            <h2 data-i18n="openBloodRequests">Open blood requests</h2>
+            <button id="refreshRequests" class="small-btn" type="button" data-i18n="refresh">Refresh</button>
         </div>
-        <div id="requestList"><p class="hint">Loading...</p></div>
+        <div id="requestList"><p class="hint" data-i18n="loadingBlood">Loading...</p></div>
     </section>
 
     <section class="blood-card">
         <div class="blood-section-heading">
-            <h2>My donation history</h2>
-            <button id="refreshHistory" class="small-btn" type="button">Refresh</button>
+            <h2 data-i18n="donationHistory">My donation history</h2>
+            <button id="refreshHistory" class="small-btn" type="button" data-i18n="refresh">Refresh</button>
         </div>
-        <div id="historyList"><p class="hint">Loading...</p></div>
+        <div id="historyList"><p class="hint" data-i18n="loadingBlood">Loading...</p></div>
     </section>
 </main>
 
 <script src="{% static 'js/api.js' %}"></script>
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/districts.js' %}"></script>
+<script src="{% static 'js/i18n.js' %}"></script>
 <script src="{% static 'js/blood.js' %}"></script>
 </body>
 </html>

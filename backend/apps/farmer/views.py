@@ -1,7 +1,9 @@
-from django.db.models import Q
+from django.db.models import Avg, Max, Min, Q
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from apps.reports.models import Report
 from .models import ProduceListing
 from .serializers import ProduceListingSerializer
 
@@ -81,3 +83,36 @@ class MyProduceListView(APIView):
             "data": serializer.data,
             "count": len(serializer.data),
         })
+
+
+class ProducePriceRangeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, id):
+        listing = get_object_or_404(ProduceListing, id=id)
+        prices = ProduceListing.objects.filter(
+            category__iexact=listing.category,
+            location__iexact=listing.location,
+            availability=ProduceListing.Availability.AVAILABLE,
+        ).exclude(farmer_id=listing.farmer_id)
+        summary = prices.aggregate(minimum=Min("price"), maximum=Max("price"), average=Avg("price"))
+        summary["count"] = prices.count()
+        return Response({"success": True, "data": summary, "message": "Active farmer listing prices loaded."})
+
+
+class ProduceListingReportView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, id):
+        listing = get_object_or_404(ProduceListing, id=id)
+        description = str(request.data.get("description", "")).strip()
+        if not description:
+            return Response({"success": False, "message": "A report description is required."}, status=status.HTTP_400_BAD_REQUEST)
+        report = Report.objects.create(
+            reporter=request.user,
+            reported_user=listing.farmer,
+            content_object=listing,
+            category=Report.Category.FRAUD,
+            description=description,
+        )
+        return Response({"success": True, "data": {"id": str(report.pk)}, "message": "Listing reported."}, status=status.HTTP_201_CREATED)
