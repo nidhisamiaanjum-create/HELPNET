@@ -25,13 +25,14 @@
         <button
             type="button"
             id="langToggle"
-            class="lang-toggle">
+            class="lang-toggle"
+            data-i18n="langButton">
             English
         </button>
 
         <a
             href="/profile/"
-            class="back-link">
+            class="back-link" data-i18n="profile">
             ← Profile
         </a>
 
@@ -44,9 +45,9 @@
 
     <section class="profile-card">
 
-        <h1>Settings</h1>
+        <h1 data-i18n="settingsTitle">Settings</h1>
 
-        <p>
+        <p data-i18n="settingsIntro">
             Manage your account and privacy settings.
         </p>
 
@@ -54,9 +55,9 @@
 
             <div class="privacy-settings">
 
-                <h2>Privacy Settings</h2>
+                <h2 data-i18n="privacySettings">Privacy Settings</h2>
 
-                <p>
+                <p data-i18n="privacyChoice">
                     Choose which information other users can see.
                 </p>
 
@@ -66,7 +67,7 @@
                         type="checkbox"
                         id="showPhone"
                         name="is_phone_visible">
-                    Show my phone number
+                    <span data-i18n="showPhone">Show my phone number</span>
                 </label>
 
 
@@ -75,7 +76,7 @@
                         type="checkbox"
                         id="showEmail"
                         name="is_email_visible">
-                    Show my email address
+                    <span data-i18n="showEmail">Show my email address</span>
                 </label>
 
 
@@ -84,7 +85,7 @@
                         type="checkbox"
                         id="showLocation"
                         name="is_location_visible">
-                    Show my location
+                    <span data-i18n="showLocation">Show my location</span>
                 </label>
 
 
@@ -93,7 +94,7 @@
                         type="checkbox"
                         id="showDob"
                         name="is_date_of_birth_visible">
-                    Show my date of birth
+                    <span data-i18n="showDateOfBirth">Show my date of birth</span>
                 </label>
 
             </div>
@@ -102,7 +103,7 @@
             <button
                 type="submit"
                 class="btn">
-                Save Settings
+                <span data-i18n="saveSettings">Save Settings</span>
             </button>
 
             <p
@@ -172,8 +173,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         console.error("Failed to load settings:", error);
 
-        message.textContent =
-            "Unable to load your settings.";
+        message.textContent = t("settingsLoadedError");
 
     }
 
@@ -223,23 +223,19 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             if (!response.ok) {
 
-                message.textContent =
-                    result.message ||
-                    "Failed to save settings.";
+                message.textContent = result.message || t("settingsSaveError");
 
                 return;
             }
 
 
-            message.textContent =
-                "Settings saved successfully.";
+            message.textContent = t("settingsSaved");
 
         } catch (error) {
 
             console.error("Failed to save settings:", error);
 
-            message.textContent =
-                "Unable to save settings.";
+            message.textContent = t("settingsSaveError");
 
         }
 
@@ -249,5 +245,5 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 </script>
 
-</body>
+<script src="{% static 'js/i18n.js' %}"></script></body>
 </html>

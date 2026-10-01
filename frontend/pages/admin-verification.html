@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Admin Verification | HELPNET</title>
+    <title data-i18n="adminVerificationTitle">Admin Verification | HELPNET</title>
 
     <link
         href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap"
@@ -23,29 +23,29 @@
     </a>
 
     <div class="header-actions">
-        <button type="button" id="logoutButton" class="lang-toggle">
+        <button type="button" id="logoutButton" class="lang-toggle" data-i18n="logout">
             লগআউট
         </button>
     </div>
-</header>
+<button id="langToggle" class="lang-toggle" data-i18n="langButton">English</button></header>
 
 <main class="page">
 
     <section class="card">
-        <h1>Admin Verification</h1>
+        <h1 data-i18n="adminVerificationTitle">Admin Verification</h1>
 
         <p class="subtitle">
-            Pending verification requests review করুন।
+            <span data-i18n="verificationSubtitle">Pending verification requests review করুন।</span>
         </p>
     </section>
 
     <section class="card">
 
-        <h2>Pending Requests</h2>
+        <h2 data-i18n="pendingRequests">Pending Requests</h2>
 
         <div id="verificationList">
             <p id="loadingMessage">
-                Loading verification requests...
+                <span data-i18n="loadingVerifications">Loading verification requests...</span>
             </p>
         </div>
 
@@ -53,7 +53,7 @@
 
     <p class="back-row">
         <a href="/admin-dashboard/" class="back-link">
-            ← Admin Dashboard
+            ← <span data-i18n="adminDashboard">Admin Dashboard</span>
         </a>
     </p>
 
@@ -63,5 +63,5 @@
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/admin-verification.js' %}"></script>
 
-</body>
+<script src="{% static 'js/i18n.js' %}"></script></body>
 </html>

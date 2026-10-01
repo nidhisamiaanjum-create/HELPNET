@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Admin Logs | HELPNET</title>
+    <title data-i18n="adminLogsTitle">Admin Logs | HELPNET</title>
 
     <link
         href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap"
@@ -30,32 +30,33 @@
             type="button"
             id="logoutButton"
             class="lang-toggle"
+            data-i18n="logout"
         >
             লগআউট
         </button>
     </div>
-</header>
+<button id="langToggle" class="lang-toggle" data-i18n="langButton">English</button></header>
 
 
 <main class="page">
 
     <section class="card">
-        <h1>Admin Audit Logs</h1>
+        <h1 data-i18n="adminLogsTitle">Admin Audit Logs</h1>
 
         <p class="subtitle">
-            Admin actions and verification activities.
+            <span data-i18n="adminLogsSubtitle">Admin actions and verification activities.</span>
         </p>
     </section>
 
 
     <section class="card">
 
-        <h2>Activity History</h2>
+        <h2 data-i18n="activityHistory">Activity History</h2>
 
         <div id="logsContainer">
 
             <p id="loadingMessage">
-                Loading admin logs...
+                <span data-i18n="loadingAdminLogs">Loading admin logs...</span>
             </p>
 
         </div>
@@ -68,7 +69,7 @@
             href="/admin-dashboard/"
             class="back-link"
         >
-            ← Admin Dashboard
+            ← <span data-i18n="adminDashboard">Admin Dashboard</span>
         </a>
     </p>
 
@@ -79,5 +80,5 @@
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/admin-logs.js' %}"></script>
 
-</body>
+<script src="{% static 'js/i18n.js' %}"></script></body>
 </html>

@@ -36,6 +36,22 @@
 
     <div id="detailAlert" class="alert"></div>
 
+    <section class="card" aria-labelledby="farmerPriceRangeTitle">
+        <h2 id="farmerPriceRangeTitle" data-i18n="farmerPriceRangeTitle">অন্যান্য কৃষকের সক্রিয় তালিকার দামের সারাংশ</h2>
+        <p id="farmerPriceRange" class="hint" data-i18n="farmerPriceRangeLoading">দামের তথ্য লোড হচ্ছে…</p>
+        <p class="hint" data-i18n="farmerPriceRangeDisclaimer">এই তথ্য ব্যবহারকারীদের সক্রিয় তালিকা থেকে নেওয়া; এটি সরকারি বা নিশ্চিত বাজারদর নয় এবং কোনো পূর্বাভাসও নয়।</p>
+    </section>
+
+    <section id="produceReportSection" class="card">
+        <h2 data-i18n="farmerReportTitle">তালিকাটি রিপোর্ট করুন</h2>
+        <form id="produceReportForm">
+            <label for="produceReportDescription" data-i18n="farmerReportReason">সন্দেহজনক তালিকার বিবরণ</label>
+            <textarea id="produceReportDescription" maxlength="2000" required></textarea>
+            <button class="small-btn danger-btn" type="submit" data-i18n="bloodReportSubmit">রিপোর্ট পাঠান</button>
+        </form>
+        <p id="produceReportMessage" class="form-message" aria-live="polite"></p>
+    </section>
+
     <!-- Produce Hero Card -->
     <div class="card">
         <div class="section-title">

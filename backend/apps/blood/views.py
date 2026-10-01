@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 from apps.ratings.models import Rating
 from apps.notifications.models import Notification
+from apps.reports.models import Report
 from .models import BloodGroup, BloodRequest, DonationHistory, DonorProfile
 
 
@@ -250,6 +251,24 @@ class BloodRequestCloseView(APIView):
 		blood_request.status = BloodRequest.Status.CLOSED
 		blood_request.save(update_fields=["status", "updated_at"])
 		return Response({"success": True, "data": request_data(blood_request), "message": "Request closed."})
+
+
+class BloodRequestReportView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	def post(self, request, request_id):
+		blood_request = get_object_or_404(BloodRequest, id=request_id)
+		description = str(request.data.get("description", "")).strip()
+		if not description:
+			return Response({"success": False, "data": None, "message": "A report description is required."}, status=400)
+		report = Report.objects.create(
+			reporter=request.user,
+			reported_user=blood_request.requester,
+			content_object=blood_request,
+			category=Report.Category.FRAUD,
+			description=description,
+		)
+		return Response({"success": True, "data": {"id": str(report.id)}, "message": "Blood request reported."}, status=201)
 
 
 class DonationHistoryView(APIView):
