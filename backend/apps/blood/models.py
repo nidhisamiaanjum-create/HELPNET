@@ -22,7 +22,18 @@ class DonorProfile(models.Model):
 	)
 	blood_group = models.CharField(max_length=3, choices=BloodGroup.choices)
 	area = models.CharField(max_length=120)
-	is_available = models.BooleanField(default=True)
+
+	class Availability(models.TextChoices):
+		AVAILABLE = "available", "Available"
+		BUSY = "busy", "Busy"
+		NOT_AVAILABLE = "not_available", "Not Available"
+
+	availability = models.CharField(
+		max_length=20,
+		choices=Availability.choices,
+		default=Availability.AVAILABLE,
+	)
+
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 
@@ -46,6 +57,11 @@ class BloodRequest(models.Model):
 	area = models.CharField(max_length=120)
 	hospital = models.CharField(max_length=200, blank=True)
 	details = models.TextField(blank=True)
+	supporting_document = models.FileField(
+    	upload_to="blood/supporting_documents/",
+    	blank=True,
+    	null=True,
+	)
 	status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)

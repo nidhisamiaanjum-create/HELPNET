@@ -1,40 +1,41 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="bn">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title data-i18n="moderationTitle">রিপোর্ট ও কনটেন্ট মডারেশন</title>
+    <title data-i18n="moderationTitle"> রিপোর্ট ও কনটেন্ট মডারেশন </title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
+
 <body>
-<header class="site-header">
-    <a href="/admin-dashboard/" class="logo" data-i18n="appName">হেল্পনেট</a>
-    <div class="header-actions">
-        <button id="langToggle" type="button" class="lang-toggle" data-i18n="langButton">English</button>
-        <button id="logoutButton" type="button" class="lang-toggle" data-i18n="logout">লগআউট</button>
-    </div>
-</header>
-<main class="page profile-page">
-    <section class="card">
-        <h1 data-i18n="moderationTitle">রিপোর্ট ও কনটেন্ট মডারেশন</h1>
-        <p id="moderationMessage" class="form-message" aria-live="polite"></p>
-        <div id="moderationReports" class="admin-list"></div>
-    </section>
-    <section class="card">
-        <h2 data-i18n="moderationContentTitle">পোস্টিং সম্পাদনা বা সরান</h2>
-        <label for="moderationContentType" data-i18n="moderationContentType">পোস্টিংয়ের ধরন</label>
-        <select id="moderationContentType">
-            <option value="farmer.producelisting" data-i18n="moderationFarmer">কৃষকের তালিকা</option>
-            <option value="goods.goodslisting" data-i18n="moderationGoods">ব্যবহৃত পণ্যের তালিকা</option>
-            <option value="volunteer.volunteeropportunity" data-i18n="moderationVolunteer">স্বেচ্ছাসেবার সুযোগ</option>
-        </select>
-        <div id="moderationContentItems" class="admin-list"></div>
-    </section>
-</main>
-<script src="{% static 'js/api.js' %}"></script>
-<script src="{% static 'js/auth.js' %}"></script>
-<script src="{% static 'js/i18n.js' %}"></script>
-<script src="{% static 'js/admin-moderation.js' %}"></script>
+    <header class="site-header"> <a href="/admin-dashboard/" class="logo" data-i18n="appName"> হেল্পনেট </a>
+        <div class="header-actions"> <button id="langToggle" type="button" class="lang-toggle" data-i18n="langButton">
+                English </button> <button id="logoutButton" type="button" class="lang-toggle" data-i18n="logout"> লগআউট
+            </button> </div>
+    </header>
+    <main class="page profile-page"> <!-- Reports -->
+        <section class="card">
+            <h1 data-i18n="moderationTitle"> রিপোর্ট ও কনটেন্ট মডারেশন </h1>
+            <p id="moderationMessage" class="form-message" aria-live="polite"></p>
+            <div id="moderationReports" class="admin-list"></div>
+        </section> <!-- Content moderation -->
+        <section class="card">
+            <h2 data-i18n="moderationContentTitle"> পোস্টিং সম্পাদনা বা সরান </h2> <label for="moderationContentType"
+                data-i18n="moderationContentType"> পোস্টিংয়ের ধরন </label> <select id="moderationContentType">
+                <option value="farmer.producelisting" data-i18n="moderationFarmer"> কৃষকের তালিকা </option>
+                <option value="goods.goodslisting" data-i18n="moderationGoods"> ব্যবহৃত পণ্যের তালিকা </option>
+                <option value="volunteer.volunteeropportunity" data-i18n="moderationVolunteer"> স্বেচ্ছাসেবার সুযোগ
+                </option>
+            </select>
+            <div id="moderationContentItems" class="admin-list"></div>
+        </section>
+    </main>
+    <script src="{% static 'js/api.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/i18n.js' %}"></script>
+    <script src="{% static 'js/admin-moderation.js' %}"></script>
 </body>
+
 </html>
