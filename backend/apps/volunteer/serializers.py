@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import VolunteerOpportunity, VolunteerProfile, VolunteerSignup, VolunteerAttendance, VolunteerMessage, VolunteerCertificate
+from .models import VolunteerOpportunity, VolunteerProfile, VolunteerProfileDocument, VolunteerSignup, VolunteerAttendance, VolunteerMessage, VolunteerCertificate
 
 
 class VolunteerOpportunitySerializer(serializers.ModelSerializer):
@@ -23,6 +23,13 @@ class VolunteerProfileSerializer(serializers.ModelSerializer):
         model = VolunteerProfile
         fields = ["user_id", "full_name", "skills", "availability", "location", "blood_group", "supporting_certificates", "updated_at"]
         read_only_fields = ["user_id", "full_name", "updated_at"]
+
+
+class VolunteerProfileDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VolunteerProfileDocument
+        fields = ["id", "file", "original_name", "uploaded_at"]
+        read_only_fields = ["id", "original_name", "uploaded_at"]
 
 
 class VolunteerSignupSerializer(serializers.ModelSerializer):

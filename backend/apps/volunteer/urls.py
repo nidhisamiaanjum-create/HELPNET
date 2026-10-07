@@ -12,6 +12,8 @@ urlpatterns = [
     path("certificates/", views.CertificateListIssueView.as_view(), name="volunteer-certificate-list"),
     path("certificates/<int:certificate_id>/pdf/", views.CertificatePdfView.as_view(), name="volunteer-certificate-pdf"),
     path("profile/", views.VolunteerProfileView.as_view(), name="volunteer-profile"),
+    path("profile/documents/", views.VolunteerProfileDocumentsView.as_view(), name="volunteer-profile-documents"),
     path("search/", views.VolunteerSearchView.as_view(), name="volunteer-search"),
     path("admin/", views.AdminVolunteersView.as_view(), name="admin-volunteers"),
+    path("admin/export/", views.VolunteerCsvExportView.as_view(), name="admin-volunteer-export"),
 ]

@@ -15,6 +15,17 @@ class VolunteerProfile(models.Model):
         return f"Volunteer profile: {self.user.full_name}"
 
 
+class VolunteerProfileDocument(models.Model):
+    """Private supporting certificates uploaded by their volunteer owner."""
+    profile = models.ForeignKey(VolunteerProfile, on_delete=models.CASCADE, related_name="documents")
+    file = models.FileField(upload_to="volunteer_certificates/%Y/%m/")
+    original_name = models.CharField(max_length=255)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-uploaded_at"]
+
+
 class VolunteerOpportunity(models.Model):
     class Status(models.TextChoices):
         OPEN = "Open", "Open"
