@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HELPNET - Post Produce</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header class="site-header">
+    <a href="/dashboard/" class="logo" data-i18n="appName">
+        হেল্পনেট
+    </a>
+
+    <div class="header-actions">
+        <a href="/farmer-market/" class="back-link">← Back to Marketplace</a>
+        <button type="button" id="langToggle" class="lang-toggle">English</button>
+        <button type="button" id="logoutButton" class="lang-toggle" data-i18n="logout">Logout</button>
+    </div>
+</header>
+
+<main class="page">
+
+    <!-- ST 47: Prominent Disclaimer Banner -->
+    <div class="alert-card" style="margin-bottom: 20px; border-left: 4px solid var(--teal);">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+            <span class="alert-label">Notice</span>
+            <p style="font-weight: 600; color: var(--text); font-size: 15px; margin-top: 4px;">
+                HELPNET does not handle payment or delivery. All arrangements are made directly between the farmer and consumer.
+            </p>
+        </div>
+    </div>
+
+    <!-- Create Produce Simple Form Card (ST 45: Simple UI, large buttons, clear labels) -->
+    <div class="card">
+        <h1 style="font-size: 26px; color: var(--teal-dark); margin-bottom: 8px;" data-i18n="postNewProduce">
+            ➕ নতুন পণ্য যোগ করুন
+        </h1>
+        <p class="subtitle" style="margin-bottom: 24px;">
+            Fill out the simple details below to list your harvest directly to local buyers.
+        </p>
+
+        <div id="produceAlert" class="alert"></div>
+
+        <form id="createProduceForm" novalidate>
+            
+            <!-- Produce Name -->
+            <div class="field">
+                <label for="produceName" data-i18n="produceName">
+                    পণ্যের নাম / Produce Name *
+                </label>
+                <input type="text" id="produceName" placeholder="e.g. Fresh Red Tomatoes / তাজা টমেটো" required>
+                <span id="produceNameError" class="field-error"></span>
+            </div>
+
+            <!-- Category -->
+            <div class="field">
+                <label for="produceCategory" data-i18n="produceCategory">
+                    ক্যাটাগরি / Category
+                </label>
+                <select id="produceCategory">
+                    <option value="Vegetables">Vegetables (সবজি)</option>
+                    <option value="Fruits">Fruits (ফল)</option>
+                    <option value="Grains">Grains & Rice (চাল/ধান/শস্য)</option>
+                    <option value="Dairy">Dairy & Eggs (দুগ্ধ ও ডিম)</option>
+                    <option value="Spices">Spices (মসলা)</option>
+                    <option value="Other">Other (অন্যান্য)</option>
+                </select>
+            </div>
+
+            <!-- Price & Unit -->
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                <div class="field">
+                    <label for="producePrice" data-i18n="producePrice">
+                        দাম (টাকা) / Price (BDT) *
+                    </label>
+                    <input type="number" id="producePrice" placeholder="e.g. 50" min="1" step="0.5" required>
+                    <span id="producePriceError" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label for="produceUnit" data-i18n="produceUnit">
+                        একক / Unit
+                    </label>
+                    <select id="produceUnit">
+                        <option value="kg">kg (কেজি)</option>
+                        <option value="maund">maund (মণ)</option>
+                        <option value="dozen">dozen (ডজন)</option>
+                        <option value="piece">piece (টি / পিস)</option>
+                        <option value="bag">bag (বস্তা)</option>
+                        <option value="liter">liter (লিটার)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Quantity Available -->
+            <div class="field">
+                <label for="produceQuantity" data-i18n="produceQuantity">
+                    মোট পরিমাণ / Available Quantity *
+                </label>
+                <input type="text" id="produceQuantity" placeholder="e.g. 100 kg বা ২০ মণ" required>
+                <span id="produceQuantityError" class="field-error"></span>
+            </div>
+
+            <!-- Location -->
+            <div class="field">
+                <label for="farmLocation" data-i18n="farmLocation">
+                    খামার / এলাকার অবস্থান / Location *
+                </label>
+                <input type="text" id="farmLocation" placeholder="e.g. Savar, Dhaka বা Bogura" required>
+                <span id="farmLocationError" class="field-error"></span>
+            </div>
+
+            <!-- Description -->
+            <div class="field">
+                <label for="produceDescription" data-i18n="produceDescription">
+                    পণ্যের বিবরণ / Description (ঐচ্ছিক)
+                </label>
+                <textarea id="produceDescription" rows="3" placeholder="রাসায়নিক মুক্ত, অর্গানিক, আজকের তোলা তাজা ফসল..."></textarea>
+            </div>
+
+            <!-- Initial Status -->
+            <div class="field">
+                <label for="produceAvailability" data-i18n="produceAvailability">
+                    লভ্যতা অবস্থা / Availability
+                </label>
+                <select id="produceAvailability">
+                    <option value="Available">Available (উপলব্ধ / স্টক আছে)</option>
+                    <option value="Unavailable">Unavailable (অনুপলব্ধ / স্টক শেষ)</option>
+                </select>
+            </div>
+
+            <!-- Submit Button (Large button as per ST 45) -->
+            <button type="submit" id="submitProduceBtn" class="btn" style="height: 56px; font-size: 20px;" data-i18n="publishProduce">
+                পণ্য প্রকাশ করুন / Publish Produce
+            </button>
+
+        </form>
+    </div>
+
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/i18n.js' %}"></script>
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/farmer.js' %}"></script>
+
+</body>
+</html>

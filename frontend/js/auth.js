@@ -233,6 +233,10 @@ function initRegisterPage() {
    LOGIN
    ============================================================ */
 
+/* ============================================================
+   LOGIN
+   ============================================================ */
+
 function initLoginPage() {
 
     const form =
@@ -246,6 +250,7 @@ function initLoginPage() {
     const button =
         document.getElementById("loginButton");
 
+    let loginRequestInFlight = false;
 
     form.addEventListener(
         "submit",
@@ -263,9 +268,9 @@ function initLoginPage() {
 
             /* Get values */
 
-            const email =
+            const identifier =
                 document
-                    .getElementById("email")
+                    .getElementById("identifier")
                     .value
                     .trim();
 
@@ -274,17 +279,18 @@ function initLoginPage() {
                 document
                     .getElementById("password")
                     .value;
-
+		    console.log("LOGIN IDENTIFIER:", identifier);
+		    console.log("LOGIN PASSWORD LENGTH:", password.length);
 
             /* Validation */
 
             let valid = true;
 
 
-            if (!email) {
+            if (!identifier) {
 
                 showFieldError(
-                    "email",
+                    "identifier",
                     t("required")
                 );
 
@@ -307,21 +313,41 @@ function initLoginPage() {
                 return;
             }
 
+            if (loginRequestInFlight) return;
+            loginRequestInFlight = true;
 
             setBusy(button, true);
 
 
             try {
 
-                console.log("Sending login request...");
+                console.log(
+                    "Sending login request..."
+                );
 
+
+                /*
+                   Backend accepts either:
+
+                   Email:
+                   {
+                       identifier: "c@gmail.com",
+                       password: "..."
+                   }
+
+                   OR phone:
+                   {
+                       identifier: "01712345671",
+                       password: "..."
+                   }
+                */
 
                 const response =
                     await apiRequest(
                         "/api/auth/login/",
                         "POST",
                         {
-                            email: email,
+                            identifier: identifier,
                             password: password
                         }
                     );
@@ -339,23 +365,12 @@ function initLoginPage() {
                     response.data;
 
 
-                /*
-                   Your backend may return:
-                   {
-                       access: "...",
-                       refresh: "...",
-                       user_id: "...",
-                       full_name: "...",
-                       email: "...",
-                       phone_number: "...",
-                       role: "..."
-                   }
-
-                   Or it may wrap the user differently.
-                */
-
                 const accessToken =
                     user.access;
+
+
+                const refreshToken =
+                    user.refresh;
 
 
                 if (!accessToken) {
@@ -386,14 +401,34 @@ function initLoginPage() {
                         user.role
                 };
 
+                console.log("LOGIN RESPONSE USER:", user);
+                console.log("LOGIN RESPONSE ROLE:", user.role);
 
-                /* Save session */
+               /* =====================================================
+   SAVE NEW LOGIN SESSION
+===================================================== */
 
-                saveSession(
-                    accessToken,
-                    userInfo
-                );
+localStorage.setItem(
+    "helpnet_token",
+    accessToken
+);
 
+localStorage.setItem(
+    "helpnet_user",
+    JSON.stringify(userInfo)
+);
+
+if (refreshToken) {
+    localStorage.setItem(
+        "refreshToken",
+        refreshToken
+    );
+}
+
+console.log(
+    "SESSION SAVED:",
+    JSON.parse(localStorage.getItem("helpnet_user"))
+);
 
                 /* Success */
 
@@ -407,16 +442,9 @@ function initLoginPage() {
 
                 /* Go to dashboard */
 
-                setTimeout(
-                    function () {
-
-                        window.location.href =
-                            "/dashboard/";
-
-                    },
-                    700
-                );
-
+                window.location.href = user.role && user.role.toLowerCase() === "admin"
+                    ? "/admin-dashboard/"
+                    : "/dashboard/";
 
             } catch (error) {
 
@@ -437,6 +465,7 @@ function initLoginPage() {
             } finally {
 
                 setBusy(button, false);
+                loginRequestInFlight = false;
             }
 
         }
@@ -448,9 +477,27 @@ function initLoginPage() {
    LOGOUT
    ============================================================ */
 
-function logout() {
+async function logout() {
+
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    if (refreshToken) {
+        try {
+            await apiRequest(
+                "/api/auth/logout/",
+                "POST",
+                {
+                    refresh: refreshToken
+                }
+            );
+        } catch (error) {
+            console.error("Logout API error:", error);
+        }
+    }
 
     clearSession();
+
+    localStorage.removeItem("refreshToken");
 
     window.location.href =
         "/login/";

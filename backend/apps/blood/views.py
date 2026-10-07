@@ -1,3 +1,393 @@
-from django.shortcuts import render
+from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-# Create your views here.
+from apps.ratings.models import Rating
+from apps.notifications.models import Notification
+from apps.reports.models import Report
+from .models import BloodGroup, BloodRequest, DonationHistory, DonorProfile
+
+
+User = get_user_model()
+
+
+def profile_data(profile):
+	rating_queryset = profile.user.ratings_received.all()
+	return {
+		"user_id": str(profile.user.user_id),
+		"full_name": profile.user.full_name,
+		"blood_group": profile.blood_group,
+		"area": profile.area,
+		"availability": profile.availability,
+		"is_verified": profile.user.is_verified,
+		"average_rating": Rating.average_for_user(profile.user),
+		"rating_count": rating_queryset.count(),
+	}
+
+
+def request_data(blood_request):
+	return {
+		"id": str(blood_request.id),
+		"requester_id": str(blood_request.requester.user_id),
+		"requester_name": blood_request.requester.full_name,
+		"blood_group": blood_request.blood_group,
+		"area": blood_request.area,
+		"hospital": blood_request.hospital,
+		"details": blood_request.details,
+		"supporting_document": (
+			blood_request.supporting_document.url
+			if blood_request.supporting_document
+			else None
+		),
+		"status": blood_request.status,
+		"created_at": blood_request.created_at,
+	}
+
+
+class DonorProfileView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	def get(self, request):
+		profile = get_object_or_404(DonorProfile, user=request.user)
+		return Response({"success": True, "data": profile_data(profile), "message": "Donor profile loaded."})
+
+	def put(self, request):
+		blood_group = request.data.get("blood_group")
+		area = str(request.data.get("area", "")).strip()
+		availability = request.data.get(
+    		"availability",
+    		DonorProfile.Availability.AVAILABLE,
+		)	
+
+		if blood_group not in BloodGroup.values:
+			return Response(
+				{"success": False, "data": None, "message": "Select a valid blood group."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+		if not area:
+			return Response(
+				{"success": False, "data": None, "message": "Area is required."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+		if availability not in DonorProfile.Availability.values:
+			return Response(
+				{
+					"success": False,
+					"data": None,
+					"message": "Select a valid donor availability.",
+				},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+
+		profile, _ = DonorProfile.objects.update_or_create(
+			user=request.user,
+			defaults={
+				"blood_group": blood_group,
+				"area": area,
+				 "availability": availability,
+			},
+		)
+		return Response({"success": True, "data": profile_data(profile), "message": "Donor profile saved."})
+
+
+class DonorSearchView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	def get(self, request):
+		profiles = DonorProfile.objects.select_related("user").filter(
+    		availability=DonorProfile.Availability.AVAILABLE
+		)
+		blood_group = request.query_params.get("blood_group")
+		area = request.query_params.get("area", "").strip()
+		search = request.query_params.get("search", "").strip()
+		available = request.query_params.get("available")
+
+		if blood_group:
+			if blood_group not in BloodGroup.values:
+				return Response(
+					{"success": False, "data": None, "message": "Select a valid blood group."},
+					status=status.HTTP_400_BAD_REQUEST,
+				)
+			profiles = profiles.filter(blood_group=blood_group)
+		if area:
+			profiles = profiles.filter(area__iexact=area)
+		if search:
+			profiles = profiles.filter(user__full_name__icontains=search)
+		return Response(
+			{"success": True, "data": [profile_data(profile) for profile in profiles], "message": "Donors loaded."}
+		)
+
+
+class BloodRequestListCreateView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	def get(self, request):
+		requests = BloodRequest.objects.filter(status=BloodRequest.Status.OPEN).select_related("requester")
+		return Response({"success": True, "data": [request_data(item) for item in requests], "message": "Open requests loaded."})
+
+	def post(self, request):
+		blood_group = request.data.get("blood_group")
+		area = str(request.data.get("area", "")).strip()
+		hospital = str(request.data.get("hospital", "")).strip()
+		details = str(request.data.get("details", "")).strip()
+		supporting_document = request.FILES.get("supporting_document")
+
+		if blood_group not in BloodGroup.values:
+			return Response(
+				{
+					"success": False,
+					"data": None,
+					"message": "Select a valid blood group.",
+				},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+
+		if not area:
+			return Response(
+				{
+					"success": False,
+					"data": None,
+					"message": "Area is required.",
+				},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+
+		if not hospital:
+			return Response(
+				{
+					"success": False,
+					"data": None,
+					"message": "Hospital is required.",
+				},
+				status=status.HTTP_400_BAD_REQUEST,
+			)	
+
+		# Validate supporting document.
+		if supporting_document:
+			max_size = 5 * 1024 * 1024  # 5 MB
+
+			if supporting_document.size > max_size:
+				return Response(
+					{
+						"success": False,
+						"data": None,
+						"message": "Supporting document must be 5 MB or smaller.",
+					},
+					status=status.HTTP_400_BAD_REQUEST,
+				)
+
+			allowed_types = {
+				"application/pdf",
+				"image/jpeg",
+				"image/png",
+			}
+
+			if supporting_document.content_type not in allowed_types:
+				return Response(
+					{
+						"success": False,
+						"data": None,
+						"message": "Only PDF, JPG, and PNG files are allowed.",
+					},
+					status=status.HTTP_400_BAD_REQUEST,
+				)
+
+		blood_request = BloodRequest.objects.create(
+			requester=request.user,
+			blood_group=blood_group,
+			area=area,
+			hospital=hospital,
+			details=details,
+			supporting_document=supporting_document,
+		)
+
+		matching_donors = DonorProfile.objects.filter(
+			blood_group=blood_request.blood_group,
+			area=blood_request.area,
+			availability=DonorProfile.Availability.AVAILABLE,
+		).exclude(user=request.user)
+
+		Notification.objects.bulk_create([
+			Notification(
+				user=profile.user,
+				message=(
+    				f"{blood_request.blood_group} blood is urgently needed in "
+    				f"{blood_request.area}."
+				),
+				notification_type="blood_request",
+			)
+			for profile in matching_donors
+		])
+
+		return Response(
+			{
+				"success": True,
+				"data": request_data(blood_request),
+				"message": "Blood request created.",
+			},
+			status=status.HTTP_201_CREATED,
+		)
+
+
+class BloodRequestMatchesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, request_id):
+        blood_request = get_object_or_404(
+            BloodRequest,
+            id=request_id
+        )
+
+        if blood_request.requester != request.user:
+            return Response(
+                {
+                    "success": False,
+                    "data": None,
+                    "message": "Only the request owner can view matching donors.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if blood_request.status != BloodRequest.Status.OPEN:
+            return Response(
+                {
+                    "success": False,
+                    "data": None,
+                    "message": "This blood request is no longer open.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        profiles = DonorProfile.objects.filter(
+            blood_group=blood_request.blood_group,
+            area=blood_request.area,
+            availability=DonorProfile.Availability.AVAILABLE,
+        ).exclude(
+            user=blood_request.requester
+        ).select_related("user")
+
+        data = [
+            profile_data(profile)
+            for profile in profiles
+        ]
+
+        return Response(
+            {
+                "success": True,
+                "data": data,
+                "message": "Matching donors loaded.",
+            }
+        )
+
+
+class BloodRequestCompleteView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	def post(self, request, request_id):
+		blood_request = get_object_or_404(
+			BloodRequest.objects.select_related("requester"), id=request_id
+		)
+		if blood_request.requester != request.user:
+			return Response(
+				{"success": False, "data": None, "message": "Only the request owner can complete this request."},
+				status=status.HTTP_403_FORBIDDEN,
+			)
+		if blood_request.status != BloodRequest.Status.OPEN:
+			return Response(
+				{"success": False, "data": None, "message": "This request is already closed."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+
+		donor_id = request.data.get("donor_id")
+		donor_profile = get_object_or_404(
+			DonorProfile.objects.select_related("user"), user_id=donor_id
+		)
+		if (
+			donor_profile.blood_group != blood_request.blood_group
+			or donor_profile.area != blood_request.area
+		):
+			return Response(
+				{"success": False, "data": None, "message": "The donor does not match this request."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+
+		try:
+			with transaction.atomic():
+				DonationHistory.objects.create(
+					donor=donor_profile.user,
+					blood_request=blood_request,
+				)
+				blood_request.status = BloodRequest.Status.FULFILLED
+				blood_request.updated_at = timezone.now()
+				blood_request.save(update_fields=["status", "updated_at"])
+				donor_profile.availability = DonorProfile.Availability.NOT_AVAILABLE
+				donor_profile.save(update_fields=["availability", "updated_at"])
+		except IntegrityError:
+			return Response(
+				{"success": False, "data": None, "message": "Donation history already exists for this request."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+
+		return Response({"success": True, "data": request_data(blood_request), "message": "Request fulfilled."})
+
+
+class BloodRequestCloseView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	def post(self, request, request_id):
+		blood_request = get_object_or_404(BloodRequest, id=request_id)
+		if blood_request.requester != request.user:
+			return Response(
+				{"success": False, "data": None, "message": "Only the request owner can close this request."},
+				status=status.HTTP_403_FORBIDDEN,
+			)
+		if blood_request.status != BloodRequest.Status.OPEN:
+			return Response(
+				{"success": False, "data": None, "message": "This request is already closed."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+		blood_request.status = BloodRequest.Status.CLOSED
+		blood_request.save(update_fields=["status", "updated_at"])
+		return Response({"success": True, "data": request_data(blood_request), "message": "Request closed."})
+
+
+class BloodRequestReportView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	def post(self, request, request_id):
+		blood_request = get_object_or_404(BloodRequest, id=request_id)
+		description = str(request.data.get("description", "")).strip()
+		if not description:
+			return Response({"success": False, "data": None, "message": "A report description is required."}, status=400)
+		report = Report.objects.create(
+			reporter=request.user,
+			reported_user=blood_request.requester,
+			content_object=blood_request,
+			category=Report.Category.FRAUD,
+			description=description,
+		)
+		return Response({"success": True, "data": {"id": str(report.id)}, "message": "Blood request reported."}, status=201)
+
+
+class DonationHistoryView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	def get(self, request):
+		history = DonationHistory.objects.filter(donor=request.user).select_related("blood_request")
+		data = [
+			{
+				"id": str(item.id),
+				"request_id": str(item.blood_request_id),
+				"blood_group": item.blood_request.blood_group,
+				"area": item.blood_request.area,
+				"hospital": item.blood_request.hospital,
+				"donated_at": item.donated_at,
+			}
+			for item in history
+		]
+		return Response({"success": True, "data": data, "message": "Donation history loaded."})

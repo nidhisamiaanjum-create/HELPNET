@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Find People | HELPNET</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/style.css' %}"
+    >
+</head>
+
+<body>
+
+<header class="site-header">
+    <a href="/dashboard/" class="logo">
+        HELPNET
+    </a>
+
+    <a href="/dashboard/" class="back-link" data-i18n="backToDashboard">
+        Back to dashboard
+    </a>
+<button id="langToggle" class="lang-toggle" data-i18n="langButton">English</button></header>
+
+
+<main class="user-search-page">
+
+    <section class="user-search-card">
+
+        <h1 data-i18n="findPeople">Find People</h1>
+
+        <p class="hint" data-i18n="findPeopleHint">
+            Search HELPNET members by name, role or area.
+        </p>
+
+
+        <form id="userSearchForm">
+
+            <div class="field">
+                <label for="userSearchInput" data-i18n="search">
+                    Search
+                </label>
+
+                <input
+                    id="userSearchInput"
+                    type="search"
+                    placeholder="Name, role or area..." data-i18n-placeholder="searchPlaceholder"
+                    autocomplete="off"
+                >
+            </div>
+
+            <button
+                type="submit"
+                class="btn"
+                data-i18n="search"
+            >
+                🔎 Search
+            </button>
+
+        </form>
+
+
+        <p
+            id="userSearchMessage"
+            class="form-message"
+            aria-live="polite"
+        ></p>
+
+    </section>
+
+
+    <section
+        id="userSearchResults"
+        class="user-search-results"
+    ></section>
+
+</main>
+
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/user-search.js' %}"></script>
+
+<script src="{% static 'js/i18n.js' %}"></script></body>
+</html>

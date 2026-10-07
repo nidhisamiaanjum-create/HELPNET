@@ -1,1053 +1,749 @@
 {% load static %}
 
-
 <!DOCTYPE html>
 <html lang="bn">
-
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-
     <title data-i18n="profilePageTitle">প্রোফাইল | HELPNET</title>
 
-
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* Public profile starts in public mode.
+       JavaScript will remove this restriction for /profile/ without user_id. */
+        body.public-profile .profile-picture-upload,
+        body.public-profile #verificationAction,
+        body.public-profile .profile-menu,
+        body.public-profile #editProfileLink,
+        body.public-profile #edit-profile,
+        body.public-profile a[href="/settings/"] {
+            display: none !important;
+        }
+    </style>
+
+
 </head>
 
-
 <body>
+    <script>
+        if (new URLSearchParams(window.location.search).has("user_id")) {
+            document.body.classList.add("public-profile");
+        }
+    </script>
 
+    <header class="site-header">
 
-<header class="site-header">
-
-
-    <a href="/dashboard/" class="logo" data-i18n="appName">
-        হেল্পনেট
-    </a>
-
-
-    <div class="header-actions">
-
-
-        <button
-            type="button"
-            id="langToggle"
-            class="lang-toggle">
-            English
-        </button>
-
-
-        <a
-            href="/dashboard/"
-            class="back-link"
-            data-i18n="backToDashboard">
-            ড্যাশবোর্ড
+        <a href="/dashboard/" class="logo" data-i18n="appName">
+            হেল্পনেট
         </a>
 
+        <div class="header-actions">
 
-    </div>
+            <button type="button" id="langToggle" class="lang-toggle">
+                English
+            </button>
+
+            <a href="/dashboard/" class="back-link" data-i18n="backToDashboard">
+                ড্যাশবোর্ড
+            </a>
+
+        </div>
+
+    </header>
 
 
-</header>
+    <main class="profile-container">
 
-
-
-
-<main class="profile-container">
-
-
-    <!-- =========================
+        <!-- =========================
          PROFILE HEADER
     ========================== -->
-    <section class="profile-top">
-
-
-        <!-- Profile Picture -->
-        <div class="profile-picture-wrapper">
-
-
-            <div class="profile-avatar" id="profileAvatar">
-                🧑‍💼
-            </div>
-
-
-            <label
-                for="profilePictureInput"
-                class="profile-picture-upload">
-
-
-                📷
-                <span data-i18n="changePhoto">
-                    ছবি পরিবর্তন
-                </span>
-
-
-            </label>
-
-
-            <input
-                type="file"
-                id="profilePictureInput"
-                accept="image/jpeg,image/png,image/webp"
-                hidden>
-
-
-        </div>
-
-
-
-
-        <div class="profile-main-info">
-
-
-            <div class="profile-name-row">
-
-
-                <h1 id="profileName">
-                    <span data-i18n="loading">
-                        লোড হচ্ছে...
-                    </span>
-                </h1>
-
-
-                <span
-                    id="verifiedBadge"
-                    class="verified-badge"
-                    hidden>
-
-
-                    ✓
-                    <span data-i18n="verified">
-                        যাচাইকৃত
-                    </span>
-
-
-                </span>
-
-
-            </div>
-
-
-
-
-            <p id="profileContact">
-
-
-                <span id="profileEmail">
-                    —
-                </span>
-
-
-                <span> · </span>
-
-
-                <span id="profileLocation">
-                    —
-                </span>
-
-
-            </p>
-
-
-
-
-            <p
-                id="profileRole"
-                class="profile-role">
-                —
-            </p>
-
-
-
-
-            <p
-                id="profileBio"
-                class="profile-bio">
-            </p>
-
-
-        </div>
-
-
-    </section>
-
-
-
-
-
-
-    <!-- =========================
-         PROFILE STATISTICS
-    ========================== -->
-    <section class="profile-stats">
-
-
-        <div class="profile-stat">
-
-
-            <strong id="helpCount">
-                0
-            </strong>
-
-
-            <span data-i18n="donations">
-                দান
-            </span>
-
-
-        </div>
-
-
-
-
-        <div class="profile-stat">
-
-
-            <strong id="activityCount">
-                0
-            </strong>
-
-
-            <span data-i18n="events">
-                ইভেন্ট
-            </span>
-
-
-        </div>
-
-
-
-
-        <div class="profile-stat">
-
-
-            <strong id="postCount">
-                0
-            </strong>
-
-
-            <span data-i18n="posts">
-                পোস্ট
-            </span>
-
-
-        </div>
-
-
-    </section>
-
-
-
-
-
-
-    <!-- =========================
-         MY ACTIVITIES
-    ========================== -->
-    <section class="profile-menu">
-
-
-        <a
-            href="#"
-            class="profile-menu-item">
-
-
-            <span class="menu-icon">📋</span>
-
-
-            <span
-                class="menu-title"
-                data-i18n="myPosts">
-                আমার পোস্ট
-            </span>
-
-
-            <strong id="myPostsCount">0</strong>
-
-
-            <span class="menu-arrow">›</span>
-
-
-        </a>
-
-
-
-
-        <a
-            href="#"
-            class="profile-menu-item">
-
-
-            <span class="menu-icon">📅</span>
-
-
-            <span
-                class="menu-title"
-                data-i18n="myEvents">
-                আমার ইভেন্ট
-            </span>
-
-
-            <strong id="myEventsCount">0</strong>
-
-
-            <span class="menu-arrow">›</span>
-
-
-        </a>
-
-
-
-
-        <a
-            href="#"
-            class="profile-menu-item">
-
-
-            <span class="menu-icon">🩸</span>
-
-
-            <span
-                class="menu-title"
-                data-i18n="myDonations">
-                আমার দান
-            </span>
-
-
-            <strong id="myDonationsCount">0</strong>
-
-
-            <span class="menu-arrow">›</span>
-
-
-        </a>
-
-
-
-
-        <a
-            href="#"
-            class="profile-menu-item">
-
-
-            <span class="menu-icon">🏷️</span>
-
-
-            <span
-                class="menu-title"
-                data-i18n="myListings">
-                আমার তালিকা
-            </span>
-
-
-            <strong id="myListingsCount">0</strong>
-
-
-            <span class="menu-arrow">›</span>
-
-
-        </a>
-
-
-    </section>
-
-
-
-
-
-
-    <!-- =========================
-         NID VERIFICATION
-    ========================== -->
-    <section class="profile-action-card">
-
-
-        <div class="action-icon">
-            🛡️
-        </div>
-
-
-
-
-        <div class="action-info">
-
-
-            <h2 data-i18n="verification">
-                পরিচয় যাচাই
-            </h2>
-
-
-            <p
-                id="verificationStatus"
-                class="status status-unverified"
-                data-i18n="statusUnverified">
-
-
-                যাচাই করা হয়নি
-
-
-            </p>
-
-
-        </div>
-
-
-
-
-        <a
-            href="/verification/"
-            class="action-button"
-            data-i18n="verifyNow">
-
-
-            যাচাই করুন
-
-
-        </a>
-
-
-    </section>
-
-
-
-
-
-
-    <!-- =========================
-         TRUST / RATING
-    ========================== -->
-    <section class="profile-trust">
-
-
-        <div class="trust-heading">
-
-
-            <div>
-
-
-                <h2 data-i18n="trustworthiness">
-                    বিশ্বাসযোগ্যতা
-                </h2>
-
-
-                <p id="ratingSummary">
-                    ★ 0.0 · 0
-                </p>
-
-
-            </div>
-
-
-        </div>
-
-
-        <div id="trust-component"></div>
-
-
-    </section>
-
-
-
-
-
-
-    <!-- =========================
-         PROFILE ACTIONS
-    ========================== -->
-    <section class="profile-actions">
-
-
-        <a
-            href="#edit-profile"
-            class="profile-action-link">
-
-
-            <span>✏️</span>
-
-
-            <span data-i18n="editProfile">
-                প্রোফাইল সম্পাদনা
-            </span>
-
-
-            <span>›</span>
-
-
-        </a>
-
-
-
-
-        <a
-            href="/settings/"
-            class="profile-action-link">
-
-
-            <span>⚙️</span>
-
-
-            <span data-i18n="settings">
-                সেটিংস
-            </span>
-
-
-            <span>›</span>
-
-
-        </a>
-
-
-
-
-        <button
-            type="button"
-            id="logoutButton"
-            class="profile-action-link logout-link">
-
-
-            <span>🚪</span>
-
-
-            <span data-i18n="logout">
-                সাইন আউট
-            </span>
-
-
-            <span>›</span>
-
-
-        </button>
-
-
-    </section>
-
-
-
-
-
-
-    <!-- =========================
-         EDIT PROFILE
-    ========================== -->
-    <section
-        id="edit-profile"
-        class="profile-edit">
-
-
-        <h2 data-i18n="editProfile">
-            প্রোফাইল সম্পাদনা
-        </h2>
-
-
-
-
-        <form
-            id="profileForm"
-            enctype="multipart/form-data">
-
-
-
+        <section class="profile-top">
 
             <!-- Profile Picture -->
-            <div class="field">
+            <div class="profile-picture-wrapper">
 
+                <div class="profile-avatar" id="profileAvatar">
+                    🧑‍💼
+                </div>
 
-                <label
-                    for="profilePictureInput"
-                    data-i18n="profilePicture">
+                <label for="profilePictureInputTop" class="profile-picture-upload">
 
-
-                    প্রোফাইল ছবি
-
+                    📷
+                    <span data-i18n="changePhoto">
+                        ছবি পরিবর্তন
+                    </span>
 
                 </label>
 
+                <input type="file" id="profilePictureInputTop" accept="image/jpeg,image/png,image/webp" hidden>
 
-                <input
-                    type="file"
-                    id="profilePictureInputEdit"
-                    name="profile_picture"
-                    accept="image/jpeg,image/png,image/webp">
+            </div>
 
 
-                <p class="hint">
-                    JPG, PNG অথবা WebP। সর্বোচ্চ 5 MB।
+            <div class="profile-main-info">
+
+                <div class="profile-name-row">
+
+                    <h1 id="profileName">
+                        <span data-i18n="loading">
+                            লোড হচ্ছে...
+                        </span>
+                    </h1>
+
+                    <span id="verifiedBadge" class="verified-badge" hidden>
+
+                        ✓
+                        <span data-i18n="verified">
+                            যাচাইকৃত
+                        </span>
+
+                    </span>
+
+                </div>
+
+
+                <p id="profileContact">
+
+                    <span id="profileEmail">
+                        —
+                    </span>
+
+                    <span> · </span>
+
+                    <span id="profilePhone">
+                        —
+                    </span>
+
+                    <span> · </span>
+
+                    <span id="profileLocation">
+                        —
+                    </span>
+
                 </p>
 
 
-            </div>
+                <p id="profileRole" class="profile-role">
+                    —
+                </p>
 
 
-
-
-
-
-            <!-- Full Name -->
-            <div class="field">
-
-
-                <label
-                    for="profileFullName"
-                    data-i18n="fullName">
-
-
-                    পূর্ণ নাম
-
-
-                </label>
-
-
-                <input
-                    id="profileFullName"
-                    name="full_name"
-                    type="text"
-                    autocomplete="name">
-
+                <p id="profileBio" class="profile-bio">
+                </p>
 
             </div>
 
+        </section>
 
 
 
+        <!-- =========================
+         PROFILE STATISTICS
+    ========================== -->
+        <section class="profile-stats">
 
+            <div class="profile-stat">
 
-            <!-- Bio -->
-            <div class="field">
+                <strong id="helpCount">
+                    0
+                </strong>
 
-
-                <label
-                    for="profileBioInput"
-                    data-i18n="aboutMe">
-
-
-                    নিজের সম্পর্কে
-
-
-                </label>
-
-
-                <textarea
-                    id="profileBioInput"
-                    name="bio"
-                    rows="3"></textarea>
-
+                <span data-i18n="donations">
+                    দান
+                </span>
 
             </div>
 
 
+            <div class="profile-stat">
 
+                <strong id="activityCount">
+                    0
+                </strong>
 
-
-
-            <!-- Location -->
-            <div class="field">
-
-
-                <label
-                    for="profileLocationInput"
-                    data-i18n="location">
-
-
-                    অবস্থান
-
-
-                </label>
-
-
-                <input
-                    id="profileLocationInput"
-                    name="location"
-                    type="text">
-
+                <span data-i18n="events">
+                    ইভেন্ট
+                </span>
 
             </div>
 
 
+            <div class="profile-stat">
+
+                <strong id="postCount">
+                    0
+                </strong>
+
+                <span data-i18n="posts">
+                    পোস্ট
+                </span>
+
+            </div>
+
+        </section>
+
+        <!--======profile info=======-->
+        <section class="profile-card">
+            <h2>Personal Information</h2>
+
+            <div class="profile-info-list">
+
+                <div class="profile-info-item">
+                    <span class="profile-info-label">Full Name</span>
+                    <span class="profile-info-value" id="infoFullName">—</span>
+                </div>
+
+                <div class="profile-info-item">
+                    <span class="profile-info-label">Email</span>
+                    <span class="profile-info-value" id="infoEmail">—</span>
+                </div>
+
+                <div class="profile-info-item">
+                    <span class="profile-info-label">Phone</span>
+                    <span class="profile-info-value" id="infoPhone">—</span>
+                </div>
+
+                <div class="profile-info-item">
+                    <span class="profile-info-label">Location</span>
+                    <span class="profile-info-value" id="infoLocation">—</span>
+                </div>
+
+                <div class="profile-info-item">
+                    <span class="profile-info-label">Date of Birth</span>
+                    <span class="profile-info-value" id="infoDob">—</span>
+                </div>
+
+                <div class="profile-info-item">
+                    <span class="profile-info-label">Gender</span>
+                    <span class="profile-info-value" id="infoGender">—</span>
+                </div>
+
+            </div>
+        </section>
+        <!--===========-->
+        <!-- =========================
+     MY ACTIVITIES
+========================== -->
+        <section class="profile-menu" id="profileActivities">
 
 
+            <!-- My Events -->
+            <div class="profile-menu-item role-activity" data-roles="volunteer ngo admin">
 
+                <span class="menu-icon">📅</span>
 
-            <!-- Date of Birth -->
-            <div class="field">
+                <span class="menu-title" data-i18n="myEvents">
+                    আমার ইভেন্ট
+                </span>
 
+                <strong id="myEventsCount">0</strong>
 
-                <label
-                    for="profileDobInput"
-                    data-i18n="dateOfBirth">
-
-
-                    জন্মতারিখ
-
-
-                </label>
-
-
-                <input
-                    id="profileDobInput"
-                    name="date_of_birth"
-                    type="date">
-
+                <span class="menu-arrow">—</span>
 
             </div>
 
 
+            <!-- My Donations -->
+            <a href="/donation-history/" class="profile-menu-item role-activity"
+                data-roles="citizen volunteer ngo farmer blood_donor admin">
+
+                <span class="menu-icon">🩸</span>
+
+                <span class="menu-title" data-i18n="myDonations">
+                    আমার দান
+                </span>
+
+                <strong id="myDonationsCount">0</strong>
+
+                <span class="menu-arrow">›</span>
+
+            </a>
 
 
+            <!-- My Listings -->
+            <div id="myListingsItem" class="profile-menu-item role-activity" data-roles="citizen farmer">
+
+                <span class="menu-icon">🏷️</span>
+
+                <span class="menu-title" id="myListingsTitle" data-i18n="myListings">
+                    আমার তালিকা
+                </span>
+
+                <strong id="myListingsCount">0</strong>
+
+                <span class="menu-arrow">—</span>
+
+            </div>
+
+        </section>
 
 
-            <!-- Gender -->
-            <div class="field">
+        <!-- =========================
+         NID VERIFICATION
+    ========================== -->
+        <section class="profile-action-card" id="verificationAction">
+
+            <div class="action-icon">
+                🛡️
+            </div>
 
 
-                <label
-                    for="profileGenderInput"
-                    data-i18n="gender">
+            <div class="action-info">
 
+                <h2 data-i18n="verification">
+                    পরিচয় যাচাই
+                </h2>
 
-                    লিঙ্গ
+                <p id="verificationStatus" class="status status-unverified" data-i18n="statusUnverified">
 
+                    যাচাই করা হয়নি
 
-                </label>
-
-
-                <select
-                    id="profileGenderInput"
-                    name="gender">
-
-
-                    <option
-                        value=""
-                        data-i18n="selectGender">
-
-
-                        নির্বাচন করুন
-
-
-                    </option>
-
-
-                    <option
-                        value="male"
-                        data-i18n="male">
-
-
-                        পুরুষ
-
-
-                    </option>
-
-
-                    <option
-                        value="female"
-                        data-i18n="female">
-
-
-                        নারী
-
-
-                    </option>
-
-
-                    <option
-                        value="other"
-                        data-i18n="other">
-
-
-                        অন্যান্য
-
-
-                    </option>
-
-
-                </select>
-
+                </p>
 
             </div>
 
 
+            <a href="/nid-verification/" class="action-button" data-i18n="verifyNow">
+
+                যাচাই করুন
+
+            </a>
+
+        </section>
 
 
 
+        <!-- =========================
+         TRUST / RATING
+    ========================== -->
+        <section class="profile-trust">
 
-            <!-- Save -->
-            <button
-                type="submit"
-                class="btn"
-                data-i18n="saveChanges">
+            <div class="trust-heading">
+
+                <div>
+
+                    <h2 data-i18n="trustworthiness">
+                        বিশ্বাসযোগ্যতা
+                    </h2>
+
+                    <p id="ratingSummary">
+                        ★ 0.0 · 0
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div id="trust-component"></div>
+
+            <div id="existingRatings" class="existing-ratings"></div>
+            <div id="rateUserSection" class="rate-user-section" hidden>
+                <h3>Rate this user</h3>
+
+                <div class="star-picker" id="profileStarPicker">
+                    <button type="button" data-rating="1">★</button>
+                    <button type="button" data-rating="2">★</button>
+                    <button type="button" data-rating="3">★</button>
+                    <button type="button" data-rating="4">★</button>
+                    <button type="button" data-rating="5">★</button>
+                </div>
+
+                <textarea id="profileRatingComment" placeholder="Write a comment..." rows="3"></textarea>
+
+                <button type="button" class="btn" id="submitProfileRating">
+                    Submit Rating
+                </button>
+
+                <p id="ratingMessage"></p>
+            </div>
+        </section>
 
 
-                পরিবর্তন সংরক্ষণ করুন
 
+        <!-- =========================
+         PROFILE ACTIONS
+    ========================== -->
+        <section class="profile-actions" id="profileActions">
+
+            <a href="#edit-profile" class="profile-action-link" id="editProfileLink">
+
+                <span>✏️</span>
+
+                <span data-i18n="editProfile">
+                    প্রোফাইল সম্পাদনা
+                </span>
+
+                <span>›</span>
+
+            </a>
+
+
+            <a href="/settings/" class="profile-action-link">
+
+                <span>⚙️</span>
+
+                <span data-i18n="settings">
+                    সেটিংস
+                </span>
+
+                <span>›</span>
+
+            </a>
+
+
+            <button type="button" id="logoutButton" class="profile-action-link logout-link">
+
+                <span>🚪</span>
+
+                <span data-i18n="logout">
+                    সাইন আউট
+                </span>
+
+                <span>›</span>
 
             </button>
 
+        </section>
 
 
 
-            <p
-                id="profileFormMessage"
-                class="form-message"
-                aria-live="polite">
-            </p>
+        <!-- =========================
+         EDIT PROFILE
+    ========================== -->
+        <section id="edit-profile" class="profile-edit">
+
+            <h2 data-i18n="editProfile">
+                প্রোফাইল সম্পাদনা
+            </h2>
 
 
-        </form>
+            <form id="profileForm" enctype="multipart/form-data">
 
 
-    </section>
+                <!-- Profile Picture -->
+                <div class="field">
+
+                    <label for="profilePictureInputEdit" data-i18n="profilePicture">
+
+                        প্রোফাইল ছবি
+
+                    </label>
+
+                    <input type="file" id="profilePictureInputEdit" name="profile_picture"
+                        accept="image/jpeg,image/png,image/webp">
+
+                    <p class="hint">
+                        JPG, PNG অথবা WebP। সর্বোচ্চ 5 MB।
+                    </p>
+
+                </div>
 
 
-</main>
+
+                <!-- Full Name -->
+                <div class="field">
+
+                    <label for="profileFullName" data-i18n="fullName">
+
+                        পূর্ণ নাম
+
+                    </label>
+
+                    <input id="profileFullName" name="full_name" type="text" autocomplete="name">
+
+                </div>
 
 
 
+                <!-- Bio -->
+                <div class="field">
+
+                    <label for="profileBioInput" data-i18n="aboutMe">
+
+                        নিজের সম্পর্কে
+
+                    </label>
+
+                    <textarea id="profileBioInput" name="bio" rows="3"></textarea>
+
+                </div>
 
 
 
-<!-- =========================
+                <!-- Location -->
+                <div class="field">
+
+                    <label for="profileLocationInput" data-i18n="location">
+
+                        অবস্থান
+
+                    </label>
+
+                    <input id="profileLocationInput" name="location" type="text">
+
+                </div>
+
+
+
+                <!-- Date of Birth -->
+                <div class="field">
+
+                    <label for="profileDobInput" data-i18n="dateOfBirth">
+
+                        জন্মতারিখ
+
+                    </label>
+
+                    <input id="profileDobInput" name="date_of_birth" type="date">
+
+                </div>
+
+
+
+                <!-- Gender -->
+                <div class="field">
+
+                    <label for="profileGenderInput" data-i18n="gender">
+
+                        লিঙ্গ
+
+                    </label>
+
+                    <select id="profileGenderInput" name="gender">
+
+                        <option value="" data-i18n="selectGender">
+
+                            নির্বাচন করুন
+
+                        </option>
+
+                        <option value="male" data-i18n="male">
+
+                            পুরুষ
+
+                        </option>
+
+                        <option value="female" data-i18n="female">
+
+                            নারী
+
+                        </option>
+
+                        <option value="other" data-i18n="other">
+
+                            অন্যান্য
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+
+                <p id="profileFormMessage" class="form-message" aria-live="polite">
+                </p>
+
+            </form>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =========================
      JAVASCRIPT
 ========================= -->
 
+    <script src="{% static 'js/i18n.js' %}"></script>
 
-<script src="{% static 'js/i18n.js' %}"></script>
+    <script src="{% static 'js/trust-component.js' %}"></script>
 
+    <script src="{% static 'js/api.js' %}"></script>
 
-<script src="{% static 'js/trust-component.js' %}"></script>
+    <script src="{% static 'js/profile.js' %}"></script>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
 
-<script src="{% static 'js/profile.js' %}"></script>
+            const storedUser = localStorage.getItem("helpnet_user");
 
-
-
-
-<!-- =========================
-     PROFILE PICTURE PREVIEW
-========================= -->
-<script>
-
-
-document.addEventListener("DOMContentLoaded", function () {
-
-
-    const pictureInput =
-        document.getElementById("profilePictureInput");
-
-
-    const pictureInputEdit =
-        document.getElementById("profilePictureInputEdit");
-
-
-    const avatar =
-        document.getElementById("profileAvatar");
-
-
-
-
-    function previewImage(file) {
-
-
-        if (!file || !avatar) {
-            return;
-        }
-
-
-
-
-        /*
-         * Only allow image files
-         */
-        if (!file.type.startsWith("image/")) {
-
-
-            alert("Please select an image file.");
-
-
-            return;
-        }
-
-
-
-
-        /*
-         * Maximum 5 MB
-         */
-        if (file.size > 5 * 1024 * 1024) {
-
-
-            alert("Profile picture must be smaller than 5 MB.");
-
-
-            return;
-        }
-
-
-
-
-        const reader =
-            new FileReader();
-
-
-
-
-        reader.onload = function (event) {
-
-
-            avatar.innerHTML = "";
-
-
-            const image =
-                document.createElement("img");
-
-
-            image.src =
-                event.target.result;
-
-
-            image.alt =
-                "Profile picture";
-
-
-            image.className =
-                "profile-avatar-image";
-
-
-            avatar.appendChild(image);
-
-
-        };
-
-
-
-
-        reader.readAsDataURL(file);
-
-
-    }
-
-
-
-
-    /*
-     * Top profile-picture button
-     */
-    if (pictureInput) {
-
-
-        pictureInput.addEventListener(
-            "change",
-            function () {
-
-
-                if (this.files.length > 0) {
-
-
-                    previewImage(this.files[0]);
-
-
-                }
-
-
-            }
-        );
-
-
-    }
-
-
-
-
-    /*
-     * Edit-profile picture input
-     */
-    if (pictureInputEdit) {
-
-
-        pictureInputEdit.addEventListener(
-            "change",
-            function () {
-
-
-                if (this.files.length > 0) {
-
-
-                    previewImage(this.files[0]);
-
-
-                }
-
-
-            }
-        );
-
-
-    }
-
-
-});
-
-
-
-
-
-
-/* =========================
-   LOGOUT
-========================= */
-
-
-document.addEventListener("DOMContentLoaded", function () {
-
-
-    const logoutButton =
-        document.getElementById("logoutButton");
-
-
-
-
-    if (!logoutButton) {
-        return;
-    }
-
-
-
-
-    logoutButton.addEventListener(
-        "click",
-        function () {
-
-
-            if (typeof logout === "function") {
-
-
-                logout();
-
-
+            if (!storedUser) {
                 return;
             }
 
+            let user;
+
+            try {
+                user = JSON.parse(storedUser);
+            } catch (error) {
+                console.error("Invalid stored user:", error);
+                return;
+            }
+
+            const role = String(user.role || "").toLowerCase();
+
+            document.querySelectorAll(".role-activity").forEach(function (item) {
+
+                const allowedRoles =
+                    (item.dataset.roles || "")
+                        .split(/\s+/)
+                        .map(r => r.toLowerCase());
+
+                if (!allowedRoles.includes(role)) {
+                    item.style.display = "none";
+                }
+
+            });
+
+
+            /* =========================
+               ROLE-SPECIFIC LISTINGS
+            ========================= */
+
+            const listingsItem =
+                document.getElementById("myListingsItem");
+
+            const listingsTitle =
+                document.getElementById("myListingsTitle");
+
+            if (listingsItem && listingsTitle) {
+
+                if (role === "farmer") {
+
+                    listingsTitle.textContent =
+                        "আমার কৃষি পণ্য";
+
+                    listingsItem.style.cursor = "pointer";
+
+                    listingsItem.addEventListener("click", function () {
+                        window.location.href = "/farmer-market/";
+                    });
+
+                } else if (role === "citizen") {
+
+                    listingsTitle.textContent =
+                        "আমার পণ্য";
+
+                    listingsItem.style.cursor = "pointer";
+
+                    listingsItem.addEventListener("click", function () {
+                        window.location.href = "/goods-list/";
+                    });
+
+                }
+
+            }
+
+        });
+    </script>
+
+
+    <!-- =========================
+     PROFILE PICTURE PREVIEW + LOGOUT
+========================= -->
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const pictureInputTop =
+                document.getElementById("profilePictureInputTop");
+
+            const pictureInputEdit =
+                document.getElementById("profilePictureInputEdit");
+
+            const avatar =
+                document.getElementById("profileAvatar");
+
+
+            function previewImage(file) {
+
+                if (!file || !avatar) {
+                    return;
+                }
+
+                if (!file.type.startsWith("image/")) {
+                    alert("Please select an image file.");
+                    return;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    alert("Profile picture must be smaller than 5 MB.");
+                    return;
+                }
+
+                const reader = new FileReader();
+
+                reader.onload = function (event) {
+                    avatar.innerHTML = "";
+
+                    const image = document.createElement("img");
+                    image.src = event.target.result;
+                    image.alt = "Profile picture";
+                    image.className = "profile-avatar-image";
+
+                    avatar.appendChild(image);
+                };
+
+                reader.readAsDataURL(file);
+            }
+
+
+            if (pictureInputTop) {
+                pictureInputTop.addEventListener("change", function () {
+                    if (this.files.length > 0) {
+                        previewImage(this.files[0]);
+                    }
+                });
+            }
+
+
+            if (pictureInputEdit) {
+                pictureInputEdit.addEventListener("change", function () {
+                    if (this.files.length > 0) {
+                        previewImage(this.files[0]);
+                    }
+                });
+            }
+
+        });
 
 
 
-            localStorage.removeItem("helpnet_token");
-            localStorage.removeItem("helpnet_user");
+        /* =========================
+           LOGOUT
+        ========================= */
 
+        document.addEventListener("DOMContentLoaded", function () {
 
-            window.location.href = "/login/";
+            const logoutButton =
+                document.getElementById("logoutButton");
 
+            if (!logoutButton) {
+                return;
+            }
 
-        }
-    );
+            logoutButton.addEventListener("click", function () {
 
+                if (typeof logout === "function") {
+                    logout();
+                    return;
+                }
 
-});
+                localStorage.removeItem("helpnet_token");
+                localStorage.removeItem("helpnet_user");
 
+                window.location.href = "/login/";
+            });
 
-</script>
+        });
 
-
+    </script>
 
 
 </body>
+
 </html>

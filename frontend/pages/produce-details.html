@@ -1,0 +1,129 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HELPNET - Produce Details</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header class="site-header">
+    <a href="/dashboard/" class="logo" data-i18n="appName">
+        হেল্পনেট
+    </a>
+
+    <div class="header-actions">
+        <a href="/farmer-market/" class="back-link">← Back to Marketplace</a>
+        <button type="button" id="langToggle" class="lang-toggle">English</button>
+        <button type="button" id="logoutButton" class="lang-toggle" data-i18n="logout">Logout</button>
+    </div>
+</header>
+
+<main class="page profile-page" id="produceDetailPage">
+
+    <!-- ST 47: Mandatory Disclaimer -->
+    <div class="alert-card" style="margin-bottom: 20px; border-left: 4px solid var(--teal);">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+            <span class="alert-label">Marketplace Disclaimer</span>
+            <p style="font-weight: 600; color: var(--text); font-size: 15px; margin-top: 4px;">
+                HELPNET does not handle payment or delivery. All arrangements are made directly between the farmer and consumer.
+            </p>
+        </div>
+    </div>
+
+    <div id="detailAlert" class="alert"></div>
+
+    <section class="card" aria-labelledby="farmerPriceRangeTitle">
+        <h2 id="farmerPriceRangeTitle" data-i18n="farmerPriceRangeTitle">অন্যান্য কৃষকের সক্রিয় তালিকার দামের সারাংশ</h2>
+        <p id="farmerPriceRange" class="hint" data-i18n="farmerPriceRangeLoading">দামের তথ্য লোড হচ্ছে…</p>
+        <p class="hint" data-i18n="farmerPriceRangeDisclaimer">এই তথ্য ব্যবহারকারীদের সক্রিয় তালিকা থেকে নেওয়া; এটি সরকারি বা নিশ্চিত বাজারদর নয় এবং কোনো পূর্বাভাসও নয়।</p>
+    </section>
+
+    <section id="produceReportSection" class="card">
+        <h2 data-i18n="farmerReportTitle">তালিকাটি রিপোর্ট করুন</h2>
+        <form id="produceReportForm">
+            <label for="produceReportDescription" data-i18n="farmerReportReason">সন্দেহজনক তালিকার বিবরণ</label>
+            <textarea id="produceReportDescription" maxlength="2000" required></textarea>
+            <button class="small-btn danger-btn" type="submit" data-i18n="bloodReportSubmit">রিপোর্ট পাঠান</button>
+        </form>
+        <p id="produceReportMessage" class="form-message" aria-live="polite"></p>
+    </section>
+
+    <!-- Produce Hero Card -->
+    <div class="card">
+        <div class="section-title">
+            <div>
+                <span id="detailCategory" class="status" style="background:#e0f2f1; color:var(--teal-dark); margin-bottom: 8px;">Category</span>
+                <h1 id="detailTitle" style="font-size: 28px; margin-top: 6px;">Produce Name</h1>
+            </div>
+            <span id="detailAvailability" class="status status-approved">Available</span>
+        </div>
+
+        <div style="margin: 20px 0; padding: 18px; border-radius: 14px; background: rgba(21,154,156,0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <span class="profile-label">Price per unit</span>
+                <h2 id="detailPrice" style="color: var(--teal-dark); font-size: 32px; font-weight: 700; margin: 0;">৳0</h2>
+            </div>
+            <div>
+                <span class="profile-label">Available Stock</span>
+                <h3 id="detailQuantity" style="font-size: 20px; font-weight: 600; margin: 0;">-</h3>
+            </div>
+        </div>
+
+        <dl class="info-list">
+            <div>
+                <dt>📍 Farm / Location</dt>
+                <dd id="detailLocation">-</dd>
+            </div>
+            <div>
+                <dt>📝 Description & Quality</dt>
+                <dd id="detailDesc" style="text-align: left; max-width: 400px;">-</dd>
+            </div>
+        </dl>
+    </div>
+
+    <!-- Farmer Contact Information Card (ST 44) -->
+    <div class="card">
+        <div class="section-title" style="margin-bottom: 14px;">
+            <h2 style="font-size: 20px; color: var(--teal-dark);" data-i18n="farmerContactInfo">
+                কৃষকের যোগাযোগের তথ্য
+            </h2>
+            <span class="verified-badge">Direct Contact</span>
+        </div>
+
+        <div class="profile-hero" style="margin-bottom: 16px;">
+            <div class="avatar" style="background: linear-gradient(145deg, #2e7d32, #1b5e20);">👨‍🌾</div>
+            <div>
+                <h3 id="farmerName" style="margin: 0; font-size: 20px;">Farmer Name</h3>
+                <p id="farmerLocation" class="text-muted" style="margin-top: 4px;">📍 Farm location</p>
+                <p id="farmerPhone" style="font-weight: 700; color: var(--teal-dark); font-size: 18px; margin-top: 6px;">📞 -</p>
+            </div>
+        </div>
+
+        <a href="#" id="farmerCallBtn" class="btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px;" hidden>
+            📞 Call Farmer Directly
+        </a>
+    </div>
+
+    <!-- Owner Controls (Only visible if the logged-in user owns this listing) -->
+    <div id="ownerPanel" class="card" hidden style="border: 2px dashed var(--teal);">
+        <h3 style="color: var(--teal-dark); margin-bottom: 10px;">Farmer Management Controls</h3>
+        <p class="section-help">You are the publisher of this listing. You can change stock status or delete it.</p>
+        <div class="admin-actions" style="margin-top: 14px;">
+            <button id="toggleAvailBtn" class="btn-sm btn-outline">Toggle Availability</button>
+            <button id="deleteProduceBtn" class="btn-sm btn-danger">Delete Produce</button>
+        </div>
+    </div>
+
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/i18n.js' %}"></script>
+<script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/farmer.js' %}"></script>
+
+</body>
+</html>

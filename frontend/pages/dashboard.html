@@ -1,242 +1,654 @@
 {% load static %}
+
 <!DOCTYPE html>
+
 <html lang="bn">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>HELPNET - Dashboard</title>
 
-    <!-- Django Static CSS -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<title>HELPNET - Dashboard</title>
+
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+
 </head>
 
 <body>
 
-    <!-- =====================================================
-         HEADER
-         ===================================================== -->
+<header class="site-header">
 
-    <header class="site-header">
 
-        <a href="/" class="logo" data-i18n="appName">
-            হেল্পনেট
-        </a>
+<!-- Logo -->
+<a href="/dashboard/" class="logo" data-i18n="appName">
+    হেল্পনেট
+</a>
 
-        <div class="header-actions">
+<div class="header-actions">
 
-            <!-- Language -->
-            <button
-                type="button"
-                id="langToggle"
-                class="lang-toggle">
-                English
-            </button>
+    <!-- Notifications -->
+    <a
+        href="/notifications/"
+        class="notification-nav-link"
+        title="Notifications"
+        aria-label="Notifications">
+        🔔
+    </a>
 
-            <!-- Logout -->
-            <button
-                type="button"
-                id="logoutButton"
-                class="lang-toggle"
-                data-i18n="logout">
-                Logout
-            </button>
+    <!-- Language -->
+    <button
+        type="button"
+        id="langToggle"
+        class="lang-toggle">
+        English
+    </button>
 
+    <!-- Logout -->
+    <button
+        type="button"
+        id="logoutButton"
+        class="lang-toggle"
+        data-i18n="logout">
+        Logout
+    </button>
+
+</div>
+
+
+</header>
+
+<main class="dashboard-page">
+
+
+<!-- =====================================================
+     WELCOME
+====================================================== -->
+
+<section class="dashboard-welcome">
+
+    <p
+        class="welcome-small"
+        data-i18n="goodMorning">
+        শুভ সকাল,
+    </p>
+
+    <h1 id="welcomeName">
+        HELPNET User 👋
+    </h1>
+
+    <!-- Dynamic role title -->
+    <p
+        id="dashboardRoleTitle"
+        class="dashboard-role-title">
+    </p>
+
+    <!-- Trust block -->
+    <div
+        id="dashboardTrust"
+        class="trust-block"
+        data-user-id="">
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     NID VERIFICATION
+====================================================== -->
+
+<section
+    id="verifyCallout"
+    class="dashboard-section"
+    hidden>
+
+    <div class="alert-card">
+
+        <div class="alert-icon">
+            🛡️
         </div>
 
-    </header>
+        <div class="alert-content">
 
+            <span
+                class="alert-label"
+                data-i18n="actionNeeded">
+                Action needed
+            </span>
 
-    <!-- =====================================================
-         DASHBOARD
-         ===================================================== -->
+            <h3 data-i18n="verifyNidTitle">
+                Verify your NID to earn a trust badge
+            </h3>
 
-    <main class="page">
-
-        <div class="card">
-
-            <!-- Title -->
-            <h1 data-i18n="dashboardTitle">
-                Dashboard
-            </h1>
-
-            <p class="subtitle" data-i18n="dashboardSubtitle">
-                Welcome to HELPNET
+            <p data-i18n="verifyNidHint">
+                Verified members get more replies and can rate others.
             </p>
 
+        </div>
 
-            <!-- =================================================
-                 USER INFORMATION
-                 ================================================= -->
+        <a
+            href="/nid-verification/"
+            class="alert-button"
+            data-i18n="verifyNow">
+            Verify now
+        </a>
 
-            <!-- Name -->
-            <div class="field">
+    </div>
 
-                <label data-i18n="fullName">
-                    Name
-                </label>
+</section>
 
-                <div id="userName">
-                    -
-                </div>
 
+<!-- =====================================================
+     ROLE SUMMARY
+====================================================== -->
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+
+        <h2 id="roleSectionTitle">
+            My Services
+        </h2>
+
+    </div>
+
+    <p
+        id="roleSectionDescription"
+        class="dashboard-role-description">
+    </p>
+
+</section>
+
+
+<!-- =====================================================
+     ADMIN TOOLS
+====================================================== -->
+
+<section
+    id="adminSection"
+    class="dashboard-section"
+    hidden>
+
+    <div class="section-heading">
+
+        <h2 data-i18n="adminTools">
+            Admin tools
+        </h2>
+
+    </div>
+
+    <div class="service-grid">
+
+        <a
+            href="/admin-verification/"
+            class="service-card">
+
+            <div class="service-icon">
+                📋
             </div>
 
+            <span data-i18n="reviewQueue">
+                Review queue
+            </span>
 
-            <!-- Email -->
-            <div class="field">
+        </a>
 
-                <label data-i18n="email">
-                    Email
-                </label>
 
-                <div id="userEmail">
-                    -
-                </div>
+        <a
+            href="/admin-logs/"
+            class="service-card">
 
+            <div class="service-icon">
+                📜
             </div>
 
+            <span data-i18n="actionLog">
+                Action log
+            </span>
 
-            <!-- Phone -->
-            <div class="field">
+        </a>
 
-                <label data-i18n="phone">
-                    Phone
-                </label>
 
-                <div id="userPhone">
-                    -
-                </div>
+        <a
+            href="/admin-dashboard/"
+            class="service-card">
 
+            <div class="service-icon">
+                📊
             </div>
 
+            <span>
+                Admin Dashboard
+            </span>
 
-            <!-- Role -->
-            <div class="field">
+        </a>
 
-                <label data-i18n="role">
-                    Role
-                </label>
+    </div>
 
-                <div id="userRole">
-                    -
-                </div>
-
-            </div>
+</section>
 
 
-            <!-- =================================================
-                 HOME LINK
-                 ================================================= -->
+<!-- =====================================================
+     STATISTICS
+====================================================== -->
 
-            <div class="form-links">
+<section class="dashboard-stats">
 
-                <p>
-                    <a href="/" data-i18n="backToHome">
-                        Back to Home
-                    </a>
-                </p>
+    <div class="stat-card">
 
-            </div>
+        <div class="stat-icon">
+            🔔
+        </div>
+
+        <div>
+
+            <strong id="notificationCount">
+                0
+            </strong>
+
+            <span data-i18n="newNotifications">
+                নতুন বিজ্ঞপ্তি
+            </span>
 
         </div>
 
-    </main>
+    </div>
 
 
-    <!-- =====================================================
-         JAVASCRIPT
-         ===================================================== -->
+    <div class="stat-card">
 
-    <script src="{% static 'js/api.js' %}"></script>
+        <div class="stat-icon">
+            🤝
+        </div>
 
-    <script src="{% static 'js/i18n.js' %}"></script>
+        <div>
 
-    <script src="{% static 'js/auth.js' %}"></script>
+            <strong id="activityCount">
+                0
+            </strong>
 
+            <span data-i18n="myActivities">
+                আমার কার্যক্রম
+            </span>
 
-    <!-- =====================================================
-         DASHBOARD INITIALIZATION
-         ===================================================== -->
+        </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-
-            /*
-             * Check whether the user is logged in.
-             *
-             * If there is no JWT token,
-             * requireLogin() redirects to login.
-             */
-
-            if (!requireLogin()) {
-                return;
-            }
+    </div>
 
 
-            /*
-             * Get the user information
-             * saved during login.
-             */
+    <div class="stat-card">
 
-            const user = getStoredUser();
+        <div class="stat-icon">
+            ❤️
+        </div>
 
+        <div>
 
-            /*
-             * If no user information exists,
-             * stop here.
-             */
+            <strong id="helpCount">
+                0
+            </strong>
 
-            if (!user) {
-                console.error("No stored user information found.");
-                return;
-            }
+            <span data-i18n="helped">
+                সাহায্য করেছেন
+            </span>
 
+        </div>
 
-            /*
-             * Get dashboard elements.
-             */
+    </div>
 
-            const userName =
-                document.getElementById("userName");
-
-            const userEmail =
-                document.getElementById("userEmail");
-
-            const userPhone =
-                document.getElementById("userPhone");
-
-            const userRole =
-                document.getElementById("userRole");
+</section>
 
 
-            /*
-             * Display user information.
-             */
+<!-- =====================================================
+     COMMUNITY ALERT
+====================================================== -->
 
-            if (userName) {
-                userName.textContent =
-                    user.full_name || "-";
-            }
+<section class="dashboard-section">
 
-            if (userEmail) {
-                userEmail.textContent =
-                    user.email || "-";
-            }
+    <div class="section-heading">
 
-            if (userPhone) {
-                userPhone.textContent =
-                    user.phone_number || "-";
-            }
+        <h2 data-i18n="communityAlert">
+            সম্প্রদায় সতর্কতা
+        </h2>
 
-            if (userRole) {
-                userRole.textContent =
-                    user.role || "-";
-            }
+    </div>
 
-        });
-    </script>
+    <div class="alert-card">
+
+        <div class="alert-icon">
+            🩸
+        </div>
+
+        <div class="alert-content">
+
+            <span
+                class="alert-label"
+                data-i18n="urgent">
+                জরুরি
+            </span>
+
+            <h3>
+                O+
+                <span data-i18n="bloodNeeded">
+                    রক্ত প্রয়োজন
+                </span>
+            </h3>
+
+            <p data-i18n="dhakaMedical">
+                ঢাকা মেডিকেলে
+            </p>
+
+        </div>
+
+        <a
+            href="/blood/"
+            class="alert-button"
+            data-i18n="respond">
+            সাড়া দিন
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     ROLE BASED QUICK SERVICES
+====================================================== -->
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+
+        <h2 id="quickServicesTitle" data-i18n="quickServices">
+            দ্রুত সেবাসমূহ
+        </h2>
+
+    </div>
+
+    <section class="community-search">
+    <div class="section-heading">
+        <h2>Find People</h2>
+        <p>Search HELPNET members and view their profiles.</p>
+    </div>
+
+    <a href="/user-search/" class="community-search-btn">
+        <span class="community-search-icon">🔎</span>
+        <span>
+            <strong>Search People</strong>
+            <small>Find members by name, role or area</small>
+        </span>
+    </a>
+</section>
+
+
+    <div
+        id="quickServices"
+        class="service-grid">
+
+
+        <!-- =================================================
+             BLOOD
+        ================================================== -->
+
+        <a
+            href="/blood/"
+            class="service-card role-service"
+            data-roles="citizen volunteer ngo farmer blood_donor admin">
+
+            <div class="service-icon">
+                🩸
+            </div>
+
+            <span data-i18n="bloodDonation">
+                রক্তদান
+            </span>
+
+        </a>
+
+
+        <!-- Search Blood Donors -->
+
+        <a
+            href="/blood/?section=search"
+            class="service-card role-service"
+            data-roles="citizen volunteer ngo farmer admin">
+
+            <div class="service-icon">
+                🔎
+            </div>
+
+            <span>
+                Search blood donors
+            </span>
+
+        </a>
+
+
+        <!-- =================================================
+             VOLUNTEER
+        ================================================== -->
+
+        <a
+            href="/volunteer-opportunities/"
+            class="service-card role-service"
+            data-roles="volunteer ngo admin">
+
+            <div class="service-icon">
+                🤝
+            </div>
+
+            <span>
+                Volunteer Events
+            </span>
+
+        </a>
+
+
+        <!-- =================================================
+             GOODS
+        ================================================== -->
+
+        <a
+            href="/goods-list/"
+            class="service-card role-service"
+            data-roles="citizen">
+
+            <div class="service-icon">
+                ♻️
+            </div>
+
+            <span data-i18n="goodsExchange">
+                পণ্য বিনিময়
+            </span>
+
+        </a>
+
+
+        <!-- =================================================
+             WASTE
+        ================================================== -->
+
+        <a
+            href="/waste-pickup/"
+            class="service-card role-service"
+            data-roles="citizen">
+
+            <div class="service-icon">
+                🗑️
+            </div>
+
+            <span data-i18n="wasteManagement">
+                বর্জ্য ব্যবস্থাপনা
+            </span>
+
+        </a>
+
+
+        <!-- =================================================
+             FARMER MARKET
+        ================================================== -->
+
+        <a
+            href="/farmer-market/"
+            class="service-card role-service"
+            data-roles="citizen volunteer ngo farmer admin">
+
+            <div class="service-icon">
+                🌾
+            </div>
+
+            <span data-i18n="farmerMarket">
+                কৃষক বাজার
+            </span>
+
+        </a>
+
+
+        <!-- =================================================
+             HEALTH
+        ================================================== -->
+
+        <a
+            href="/health-questions/"
+            class="service-card role-service"
+            data-roles="citizen volunteer ngo farmer admin">
+
+            <div class="service-icon">
+                🏥
+            </div>
+
+            <span data-i18n="communityHealth">
+                সম্প্রদায় স্বাস্থ্য
+            </span>
+
+        </a>
+
+
+        <!-- =================================================
+             NGO VERIFICATION
+        ================================================== -->
+
+        <a
+            href="/admin-verification/"
+            class="service-card role-service"
+            data-roles="ngo admin">
+
+            <div class="service-icon">
+                🛡️
+            </div>
+
+            <span>
+                Verification
+            </span>
+
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     ROLE SPECIFIC ACTIVITY
+====================================================== -->
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+
+        <h2 id="activitySectionTitle">
+            My Activities
+        </h2>
+
+    </div>
+
+    <div
+        id="roleActivityList"
+        class="activity-list">
+
+        <!-- Javascript creates role-specific cards -->
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     RECENT ACTIVITY
+====================================================== -->
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+
+        <h2 data-i18n="recentActivity">
+            সাম্প্রতিক কার্যক্রম
+        </h2>
+
+    </div>
+
+    <div
+        class="activity-list"
+        id="activityList">
+    </div>
+
+    <p
+        id="activityEmpty"
+        class="activity-empty"
+        data-i18n="noActivity"
+        hidden>
+        এখনো কোনো কার্যক্রম নেই
+    </p>
+
+</section>
+
+
+<!-- =====================================================
+     PROFILE SUMMARY
+====================================================== -->
+
+<section class="profile-summary">
+
+    <div>
+
+        <span
+            class="profile-label"
+            data-i18n="loggedInAs">
+            লগইন করেছেন
+        </span>
+
+        <strong id="userEmail">
+            -
+        </strong>
+
+    </div>
+
+    <a
+        href="/profile/"
+        class="profile-button"
+        data-i18n="profile">
+        প্রোফাইল
+    </a>
+
+</section>
+
+
+</main>
+
+<!-- =====================================================
+     JAVASCRIPT
+====================================================== -->
+
+<script src="{% static 'js/api.js' %}"></script>
+
+<script src="{% static 'js/i18n.js' %}"></script>
+
+<script src="{% static 'js/auth.js' %}"></script>
+
+<script src="{% static 'js/dashboard.js' %}"></script>
 
 </body>
+
 </html>
