@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     CollectorProfileView,
+    AvailableVolunteerCollectorsView,
     WasteCollectorListCreateView,
     WasteCollectorRatingListCreateView,
     WastePickupRequestDetailView,
@@ -20,6 +21,12 @@ urlpatterns = [
         "requests/<uuid:id>/",
         WastePickupRequestDetailView.as_view(),
         name="waste-request-detail",
+    ),
+
+    path(
+        "collectors/available/",
+        AvailableVolunteerCollectorsView.as_view(),
+        name="waste-available-collectors",
     ),
 
     path(

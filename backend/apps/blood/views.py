@@ -24,6 +24,7 @@ def profile_data(profile):
 		"blood_group": profile.blood_group,
 		"area": profile.area,
 		"availability": profile.availability,
+		"is_available": profile.is_available,
 		"is_verified": profile.user.is_verified,
 		"average_rating": Rating.average_for_user(profile.user),
 		"rating_count": rating_queryset.count(),
@@ -59,10 +60,14 @@ class DonorProfileView(APIView):
 	def put(self, request):
 		blood_group = request.data.get("blood_group")
 		area = str(request.data.get("area", "")).strip()
-		availability = request.data.get(
-    		"availability",
-    		DonorProfile.Availability.AVAILABLE,
-		)	
+		availability = request.data.get("availability")
+		if availability is None:
+			legacy_available = request.data.get("is_available")
+			availability = (
+				DonorProfile.Availability.AVAILABLE
+				if legacy_available is None or legacy_available
+				else DonorProfile.Availability.NOT_AVAILABLE
+			)
 
 		if blood_group not in BloodGroup.values:
 			return Response(

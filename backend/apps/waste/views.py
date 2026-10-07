@@ -2,6 +2,7 @@ from django.db.models import Q
 from rest_framework import generics, permissions, serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.contrib.auth import get_user_model
 
 from .models import (
     WasteCollector,
@@ -13,6 +14,27 @@ from .serializers import (
     WasteCollectorSerializer,
     WastePickupRequestSerializer,
 )
+
+User = get_user_model()
+
+
+class AvailableVolunteerCollectorsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        area = request.query_params.get("area", "").strip()
+        volunteers = User.objects.filter(role="Volunteer")
+        if area:
+            volunteers = volunteers.filter(location__icontains=area)
+        data = [
+            {
+                "user_id": str(volunteer.user_id),
+                "full_name": volunteer.full_name,
+                "location": volunteer.location,
+            }
+            for volunteer in volunteers.order_by("full_name")
+        ]
+        return Response({"success": True, "data": data})
 
 
 class WastePickupRequestListCreateView(

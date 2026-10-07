@@ -107,11 +107,11 @@ async function submitRating(event) {
             rating: selectedRating,
             comment: document.getElementById("ratingComment").value.trim(),
         });
-        showRatingsMessage("Rating submitted successfully.", "success");
         selectedRating = 0;
         document.getElementById("ratingComment").value = "";
         renderRatingPicker();
         await loadRatings();
+        showRatingsMessage("Rating submitted successfully.", "success");
     } catch (error) {
         showRatingsMessage(error.message, "error");
     }

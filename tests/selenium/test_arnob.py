@@ -98,7 +98,8 @@ class ArnobSeleniumTests(StaticLiveServerTestCase):
 		self.browser.get(self.live_server_url + "/")
 		self.browser.execute_script(
 			"localStorage.setItem('helpnet_token', arguments[0]);"
-			"localStorage.setItem('helpnet_user', arguments[1]);",
+			"localStorage.setItem('helpnet_user', arguments[1]);"
+			"localStorage.setItem('helpnet_lang', 'en');",
 			token,
 			stored_user,
 		)
@@ -235,9 +236,7 @@ class ArnobSeleniumTests(StaticLiveServerTestCase):
 		for group in ("A+", "B+", "O+", "AB+"):
 			self.select_text("bloodGroup", group)
 			self.select_text("donorArea", "Dhaka")
-			available = self.browser.find_element(By.ID, "donorAvailable")
-			if not available.is_selected():
-				available.click()
+			self.select_value("donorAvailability", "available")
 			self.browser.find_element(By.ID, "donorProfileForm").submit()
 			self.wait.until(
 				lambda browser: "Donor profile saved"
@@ -253,15 +252,7 @@ class ArnobSeleniumTests(StaticLiveServerTestCase):
 	def test_st19_donor_can_toggle_availability(self):
 		donor, profile = self.make_donor("Availability Donor", available=True)
 		self.open_as(donor, "/blood/")
-		availability = self.wait.until(
-			lambda browser: (
-				element
-				if (element := browser.find_element(By.ID, "donorAvailable")).is_selected()
-				else False
-			)
-		)
-
-		availability.click()
+		self.select_value("donorAvailability", "busy")
 		self.browser.find_element(By.ID, "donorProfileForm").submit()
 		self.wait.until(
 			lambda browser: "Donor profile saved"
@@ -271,8 +262,7 @@ class ArnobSeleniumTests(StaticLiveServerTestCase):
 		profile.refresh_from_db()
 		self.assertFalse(profile.is_available)
 
-		availability = self.browser.find_element(By.ID, "donorAvailable")
-		availability.click()
+		self.select_value("donorAvailability", "available")
 		self.browser.find_element(By.ID, "donorProfileForm").submit()
 		self.wait.until(
 			lambda browser: "Donor profile saved"

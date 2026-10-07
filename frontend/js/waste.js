@@ -280,6 +280,11 @@ async function loadAvailableCollectors(area) {
             "GET"
         );
 
+        const volunteerRes = await apiRequest(
+            "/api/waste/collectors/available/" + query,
+            "GET"
+        );
+
         console.log("WASTE COLLECTORS RESPONSE:", res);
 
         let collectors = [];
@@ -297,6 +302,22 @@ async function loadAvailableCollectors(area) {
         ) {
             collectors = res.data;
         }
+
+        const volunteers = Array.isArray(volunteerRes?.data)
+            ? volunteerRes.data.map((volunteer) => ({
+                name: volunteer.full_name,
+                area: volunteer.location,
+                waste_types: "Volunteer collector",
+                shared_by_name: "HELPNET volunteer",
+                average_rating: 0,
+                rating_count: 0,
+            }))
+            : [];
+        const listedNames = new Set(collectors.map((collector) => collector.name));
+        collectors = [
+            ...collectors,
+            ...volunteers.filter((volunteer) => !listedNames.has(volunteer.name)),
+        ];
 
         container.innerHTML = "";
 
