@@ -27,10 +27,12 @@ async function loadOpportunities() {
                 statusButton.addEventListener("click", async () => { try { await apiRequest(`/api/volunteer/opportunities/${event.id}/`, "PATCH", {status: event.status === "Open" ? "Closed" : "Open"}); volunteerNotice("Opportunity status updated.", "success"); await loadOpportunities(); } catch (e) { volunteerNotice(e.message, "error"); } });
                 const attendanceLink = document.createElement("a"); attendanceLink.className = "small-btn"; attendanceLink.href = `/volunteer-attendance/?event_id=${encodeURIComponent(event.id)}`; attendanceLink.textContent = "Manage attendance";
                 actions.append(statusButton, attendanceLink); card.appendChild(actions);
-            } else if (volunteerRole() === "volunteer" && event.status === "Open") {
+            } else if (volunteerRole() === "volunteer" && event.status === "Open" && event.signup_count < event.required_volunteers) {
                 const signup = document.createElement("button"); signup.type = "button"; signup.className = "small-btn"; signup.textContent = "Sign up";
                 signup.addEventListener("click", async () => { try { await apiRequest(`/api/volunteer/opportunities/${event.id}/signup/`, "POST", {}); volunteerNotice("You signed up successfully.", "success"); await loadOpportunities(); } catch (e) { volunteerNotice(e.message, "error"); } });
                 card.appendChild(signup);
+            } else if (volunteerRole() === "volunteer" && event.status === "Open") {
+                volunteerText(card, "p", "This opportunity is full.");
             }
             target.appendChild(card);
         });

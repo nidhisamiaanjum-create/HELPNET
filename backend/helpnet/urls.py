@@ -6,6 +6,7 @@ from django.urls import include, path
 from django.views.generic import TemplateView
 
 from apps.users.views import PublicUserProfileView,UserSearchView
+from apps.volunteer.views import AdminVolunteersView, VolunteerCsvExportView
 
 
 def root_view(request):
@@ -32,6 +33,8 @@ urlpatterns = [
     path('api/goods/', include('apps.goods.urls')),
     path('api/health/', include('apps.health.urls')),
     path('api/volunteer/', include('apps.volunteer.urls')),
+    path('api/admin/volunteers/', AdminVolunteersView.as_view(), name='admin-volunteers-api'),
+    path('api/admin/volunteers/export/', VolunteerCsvExportView.as_view(), name='admin-volunteer-export-api'),
     path('api/verification/', include('apps.verification.urls')),
     path(
     "user-search/",
