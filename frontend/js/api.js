@@ -109,13 +109,8 @@ async function apiRequest(
 
 
     const options = {
-
         method: method,
-
-        headers: {
-            "Content-Type":
-                "application/json"
-        }
+        headers: {}
     };
 
 
@@ -133,11 +128,15 @@ async function apiRequest(
 
 
     if (body) {
-
-        options.body =
-            JSON.stringify(body);
+        if (body instanceof FormData) {
+            // Browser automatically sets the correct multipart/form-data
+            // Content-Type and boundary for FormData.
+            options.body = body;
+        } else {
+            options.headers["Content-Type"] = "application/json";
+            options.body = JSON.stringify(body);
+        }
     }
-
 
     console.log(
         "Sending fetch request..."

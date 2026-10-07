@@ -49,7 +49,8 @@ async function loadDonorProfile() {
         const profile = response.data;
         document.getElementById("bloodGroup").value = profile.blood_group;
         document.getElementById("donorArea").value = profile.area;
-        document.getElementById("donorAvailable").checked = profile.is_available;
+        document.getElementById("donorAvailability").value =
+            profile.availability || "available";
     } catch (error) {
         if (!error.message.includes("Not found")) bloodMessage(error.message, "error");
     }
@@ -61,7 +62,7 @@ async function saveDonorProfile(event) {
         await apiRequest("/api/blood/donor-profile/", "PUT", {
             blood_group: document.getElementById("bloodGroup").value,
             area: document.getElementById("donorArea").value,
-            is_available: document.getElementById("donorAvailable").checked,
+            availability: document.getElementById("donorAvailability").value,
         });
         bloodMessage(t("donorProfileSaved"), "success");
         await loadRequests();
@@ -72,15 +73,53 @@ async function saveDonorProfile(event) {
 
 async function createBloodRequest(event) {
     event.preventDefault();
+
     try {
-        await apiRequest("/api/blood/requests/", "POST", {
-            blood_group: document.getElementById("requestGroup").value,
-            area: document.getElementById("requestArea").value,
-            hospital: document.getElementById("hospital").value.trim(),
-            details: document.getElementById("requestDetails").value.trim(),
-        });
+        const formData = new FormData();
+
+        formData.append(
+            "blood_group",
+            document.getElementById("requestGroup").value
+        );
+
+        formData.append(
+            "area",
+            document.getElementById("requestArea").value
+        );
+
+        formData.append(
+            "hospital",
+            document.getElementById("hospital").value.trim()
+        );
+
+        formData.append(
+            "details",
+            document.getElementById("requestDetails").value.trim()
+        );
+
+        const documentInput =
+            document.getElementById("supportingDocument");
+
+        if (documentInput.files.length > 0) {
+            formData.append(
+                "supporting_document",
+                documentInput.files[0]
+            );
+        }
+
+        await apiRequest(
+            "/api/blood/requests/",
+            "POST",
+            formData
+        );
+
         event.target.reset();
-        bloodMessage(t("bloodRequestCreated"), "success");
+
+        bloodMessage(
+            t("bloodRequestCreated"),
+            "success"
+        );
+
         await loadRequests();
     } catch (error) {
         bloodMessage(error.message, "error");
