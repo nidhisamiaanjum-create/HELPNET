@@ -165,6 +165,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Media files (user uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+PRIVATE_MEDIA_ROOT = BASE_DIR / 'private_media'
 
 # Default primary key field type
 

@@ -34,7 +34,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             list.replaceChildren();
             data.forEach(documentItem => {
                 const row = document.createElement("p");
-                row.textContent = `${documentItem.original_name} · ${new Date(documentItem.uploaded_at).toLocaleDateString()}`;
+                row.append(`${documentItem.original_name} · ${new Date(documentItem.uploaded_at).toLocaleDateString()} `);
+                const download = document.createElement("button");
+                download.type = "button";
+                download.className = "small-btn";
+                download.textContent = "Download";
+                download.addEventListener("click", async () => {
+                    try {
+                        const response = await fetch(`${API_BASE}${documentItem.download_url}`, {headers: {Authorization: `Bearer ${getToken()}`}});
+                        if (!response.ok) throw new Error("Could not download certificate.");
+                        const url = URL.createObjectURL(await response.blob());
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.download = documentItem.original_name;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                    } catch (error) { show(error.message, "error"); }
+                });
+                row.appendChild(download);
                 list.appendChild(row);
             });
         } catch (error) { show(error.message, "error"); }

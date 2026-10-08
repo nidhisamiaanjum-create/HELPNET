@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from .storage import VolunteerPrivateCertificateStorage
 
 
 class VolunteerProfile(models.Model):
@@ -18,7 +19,7 @@ class VolunteerProfile(models.Model):
 class VolunteerProfileDocument(models.Model):
     """Private supporting certificates uploaded by their volunteer owner."""
     profile = models.ForeignKey(VolunteerProfile, on_delete=models.CASCADE, related_name="documents")
-    file = models.FileField(upload_to="volunteer_certificates/%Y/%m/")
+    file = models.FileField(storage=VolunteerPrivateCertificateStorage(), upload_to="volunteer_certificates/%Y/%m/")
     original_name = models.CharField(max_length=255)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
