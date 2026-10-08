@@ -1,1 +1,40 @@
-{% load static %}<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Print certificate | HELPNET</title><link rel="stylesheet" href="{% static 'css/style.css' %}"><link rel="stylesheet" href="{% static 'css/volunteer-certificate-print.css' %}"></head><body class="certificate-print-page"><header class="site-header"><a href="/volunteer-certificate/" class="logo">HELPNET</a></header><main class="certificate-print-main"><div class="print-toolbar"><a class="back-link" href="/volunteer-certificate/">Certificates</a><button type="button" id="printCertificate" class="btn">Print certificate</button></div><p id="certificatePrintMessage" class="form-message" aria-live="polite"></p><article id="certificateSheet" class="certificate-sheet" aria-label="Volunteer completion certificate"><p class="certificate-brand">HELPNET · COMMUNITY SERVICE</p><h1>Certificate of Completion</h1><p class="certificate-intro">This certificate is presented to</p><p id="certificateVolunteer" class="certificate-recipient">Loading certificate…</p><p class="certificate-intro">in recognition of completing volunteer service for</p><p id="certificateEvent" class="certificate-event"></p><div class="certificate-footer"><p>Completed <span id="certificateDate"></span></p><p>Organization / Coordinator<br><strong id="certificateCoordinator"></strong></p></div></article></main><script src="{% static 'js/api.js' %}"></script><script src="{% static 'js/auth.js' %}"></script><script src="{% static 'js/volunteer-certificate-print.js' %}"></script></body></html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title data-i18n="certificatePageTitle">Print certificate | HELPNET</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/volunteer-certificate-print.css' %}">
+</head>
+<body class="certificate-print-page">
+    <header class="site-header">
+        <a href="/volunteer-certificate/" class="logo">HELPNET</a>
+        <button type="button" id="langToggle" class="lang-toggle" data-i18n="langButton">English</button>
+    </header>
+    <main class="certificate-print-main">
+        <div class="print-toolbar">
+            <a class="back-link" href="/volunteer-certificate/" data-i18n="certificatesNav">Certificates</a>
+            <button type="button" id="printCertificate" class="btn" data-i18n="printCertificate">Print certificate</button>
+        </div>
+        <p id="certificatePrintMessage" class="form-message" aria-live="polite"></p>
+        <article id="certificateSheet" class="certificate-sheet" aria-label="Volunteer completion certificate">
+            <p class="certificate-brand" data-i18n="certificateBrand">HELPNET · COMMUNITY SERVICE</p>
+            <h1 data-i18n="certificateCompletionTitle">Certificate of Completion</h1>
+            <p class="certificate-intro" data-i18n="certificatePresentedTo">This certificate is presented to</p>
+            <p id="certificateVolunteer" class="certificate-recipient" data-i18n="certificateLoading">Loading certificate…</p>
+            <p class="certificate-intro" data-i18n="certificateRecognizedFor">in recognition of completing volunteer service for</p>
+            <p id="certificateEvent" class="certificate-event"></p>
+            <div class="certificate-footer">
+                <p><span data-i18n="certificateCompletedOn">Completed</span> <span id="certificateDate"></span></p>
+                <p><span data-i18n="certificateCoordinatorLabel">Organization / Coordinator</span><br><strong id="certificateCoordinator"></strong></p>
+            </div>
+        </article>
+    </main>
+    <script src="{% static 'js/api.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/i18n.js' %}"></script>
+    <script src="{% static 'js/volunteer-certificate-print.js' %}"></script>
+</body>
+</html>
