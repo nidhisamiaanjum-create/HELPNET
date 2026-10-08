@@ -3,13 +3,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     const message = document.getElementById("certificatePrintMessage");
     const certificateId = new URLSearchParams(location.search).get("certificate_id");
     if (!certificateId || !/^\d+$/.test(certificateId)) {
-        message.textContent = "A valid certificate ID is required.";
+        message.textContent = t("certificateInvalidId");
         return;
     }
     try {
         const {data} = await apiRequest("/api/volunteer/certificates/");
         const certificate = data.find(item => String(item.id) === certificateId);
-        if (!certificate) throw new Error("This certificate is not available to your account.");
+        if (!certificate) {
+            throw new Error(t("certificateUnavailable"));
+        }
         document.getElementById("certificateVolunteer").textContent = certificate.volunteer_name;
         document.getElementById("certificateEvent").textContent = certificate.event_name;
         document.getElementById("certificateDate").textContent = certificate.completion_date;
@@ -18,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.title = `Certificate - ${certificate.volunteer_name}`;
     } catch (error) {
         document.getElementById("certificateSheet").hidden = true;
-        message.textContent = error.message;
+        message.textContent = error.message || t("certificateUnavailable");
         message.className = "form-message error";
     }
 });
