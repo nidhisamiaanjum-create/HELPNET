@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.urls import reverse
 from .models import VolunteerOpportunity, VolunteerProfile, VolunteerProfileDocument, VolunteerSignup, VolunteerAttendance, VolunteerMessage, VolunteerCertificate
 
 
@@ -26,10 +27,15 @@ class VolunteerProfileSerializer(serializers.ModelSerializer):
 
 
 class VolunteerProfileDocumentSerializer(serializers.ModelSerializer):
+    download_url = serializers.SerializerMethodField()
+
+    def get_download_url(self, document):
+        return reverse("volunteer-profile-document-download", kwargs={"document_id": document.pk})
+
     class Meta:
         model = VolunteerProfileDocument
-        fields = ["id", "file", "original_name", "uploaded_at"]
-        read_only_fields = ["id", "original_name", "uploaded_at"]
+        fields = ["id", "original_name", "uploaded_at", "download_url"]
+        read_only_fields = ["id", "original_name", "uploaded_at", "download_url"]
 
 
 class VolunteerSignupSerializer(serializers.ModelSerializer):

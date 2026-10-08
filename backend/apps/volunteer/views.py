@@ -1,7 +1,7 @@
 from datetime import date
 from django.db import IntegrityError, transaction
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from reportlab.pdfgen import canvas
 from io import BytesIO
 import csv
+import mimetypes
 from pathlib import Path
 from .models import VolunteerOpportunity, VolunteerProfile, VolunteerProfileDocument, VolunteerSignup, VolunteerAttendance, VolunteerMessage, VolunteerCertificate
 from .serializers import VolunteerOpportunitySerializer, VolunteerProfileSerializer, VolunteerProfileDocumentSerializer, VolunteerSignupSerializer, VolunteerAttendanceSerializer, VolunteerMessageSerializer, VolunteerCertificateSerializer
@@ -155,6 +156,17 @@ class VolunteerProfileDocumentsView(APIView):
             return Response({"success": False, "message": "Only volunteers can view their certificates."}, status=403)
         profile, _ = VolunteerProfile.objects.get_or_create(user=request.user)
         return Response({"success": True, "data": VolunteerProfileDocumentSerializer(profile.documents.all(), many=True).data})
+
+
+class VolunteerProfileDocumentDownloadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, document_id):
+        if request.user.role != "Volunteer":
+            return Response({"success": False, "message": "Only volunteers can download their certificates."}, status=403)
+        document = get_object_or_404(VolunteerProfileDocument, pk=document_id, profile__user=request.user)
+        content_type = mimetypes.guess_type(document.original_name)[0] or "application/octet-stream"
+        return FileResponse(document.file.open("rb"), as_attachment=True, filename=document.original_name, content_type=content_type)
 
 
 class AttendanceView(APIView):

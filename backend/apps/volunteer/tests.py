@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.test import Client, TestCase, override_settings
 from django.utils import timezone
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -6,8 +7,9 @@ from rest_framework.test import APIClient
 import csv
 import io
 import tempfile
+from pathlib import Path
 
-from .models import VolunteerAttendance, VolunteerOpportunity, VolunteerSignup
+from .models import VolunteerAttendance, VolunteerOpportunity, VolunteerProfile, VolunteerProfileDocument, VolunteerSignup
 
 
 User = get_user_model()
@@ -174,10 +176,12 @@ class VolunteerMessageAndCertificateTests(TestCase):
         self.assertEqual(self.client.get(url).status_code, 403)
 
         page_client = Client(HTTP_HOST="localhost")
-        for path in ("/volunteer-opportunities/", "/create-opportunity/", "/volunteer-profile/", "/volunteer-attendance/", "/volunteer-search/", "/admin-volunteers/"):
+        for path in ("/volunteer-opportunities/", "/volunteer-opportunity-details/?event_id=1", "/create-opportunity/", "/volunteer-profile/", "/volunteer-attendance/", "/volunteer-certificate/print/", "/volunteer-search/", "/admin-volunteers/"):
             page = page_client.get(path)
             self.assertEqual(page.status_code, 200)
             self.assertIn(b"HELPNET", page.content)
+        print_view = page_client.get("/volunteer-certificate/print/")
+        self.assertContains(print_view, b'id="printCertificate"')
 
 
 class SprintFourCompletionTests(TestCase):
@@ -210,10 +214,24 @@ class SprintFourCompletionTests(TestCase):
         upload_url = "/api/volunteer/profile/documents/"
         uploaded = self.client.post(upload_url, {"file": SimpleUploadedFile("first-aid.pdf", b"%PDF-1.4 certificate")}, format="multipart")
         self.assertEqual(uploaded.status_code, 201)
-        self.assertEqual(self.client.get(upload_url).data["data"][0]["original_name"], "first-aid.pdf")
+        document_data = self.client.get(upload_url).data["data"][0]
+        self.assertEqual(document_data["original_name"], "first-aid.pdf")
+        self.assertNotIn("file", document_data)
+        self.assertTrue(document_data["download_url"].endswith("/download/"))
+        document = VolunteerProfileDocument.objects.get(pk=document_data["id"])
+        self.assertNotIn(Path(settings.MEDIA_ROOT).resolve(), Path(document.file.path).resolve().parents)
+        self.client.force_authenticate(None)
+        self.assertEqual(self.client.get(document_data["download_url"]).status_code, 401)
+        self.client.force_authenticate(self.other_volunteer)
+        self.assertEqual(self.client.get(document_data["download_url"]).status_code, 404)
+        self.client.force_authenticate(self.volunteer)
+        download = self.client.get(document_data["download_url"])
+        self.assertEqual(download.status_code, 200)
+        self.assertTrue(download.streaming)
+        self.assertEqual(b"".join(download.streaming_content), b"%PDF-1.4 certificate")
+        self.assertEqual(self.client.get(f"/media/{document.file.name}").status_code, 404)
         rejected = self.client.post(upload_url, {"file": SimpleUploadedFile("script.exe", b"no")}, format="multipart")
         self.assertEqual(rejected.status_code, 400)
-        from .models import VolunteerProfile
         VolunteerProfile.objects.get(user=self.volunteer).documents.first().file.delete(save=False)
 
     def test_search_single_and_combined_participation_filters_and_csv_privacy(self):
