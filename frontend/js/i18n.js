@@ -311,7 +311,205 @@ const TEXT = {
 
 
         /* Language button */
-        langButton: "English"
+        langButton: "English",
+        bloodReport: "রক্তের অনুরোধটি রিপোর্ট করুন",
+        bloodReportReason: "সন্দেহের বিবরণ লিখুন",
+        bloodReportSubmit: "রিপোর্ট পাঠান",
+        bloodReportSuccess: "রিপোর্ট পাঠানো হয়েছে।",
+        farmerReportTitle: "তালিকাটি রিপোর্ট করুন",
+        farmerReportReason: "সন্দেহজনক তালিকার বিবরণ",
+        farmerPriceRangeTitle: "অন্যান্য কৃষকের সক্রিয় তালিকার দামের সারাংশ",
+        farmerPriceRangeLoading: "দামের তথ্য লোড হচ্ছে…",
+        farmerPriceRangeDisclaimer: "এই তথ্য ব্যবহারকারীদের সক্রিয় তালিকা থেকে নেওয়া; এটি সরকারি বা নিশ্চিত বাজারদর নয় এবং কোনো পূর্বাভাসও নয়।",
+        farmerPriceRangeUnavailable: "এই বিভাগ ও এলাকায় অন্য কৃষকের কোনো সক্রিয় তালিকা পাওয়া যায়নি।",
+        farmerPriceRangeMin: "সর্বনিম্ন",
+        farmerPriceRangeMax: "সর্বোচ্চ",
+        farmerPriceRangeAverage: "গড়",
+        healthDisclaimer: "HELPNET কোনো চিকিৎসক বা স্বাস্থ্য-পেশাজীবীকে অনুমোদন বা সুপারিশ করে না। এখানে দেখানো যোগাযোগের তথ্য ব্যবহারকারীদের দেওয়া; এটি চিকিৎসা পরামর্শ নয়।",
+        adminModeration: "কনটেন্ট মডারেশন",
+        moderationTitle: "রিপোর্ট ও কনটেন্ট মডারেশন",
+        moderationReason: "মডারেশনের কারণ (ঐচ্ছিক)",
+        moderationChanges: "সম্পাদনার তথ্য JSON আকারে দিন",
+        moderationReview: "রিপোর্ট পর্যালোচনা",
+        moderationEdit: "সম্পাদনা",
+        moderationRemove: "সরান",
+        moderationEmpty: "কোনো রিপোর্ট নেই।",
+        moderationContentTitle: "পোস্টিং সম্পাদনা বা সরান",
+        moderationContentType: "পোস্টিংয়ের ধরন",
+        moderationFarmer: "কৃষকের তালিকা",
+        moderationGoods: "ব্যবহৃত পণ্যের তালিকা",
+        moderationVolunteer: "স্বেচ্ছাসেবার সুযোগ",
+        moderationSaved: "কনটেন্ট সম্পাদনা করা হয়েছে।",
+        moderationRemoved: "কনটেন্ট সরানো হয়েছে।",
+        moderationReviewed: "রিপোর্ট পর্যালোচনা করা হয়েছে।",
+        reportFraud: "সন্দেহজনক বা ভুয়া তথ্য",
+        reportOther: "অন্যান্য"
+        ,reportStatusPending: "অপেক্ষমাণ"
+        ,reportStatusReviewed: "পর্যালোচিত"
+        ,reportStatusResolved: "সমাধান হয়েছে"
+        ,reportStatusDismissed: "বাতিল"
+        ,moderationFailed: "মডারেশন কাজটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।"
+        ,moderationLoadFailed: "মডারেশন তালিকা লোড করা যায়নি।"
+        ,moderationInvalidChanges: "সম্পাদনার জন্য বৈধ JSON দিন।"
+        ,adminAccessRequired: "শুধু প্রশাসক এই পাতাটি ব্যবহার করতে পারবেন।"
+        ,adminLogsTitle: "প্রশাসনিক কার্যক্রমের লগ"
+        ,activityHistory: "কার্যক্রমের ইতিহাস"
+        ,adminVerificationTitle: "প্রশাসনিক যাচাই"
+        ,pendingRequests: "অপেক্ষমাণ অনুরোধ"
+        ,notificationsTitle: "বিজ্ঞপ্তি"
+        ,refresh: "আবার লোড করুন"
+        ,ratingsTitle: "রেটিং"
+        ,settingsTitle: "সেটিংস"
+        ,privacySettings: "গোপনীয়তার সেটিংস"
+        ,saveSettings: "সেটিংস সংরক্ষণ করুন"
+        ,findPeople: "মানুষ খুঁজুন"
+        ,search: "খুঁজুন"
+        ,volunteerDatabase: "স্বেচ্ছাসেবক তালিকা"
+        ,skills: "দক্ষতা"
+        ,availability: "সময় দেওয়ার সুযোগ"
+        ,bloodGroup: "রক্তের গ্রুপ"
+        ,filter: "ফিল্টার করুন"
+        ,createOpportunity: "সুযোগ তৈরি করুন"
+        ,volunteerOpportunities: "স্বেচ্ছাসেবার সুযোগ"
+        ,eventAttendance: "অনুষ্ঠানে উপস্থিতি"
+        ,coordinatedEvent: "আপনার সমন্বিত অনুষ্ঠান"
+        ,loadingEvents: "অনুষ্ঠান লোড হচ্ছে…"
+        ,completionCertificates: "সম্পন্নের সনদ"
+        ,issueCertificate: "সনদ দিন"
+        ,certificatePageTitle: "সনদ প্রিন্ট | HELPNET"
+        ,certificatesNav: "সনদ"
+        ,printCertificate: "সনদ প্রিন্ট করুন"
+        ,certificateBrand: "HELPNET · কমিউনিটি সার্ভিস"
+        ,certificateCompletionTitle: "সম্পাদনের সনদ"
+        ,certificatePresentedTo: "এই সনদটি প্রদান করা হয়েছে"
+        ,certificateRecognizedFor: "স্বেচ্ছাসেবামূলক সেবা সম্পন্ন করার স্বীকৃতি হিসেবে"
+        ,certificateCompletedOn: "সম্পন্ন হয়েছে"
+        ,certificateCoordinatorLabel: "সংগঠন / সমন্বয়কারী"
+        ,certificateLoading: "সনদ লোড হচ্ছে…"
+        ,certificateInvalidId: "বৈধ সনদ আইডি প্রয়োজন।"
+        ,certificateUnavailable: "এই সনদটি আপনার অ্যাকাউন্টের জন্য উপলব্ধ নয়।"
+        ,eventMessages: "অনুষ্ঠানের বার্তা"
+        ,chooseEvent: "আপনার অনুষ্ঠান বা স্বেচ্ছাসেবার সাইন-আপ বেছে নিন।"
+        ,sendMessage: "বার্তা পাঠান"
+        ,volunteerProfile: "স্বেচ্ছাসেবক প্রোফাইল"
+        ,firstAidPlaceholder: "প্রাথমিক চিকিৎসা, শিক্ষা, সরবরাহ"
+        ,availabilityPlaceholder: "সপ্তাহান্তে, সন্ধ্যায়"
+        ,certificatesPlaceholder: "নাম বা লিংক, প্রতি লাইনে একটি"
+        ,saveProfile: "প্রোফাইল সংরক্ষণ করুন"
+        ,searchVolunteers: "স্বেচ্ছাসেবক খুঁজুন"
+        ,eventTitle: "শিরোনাম"
+        ,eventDescription: "বিবরণ"
+        ,date: "তারিখ"
+        ,requiredVolunteers: "প্রয়োজনীয় স্বেচ্ছাসেবক"
+        ,submit: "জমা দিন",
+        notificationSubtitle: "রক্তদাতা সতর্কতা ও অ্যাকাউন্টের আপডেট।",
+        rateUserTitle: "HELPNET ব্যবহারকারীকে রেটিং দিন",
+        userId: "ব্যবহারকারীর আইডি",
+        loadRatings: "রেটিং লোড করুন",
+        rating: "রেটিং",
+        ratingComment: "মন্তব্য (ঐচ্ছিক)",
+        submitRating: "রেটিং জমা দিন",
+        adminLogsSubtitle: "প্রশাসকের কাজ ও যাচাই কার্যক্রম।",
+        loadingAdminLogs: "প্রশাসনিক লগ লোড হচ্ছে…",
+        adminDashboard: "প্রশাসনিক ড্যাশবোর্ড",
+        verificationSubtitle: "অপেক্ষমাণ যাচাইয়ের অনুরোধ পর্যালোচনা করুন।",
+        loadingVerifications: "যাচাইয়ের অনুরোধ লোড হচ্ছে…",
+        settingsIntro: "আপনার অ্যাকাউন্ট ও গোপনীয়তার সেটিংস পরিচালনা করুন।",
+        privacyChoice: "অন্য ব্যবহারকারীরা কোন তথ্য দেখতে পারবেন তা বেছে নিন।",
+        showPhone: "আমার ফোন নম্বর দেখান",
+        showEmail: "আমার ইমেইল দেখান",
+        showLocation: "আমার অবস্থান দেখান",
+        showDateOfBirth: "আমার জন্মতারিখ দেখান",
+        settingsLoadedError: "আপনার সেটিংস লোড করা যায়নি।",
+        settingsSaveError: "সেটিংস সংরক্ষণ করা যায়নি।",
+        settingsSaved: "সেটিংস সংরক্ষিত হয়েছে।",
+        forgotPasswordTitle: "পাসওয়ার্ড ভুলে গেছেন?",
+        forgotPasswordSubtitle: "আপনার অ্যাকাউন্টের ইমেইল দিন। পাসওয়ার্ড রিসেটের নির্দেশনা পাঠানো হবে।",
+        emailPlaceholder: "আপনার ইমেইল লিখুন",
+        resetPassword: "পাসওয়ার্ড রিসেট করুন",
+        backToLogin: "লগইনে ফিরে যান",
+        resetPasswordTitle: "নতুন পাসওয়ার্ড সেট করুন",
+        resetPasswordSubtitle: "আপনার নতুন পাসওয়ার্ড দিন।",
+        newPassword: "নতুন পাসওয়ার্ড",
+        confirmPassword: "পাসওয়ার্ড আবার লিখুন",
+        updatePassword: "পাসওয়ার্ড পরিবর্তন করুন",
+        findPeopleHint: "নাম, ভূমিকা বা এলাকা দিয়ে HELPNET সদস্য খুঁজুন।",
+        searchPlaceholder: "নাম, ভূমিকা বা এলাকা…",
+        eventMessageText: "বার্তা",
+        selectVolunteer: "স্বেচ্ছাসেবক বেছে নিন",
+        loadingOpportunities: "সুযোগ লোড হচ্ছে…",
+        profileSkillsHint: "প্রাথমিক চিকিৎসা, শিক্ষা, সরবরাহ",
+        profileAvailabilityHint: "সপ্তাহান্তে, সন্ধ্যায়",
+        profileCertificatesHint: "নাম বা লিংক, প্রতি লাইনে একটি",
+        volunteerAttendance: "উপস্থিতি",
+        messageSend: "বার্তা পাঠান",
+        goodsListTitle: "ব্যবহৃত পণ্য",
+        createGoodsTitle: "পণ্যের তালিকা তৈরি করুন",
+        goodsExchangeTitle: "ব্যবহৃত পণ্য বিনিময়",
+        listAnItem: "পণ্যের তালিকা দিন",
+        loadingListings: "তালিকা লোড হচ্ছে…",
+        itemTitle: "শিরোনাম",
+        itemDescription: "বিবরণ",
+        itemCondition: "অবস্থা",
+        selectCondition: "অবস্থা নির্বাচন করুন",
+        conditionNew: "নতুন",
+        conditionLikeNew: "প্রায় নতুন",
+        conditionGood: "ভালো",
+        conditionFair: "মোটামুটি",
+        conditionForParts: "যন্ত্রাংশের জন্য",
+        askingPrice: "চাওয়া মূল্য",
+        itemLocation: "এলাকা",
+        itemImageOptional: "ছবি (ঐচ্ছিক)",
+        createListing: "তালিকা তৈরি করুন",
+        listingStatus: "তালিকার অবস্থা",
+        statusReserved: "সংরক্ষিত",
+        statusExchanged: "বিনিময় হয়েছে",
+        statusRemoved: "সরানো হয়েছে",
+        updateStatus: "অবস্থা হালনাগাদ করুন",
+        expressInterest: "আগ্রহ জানান",
+        reportListing: "তালিকাটি রিপোর্ট করুন",
+        reason: "কারণ",
+        detailsOptional: "বিবরণ (ঐচ্ছিক)",
+        submitReport: "রিপোর্ট জমা দিন",
+        goodsDisclaimerTitle: "দায়বদ্ধতা সংক্রান্ত ঘোষণা",
+        goodsDisclaimer: "HELPNET পেমেন্ট পরিচালনা করে না এবং পণ্যের অবস্থা নিশ্চিত করে না। ব্যবহারকারীরা নিজেদের মধ্যে বিনিময়ের ব্যবস্থা করেন।",
+        bloodPageTitle: "রক্তদান",
+        donorProfileHint: "আপনার রক্তের গ্রুপ, জেলা ও বর্তমান প্রাপ্যতা নিবন্ধন করুন।",
+        selectBloodGroup: "রক্তের গ্রুপ নির্বাচন করুন",
+        selectDistrict: "জেলা নির্বাচন করুন",
+        donorAvailability: "রক্তদানে প্রস্তুত",
+        saveDonorProfile: "রক্তদাতার তথ্য সংরক্ষণ করুন",
+        searchBloodDonors: "রক্তদাতা খুঁজুন",
+        anyBloodGroup: "যেকোনো রক্তের গ্রুপ",
+        anyDistrict: "যেকোনো জেলা",
+        donorName: "রক্তদাতার নাম",
+        searchByName: "নাম দিয়ে খুঁজুন",
+        searchDonors: "রক্তদাতা খুঁজুন",
+        searchAvailableDonors: "উপলভ্য রক্তদাতা খুঁজুন।",
+        createBloodRequest: "রক্তের অনুরোধ তৈরি করুন",
+        hospital: "হাসপাতাল",
+        details: "বিস্তারিত",
+        createRequest: "অনুরোধ তৈরি করুন",
+        openBloodRequests: "সক্রিয় রক্তের অনুরোধ",
+        donationHistory: "আমার রক্তদানের ইতিহাস",
+        noOpenRequests: "কোনো সক্রিয় রক্তের অনুরোধ নেই।",
+        noDonationsRecorded: "এখনো কোনো রক্তদানের তথ্য নেই।",
+        matchingDonors: "মিলে যাওয়া উপলভ্য রক্তদাতা",
+        noMatchingDonors: "এই গ্রুপ ও এলাকায় কোনো মিল পাওয়া যায়নি।",
+        chooseDonor: "রক্তদাতা নির্বাচন করুন",
+        fulfillRequest: "অনুরোধ পূরণ হয়েছে",
+        findMatchingDonors: "মিলে যাওয়া রক্তদাতা খুঁজুন",
+        closeRequest: "অনুরোধ বন্ধ করুন",
+        donorProfileSaved: "রক্তদাতার তথ্য সংরক্ষিত হয়েছে।",
+        bloodRequestCreated: "রক্তের অনুরোধ তৈরি হয়েছে।",
+        bloodRequestFulfilled: "অনুরোধ পূরণ হয়েছে এবং রক্তদানের ইতিহাস সংরক্ষিত হয়েছে।",
+        bloodRequestClosed: "অনুরোধ বন্ধ করা হয়েছে।",
+        loadingBlood: "লোড হচ্ছে…",
+        bloodReportFailed: "রিপোর্ট পাঠানো যায়নি। আবার চেষ্টা করুন।",
+        requestedBy: "অনুরোধকারী",
+        yourDonorProfile: "এটি আপনার রক্তদাতার প্রোফাইল।",
+        rateDonor: "রক্তদাতাকে রেটিং দিন",
+        ratingsCount: "{count}টি রেটিং"
     },
 
 
@@ -621,7 +819,204 @@ const TEXT = {
 
 
         /* Language button */
-        langButton: "বাংলা"
+        langButton: "বাংলা",
+        bloodReport: "Report this blood request",
+        bloodReportReason: "Describe why this request seems suspicious",
+        bloodReportSubmit: "Submit report",
+        bloodReportSuccess: "Report submitted.",
+        farmerReportTitle: "Report this listing",
+        farmerReportReason: "Describe why this listing seems suspicious",
+        farmerPriceRangeTitle: "Active listing prices from other farmers",
+        farmerPriceRangeLoading: "Loading price information…",
+        farmerPriceRangeDisclaimer: "This information comes from users’ active listings. It is not an official or guaranteed market price, and it is not a prediction.",
+        farmerPriceRangeUnavailable: "No active listings from other farmers were found in this category and area.",
+        farmerPriceRangeMin: "Minimum",
+        farmerPriceRangeMax: "Maximum",
+        farmerPriceRangeAverage: "Average",
+        healthDisclaimer: "HELPNET does not endorse or recommend health professionals. Contact information shown here is user-provided and is not medical advice.",
+        adminModeration: "Content moderation",
+        moderationTitle: "Reports and content moderation",
+        moderationReason: "Moderation reason (optional)",
+        moderationChanges: "Enter edit values as JSON",
+        moderationReview: "Review report",
+        moderationEdit: "Edit",
+        moderationRemove: "Remove",
+        moderationEmpty: "No reports found.",
+        moderationContentTitle: "Edit or remove postings",
+        moderationContentType: "Posting type",
+        moderationFarmer: "Farmer listings",
+        moderationGoods: "Second-hand listings",
+        moderationVolunteer: "Volunteer opportunities",
+        moderationSaved: "Content updated.",
+        moderationRemoved: "Content removed.",
+        moderationReviewed: "Report reviewed.",
+        reportFraud: "Suspicious or false information",
+        reportOther: "Other"
+        ,reportStatusPending: "Pending"
+        ,reportStatusReviewed: "Reviewed"
+        ,reportStatusResolved: "Resolved"
+        ,reportStatusDismissed: "Dismissed"
+        ,moderationFailed: "The moderation action could not be completed. Please try again."
+        ,moderationLoadFailed: "Could not load moderation items."
+        ,moderationInvalidChanges: "Enter valid JSON for the content changes."
+        ,adminAccessRequired: "Administrator access is required for this page."
+        ,adminLogsTitle: "Admin activity log"
+        ,activityHistory: "Activity history"
+        ,adminVerificationTitle: "Admin verification"
+        ,pendingRequests: "Pending requests"
+        ,notificationsTitle: "Notifications"
+        ,refresh: "Refresh"
+        ,ratingsTitle: "Ratings"
+        ,settingsTitle: "Settings"
+        ,privacySettings: "Privacy settings"
+        ,saveSettings: "Save settings"
+        ,findPeople: "Find people"
+        ,search: "Search"
+        ,volunteerDatabase: "Volunteer database"
+        ,skills: "Skills"
+        ,availability: "Availability"
+        ,bloodGroup: "Blood group"
+        ,filter: "Filter"
+        ,createOpportunity: "Create opportunity"
+        ,volunteerOpportunities: "Volunteer opportunities"
+        ,eventAttendance: "Event attendance"
+        ,coordinatedEvent: "Your coordinated event"
+        ,loadingEvents: "Loading your events…"
+        ,completionCertificates: "Completion certificates"
+        ,issueCertificate: "Issue certificate"
+        ,certificatePageTitle: "Print certificate | HELPNET"
+        ,certificatesNav: "Certificates"
+        ,printCertificate: "Print certificate"
+        ,certificateBrand: "HELPNET · COMMUNITY SERVICE"
+        ,certificateCompletionTitle: "Certificate of Completion"
+        ,certificatePresentedTo: "This certificate is presented to"
+        ,certificateRecognizedFor: "in recognition of completing volunteer service for"
+        ,certificateCompletedOn: "Completed"
+        ,certificateCoordinatorLabel: "Organization / Coordinator"
+        ,certificateLoading: "Loading certificate…"
+        ,certificateInvalidId: "A valid certificate ID is required."
+        ,certificateUnavailable: "This certificate is not available to your account."
+        ,eventMessages: "Event messages"
+        ,chooseEvent: "Choose one of your events or volunteer signups."
+        ,sendMessage: "Send message"
+        ,volunteerProfile: "Volunteer profile"
+        ,firstAidPlaceholder: "First aid, teaching, logistics"
+        ,availabilityPlaceholder: "Weekends, evenings"
+        ,certificatesPlaceholder: "Names or links, one per line"
+        ,saveProfile: "Save profile"
+        ,searchVolunteers: "Search volunteers"
+        ,eventTitle: "Title"
+        ,eventDescription: "Description"
+        ,date: "Date"
+        ,requiredVolunteers: "Required volunteers"
+        ,submit: "Submit",
+        notificationSubtitle: "Blood donor alerts and account updates.",
+        rateUserTitle: "Rate HELPNET User",
+        userId: "User ID",
+        loadRatings: "Load ratings",
+        rating: "Rating",
+        ratingComment: "Comment (optional)",
+        submitRating: "Submit rating",
+        adminLogsSubtitle: "Admin actions and verification activities.",
+        loadingAdminLogs: "Loading admin logs…",
+        adminDashboard: "Admin dashboard",
+        verificationSubtitle: "Review pending verification requests.",
+        loadingVerifications: "Loading verification requests…",
+        settingsIntro: "Manage your account and privacy settings.",
+        privacyChoice: "Choose which information other users can see.",
+        showPhone: "Show my phone number",
+        showEmail: "Show my email address",
+        showLocation: "Show my location",
+        showDateOfBirth: "Show my date of birth",
+        settingsLoadedError: "Unable to load your settings.",
+        settingsSaveError: "Unable to save settings.",
+        settingsSaved: "Settings saved successfully.",
+        forgotPasswordTitle: "Forgot your password?",
+        forgotPasswordSubtitle: "Enter your account email. We’ll send instructions to reset your password.",
+        emailPlaceholder: "Enter your email",
+        resetPassword: "Reset password",
+        backToLogin: "Back to login",
+        resetPasswordTitle: "Set a new password",
+        resetPasswordSubtitle: "Enter your new password.",
+        newPassword: "New password",
+        confirmPassword: "Enter your password again",
+        updatePassword: "Change password",
+        findPeopleHint: "Search HELPNET members by name, role or area.",
+        searchPlaceholder: "Name, role or area…",
+        eventMessageText: "Message",
+        selectVolunteer: "Select a volunteer",
+        loadingOpportunities: "Loading opportunities…",
+        profileSkillsHint: "First aid, teaching, logistics",
+        profileAvailabilityHint: "Weekends, evenings",
+        profileCertificatesHint: "Names or links, one per line",
+        volunteerAttendance: "Attendance",
+        messageSend: "Send message",
+        goodsListTitle: "Second-hand goods",
+        createGoodsTitle: "Create a goods listing",
+        goodsExchangeTitle: "Second-hand goods exchange",
+        listAnItem: "List an item",
+        loadingListings: "Loading listings…",
+        itemTitle: "Title",
+        itemDescription: "Description",
+        itemCondition: "Condition",
+        selectCondition: "Select condition",
+        conditionNew: "New",
+        conditionLikeNew: "Like new",
+        conditionGood: "Good",
+        conditionFair: "Fair",
+        conditionForParts: "For parts",
+        askingPrice: "Asking price",
+        itemLocation: "Location",
+        itemImageOptional: "Image (optional)",
+        createListing: "Create listing",
+        listingStatus: "Listing status",
+        statusReserved: "Reserved",
+        statusExchanged: "Exchanged",
+        statusRemoved: "Removed",
+        updateStatus: "Update status",
+        expressInterest: "Express interest",
+        reportListing: "Report this listing",
+        reason: "Reason",
+        detailsOptional: "Details (optional)",
+        submitReport: "Submit report",
+        goodsDisclaimerTitle: "Disclaimer",
+        goodsDisclaimer: "HELPNET does not handle payments and does not guarantee item condition. Exchanges are arranged directly between users.",
+        bloodPageTitle: "Blood donation",
+        donorProfileHint: "Register your blood group, district, and current availability.",
+        selectBloodGroup: "Select blood group",
+        donorAvailability: "Available to donate",
+        saveDonorProfile: "Save donor profile",
+        searchBloodDonors: "Search blood donors",
+        anyBloodGroup: "Any blood group",
+        anyDistrict: "Any district",
+        donorName: "Donor name",
+        searchByName: "Search by name",
+        searchDonors: "Search donors",
+        searchAvailableDonors: "Search for available donors.",
+        createBloodRequest: "Create a blood request",
+        hospital: "Hospital",
+        details: "Details",
+        createRequest: "Create request",
+        openBloodRequests: "Open blood requests",
+        donationHistory: "My donation history",
+        noOpenRequests: "No open blood requests.",
+        noDonationsRecorded: "No donations recorded yet.",
+        matchingDonors: "Matching available donors",
+        noMatchingDonors: "No donor matches this group and area right now.",
+        chooseDonor: "Select a donor",
+        fulfillRequest: "Fulfill request",
+        findMatchingDonors: "Find matching donors",
+        closeRequest: "Close request",
+        donorProfileSaved: "Donor profile saved.",
+        bloodRequestCreated: "Blood request created.",
+        bloodRequestFulfilled: "Request fulfilled and donation history recorded.",
+        bloodRequestClosed: "Request closed.",
+        loadingBlood: "Loading…",
+        bloodReportFailed: "Report could not be submitted. Please try again.",
+        requestedBy: "Requested by",
+        yourDonorProfile: "This is your donor profile.",
+        rateDonor: "Rate donor",
+        ratingsCount: "{count} ratings"
     }
 };
 
@@ -807,6 +1202,10 @@ function applyLanguage() {
 
 
     }
+
+    document.dispatchEvent(new CustomEvent("helpnet:languagechange", {
+        detail: { language: language }
+    }));
 
 
 }

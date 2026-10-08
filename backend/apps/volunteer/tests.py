@@ -1,9 +1,15 @@
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.test import Client, TestCase, override_settings
 from django.utils import timezone
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APIClient
+import csv
+import io
+import tempfile
+from pathlib import Path
 
-from .models import VolunteerAttendance, VolunteerOpportunity, VolunteerSignup
+from .models import VolunteerAttendance, VolunteerOpportunity, VolunteerProfile, VolunteerProfileDocument, VolunteerSignup
 
 
 User = get_user_model()
@@ -170,6 +176,104 @@ class VolunteerMessageAndCertificateTests(TestCase):
         self.assertEqual(self.client.get(url).status_code, 403)
 
         page_client = Client(HTTP_HOST="localhost")
-        for path in ("/volunteer-opportunities/", "/volunteer-attendance/"):
+        for path in ("/volunteer-opportunities/", "/volunteer-opportunity-details/?event_id=1", "/create-opportunity/", "/volunteer-profile/", "/volunteer-attendance/", "/volunteer-certificate/print/", "/volunteer-search/", "/admin-volunteers/"):
             page = page_client.get(path)
             self.assertEqual(page.status_code, 200)
+            self.assertIn(b"HELPNET", page.content)
+        print_view = page_client.get("/volunteer-certificate/print/")
+        self.assertContains(print_view, b'id="printCertificate"')
+
+
+class SprintFourCompletionTests(TestCase):
+    def setUp(self):
+        self.ngo = User.objects.create_user(phone_number="01000000101", email="ngo2@example.test", full_name="NGO Two", password="test-password-123", role="NGO")
+        self.citizen = User.objects.create_user(phone_number="01000000102", email="citizen2@example.test", full_name="Citizen Two", password="test-password-123", role="Citizen")
+        self.volunteer = User.objects.create_user(phone_number="01000000103", email="private-volunteer@example.test", full_name="Volunteer One", password="test-password-123", role="Volunteer")
+        self.other_volunteer = User.objects.create_user(phone_number="01000000104", email="private-other@example.test", full_name="Volunteer Two", password="test-password-123", role="Volunteer")
+        self.event = VolunteerOpportunity.objects.create(title="Food Support", description="Pack food", date="2026-10-20", location="Dhaka", required_volunteers=1, coordinator=self.ngo)
+        self.client = APIClient()
+
+    def test_ngo_can_post_citizen_is_refused_and_signup_capacity_enforced(self):
+        self.client.force_authenticate(self.citizen)
+        payload = {"title": "Citizen event", "description": "No", "date": "2026-10-21", "location": "Dhaka", "required_volunteers": 2}
+        self.assertEqual(self.client.post("/api/volunteer/opportunities/", payload, format="json").status_code, 403)
+        self.client.force_authenticate(self.ngo)
+        self.assertEqual(self.client.post("/api/volunteer/opportunities/", payload, format="json").status_code, 201)
+        self.client.force_authenticate(self.volunteer)
+        url = f"/api/volunteer/opportunities/{self.event.pk}/signup/"
+        self.assertEqual(self.client.post(url, {}, format="json").status_code, 201)
+        self.assertEqual(self.client.post(url, {}, format="json").status_code, 400)
+        self.client.force_authenticate(self.other_volunteer)
+        self.assertEqual(self.client.post(url, {}, format="json").status_code, 400)
+
+    @override_settings(MEDIA_ROOT=tempfile.gettempdir())
+    def test_profile_save_and_certificate_upload_validation(self):
+        self.client.force_authenticate(self.volunteer)
+        saved = self.client.put("/api/volunteer/profile/", {"skills": "First aid", "availability": "Weekends", "location": "Dhaka", "blood_group": "O+"}, format="json")
+        self.assertEqual(saved.status_code, 200)
+        upload_url = "/api/volunteer/profile/documents/"
+        uploaded = self.client.post(upload_url, {"file": SimpleUploadedFile("first-aid.pdf", b"%PDF-1.4 certificate")}, format="multipart")
+        self.assertEqual(uploaded.status_code, 201)
+        document_data = self.client.get(upload_url).data["data"][0]
+        self.assertEqual(document_data["original_name"], "first-aid.pdf")
+        self.assertNotIn("file", document_data)
+        self.assertTrue(document_data["download_url"].endswith("/download/"))
+        document = VolunteerProfileDocument.objects.get(pk=document_data["id"])
+        self.assertNotIn(Path(settings.MEDIA_ROOT).resolve(), Path(document.file.path).resolve().parents)
+        self.client.force_authenticate(None)
+        self.assertEqual(self.client.get(document_data["download_url"]).status_code, 401)
+        self.client.force_authenticate(self.other_volunteer)
+        self.assertEqual(self.client.get(document_data["download_url"]).status_code, 404)
+        self.client.force_authenticate(self.volunteer)
+        download = self.client.get(document_data["download_url"])
+        self.assertEqual(download.status_code, 200)
+        self.assertTrue(download.streaming)
+        self.assertEqual(b"".join(download.streaming_content), b"%PDF-1.4 certificate")
+        self.assertEqual(self.client.get(f"/media/{document.file.name}").status_code, 404)
+        rejected = self.client.post(upload_url, {"file": SimpleUploadedFile("script.exe", b"no")}, format="multipart")
+        self.assertEqual(rejected.status_code, 400)
+        VolunteerProfile.objects.get(user=self.volunteer).documents.first().file.delete(save=False)
+
+    def test_search_single_and_combined_participation_filters_and_csv_privacy(self):
+        from .models import VolunteerProfile
+        VolunteerProfile.objects.create(user=self.volunteer, skills="First aid, cooking", availability="Weekends", location="Dhaka", blood_group="O+", supporting_certificates="private certificate")
+        VolunteerProfile.objects.create(user=self.other_volunteer, skills="Teaching", availability="Weekdays", location="Chittagong", blood_group="A+", supporting_certificates="another private certificate")
+        VolunteerSignup.objects.create(volunteer=self.volunteer, event=self.event)
+        self.client.force_authenticate(self.ngo)
+        single = self.client.get("/api/volunteer/search/?skills=first%20aid")
+        self.assertEqual([row["full_name"] for row in single.data["data"]], ["Volunteer One"])
+        combined = self.client.get("/api/volunteer/search/?skills=first&availability=weekends&location=dhaka&participation_history=yes")
+        self.assertEqual([row["full_name"] for row in combined.data["data"]], ["Volunteer One"])
+        none = self.client.get("/api/volunteer/search/?participation_history=no")
+        self.assertEqual([row["full_name"] for row in none.data["data"]], ["Volunteer Two"])
+
+        admin = User.objects.create_user(phone_number="01000000105", email="admin2@example.test", full_name="Admin Two", password="test-password-123", role="Admin")
+        self.client.force_authenticate(admin)
+        response = self.client.get("/api/admin/volunteers/export/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv; charset=utf-8")
+        rows = list(csv.reader(io.StringIO(response.content.decode("utf-8-sig"))))
+        self.assertEqual(rows[0], ["Full name", "Skills", "Availability", "Location", "Signup count", "Completed events"])
+        export_rows = {row[0]: row for row in rows[1:]}
+        self.assertIn("Volunteer One", export_rows)
+        csv_text = response.content.decode("utf-8")
+        for private in ("private-volunteer@example.test", "01000000103", "O+", "private certificate"):
+            self.assertNotIn(private, csv_text)
+        self.client.force_authenticate(self.citizen)
+        self.assertEqual(self.client.get("/api/admin/volunteers/export/").status_code, 403)
+
+    def test_attendance_timestamps_are_recorded_once_and_cannot_be_overwritten(self):
+        VolunteerSignup.objects.create(volunteer=self.volunteer, event=self.event)
+        self.client.force_authenticate(self.ngo)
+        url = f"/api/volunteer/opportunities/{self.event.pk}/attendance/"
+        payload = {"volunteer_id": str(self.volunteer.user_id), "action": "check_in"}
+        first = self.client.post(url, payload, format="json")
+        original_check_in = first.data["data"]["check_in_time"]
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(self.client.post(url, payload, format="json").status_code, 400)
+        check_out = self.client.post(url, {**payload, "action": "check_out"}, format="json")
+        self.assertEqual(check_out.status_code, 200)
+        self.assertEqual(check_out.data["data"]["check_in_time"], original_check_in)
+        original_check_out = check_out.data["data"]["check_out_time"]
+        self.assertEqual(self.client.post(url, {**payload, "action": "check_out"}, format="json").status_code, 400)
+        self.assertEqual(VolunteerAttendance.objects.get(event=self.event, volunteer=self.volunteer).check_out_time.isoformat().replace("+00:00", "Z"), original_check_out)

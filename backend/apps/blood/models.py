@@ -22,9 +22,42 @@ class DonorProfile(models.Model):
 	)
 	blood_group = models.CharField(max_length=3, choices=BloodGroup.choices)
 	area = models.CharField(max_length=120)
-	is_available = models.BooleanField(default=True)
+
+	class Availability(models.TextChoices):
+		AVAILABLE = "available", "Available"
+		BUSY = "busy", "Busy"
+		NOT_AVAILABLE = "not_available", "Not Available"
+
+	availability = models.CharField(
+		max_length=20,
+		choices=Availability.choices,
+		default=Availability.AVAILABLE,
+	)
+
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
+
+	def __init__(self, *args, **kwargs):
+		# Keep compatibility with callers using the legacy boolean field while
+		# storing the richer three-state availability model.
+		legacy_available = kwargs.pop("is_available", None)
+		if legacy_available is not None and "availability" not in kwargs:
+			kwargs["availability"] = (
+				self.Availability.AVAILABLE
+				if legacy_available
+				else self.Availability.NOT_AVAILABLE
+			)
+		super().__init__(*args, **kwargs)
+
+	@property
+	def is_available(self):
+		return self.availability == self.Availability.AVAILABLE
+
+	@is_available.setter
+	def is_available(self, value):
+		self.availability = (
+			self.Availability.AVAILABLE if value else self.Availability.NOT_AVAILABLE
+		)
 
 	def __str__(self):
 		return f"{self.user.full_name} ({self.blood_group}, {self.area})"
@@ -46,6 +79,11 @@ class BloodRequest(models.Model):
 	area = models.CharField(max_length=120)
 	hospital = models.CharField(max_length=200, blank=True)
 	details = models.TextField(blank=True)
+	supporting_document = models.FileField(
+    	upload_to="blood/supporting_documents/",
+    	blank=True,
+    	null=True,
+	)
 	status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)

@@ -4,64 +4,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ratings | HELPNET</title>
+    <title data-i18n="ratingsTitle">Ratings | HELPNET</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
 <header class="site-header">
     <a href="/dashboard/" class="logo">HELPNET</a>
-    <a href="/profile/" class="back-link">Back to profile</a>
-</header>
+    <a href="/profile/" class="back-link" data-i18n="backToProfile">Back to profile</a>
+<button id="langToggle" class="lang-toggle" data-i18n="langButton">English</button></header>
 
 <main class="ratings-page">
     <section class="ratings-card">
-        <h1>Rate HELPNET User</h1>
+        <h1 data-i18n="rateUserTitle">Rate HELPNET User</h1>
 
-<section id="userSummary">
-    <h2 id="ratedUserName"></h2>
-    <p id="ratedUserRole"></p>
-    <p id="ratedUserArea"></p>
-    <p id="averageRating"></p>
-</section>
+        <section id="ratingsContent" hidden>
+            <h2 id="ratedUserName"></h2>
+            <p id="ratedUserVerification" class="verified-badge" hidden data-i18n="verified">✓ Verified</p>
+            <p id="ratedUserRole"></p>
+            <p id="ratedUserArea"></p>
+            <p id="averageRating"></p>
+        </section>
 
-<form id="ratingForm">
-    <label>Rating</label>
+        <div class="field">
+            <label for="ratedUserId" data-i18n="userId">User ID</label>
+            <input id="ratedUserId" type="text" autocomplete="off">
+            <button id="loadRatings" class="small-btn" type="button" data-i18n="loadRatings">Load ratings</button>
+        </div>
 
-    <div id="starPicker"
-         class="star-picker"
-         role="radiogroup"
-         aria-label="Choose a rating">
-    </div>
-
-    <label for="ratingComment">Comment (optional)</label>
-    <textarea id="ratingComment" rows="3" maxlength="1000"></textarea>
-
-    <button id="submitRating" class="btn" type="submit">
-        Submit rating
-    </button>
-</form>
-
-<div id="existingRatings" class="existing-ratings"></div>
-        <p id="ratingsMessage" class="form-message" aria-live="polite"></p>
-    </section>
-
-    <section id="ratingsContent" class="ratings-card" hidden>
-        <h2 id="ratedUserName">Ratings</h2>
-        <p id="ratedUserVerification" class="verified-badge" hidden>✓ Verified</p>
-        <p id="averageRating" class="rating-average"></p>
         <form id="ratingForm">
-            <label>Rating</label>
+            <label for="starPicker" data-i18n="rating">Rating</label>
             <div id="starPicker" class="star-picker" role="radiogroup" aria-label="Choose a rating"></div>
-            <label for="ratingComment">Comment (optional)</label>
+            <label for="ratingComment" data-i18n="ratingComment">Comment (optional)</label>
             <textarea id="ratingComment" rows="3" maxlength="1000"></textarea>
-            <button id="submitRating" class="btn" type="submit">Submit rating</button>
+            <button id="submitRating" class="btn" type="submit" data-i18n="submitRating">Submit rating</button>
         </form>
+
         <div id="existingRatings" class="existing-ratings"></div>
+        <p id="ratingsMessage" class="form-message" aria-live="polite"></p>
     </section>
 </main>
 
 <script src="{% static 'js/api.js' %}"></script>
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/ratings.js' %}"></script>
-</body>
+<script src="{% static 'js/i18n.js' %}"></script></body>
 </html>

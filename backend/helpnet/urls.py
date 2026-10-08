@@ -6,6 +6,7 @@ from django.urls import include, path
 from django.views.generic import TemplateView
 
 from apps.users.views import PublicUserProfileView,UserSearchView
+from apps.volunteer.views import AdminVolunteersView, VolunteerCsvExportView
 
 
 def root_view(request):
@@ -32,6 +33,8 @@ urlpatterns = [
     path('api/goods/', include('apps.goods.urls')),
     path('api/health/', include('apps.health.urls')),
     path('api/volunteer/', include('apps.volunteer.urls')),
+    path('api/admin/volunteers/', AdminVolunteersView.as_view(), name='admin-volunteers-api'),
+    path('api/admin/volunteers/export/', VolunteerCsvExportView.as_view(), name='admin-volunteer-export-api'),
     path('api/verification/', include('apps.verification.urls')),
     path(
     "user-search/",
@@ -53,6 +56,7 @@ path(
     path('register/', TemplateView.as_view(template_name='pages/register.html'), name='register'),
     path('dashboard/', TemplateView.as_view(template_name='pages/dashboard.html'), name='dashboard'),
     path('profile/', TemplateView.as_view(template_name='pages/profile.html'), name='profile'),
+    path('settings/', TemplateView.as_view(template_name='pages/settings.html'), name='settings'),
     path('ratings/', TemplateView.as_view(template_name='pages/ratings.html'), name='ratings'),
     path('blood/', TemplateView.as_view(template_name='pages/blood.html'), name='blood'),
     path('notifications/', TemplateView.as_view(template_name='pages/notifications.html'), name='notifications'),
@@ -64,10 +68,12 @@ path(
     path('health-question-details/', TemplateView.as_view(template_name='pages/health-question-details.html'), name='health-question-details-page'),
     path('health-professionals/', TemplateView.as_view(template_name='pages/health-professionals.html'), name='health-professionals-page'),
     path('volunteer-opportunities/', TemplateView.as_view(template_name='pages/volunteer-opportunities.html'), name='volunteer-opportunities-page'),
+    path('volunteer-opportunity-details/', TemplateView.as_view(template_name='pages/volunteer-opportunity-details.html'), name='volunteer-opportunity-details-page'),
     path('create-opportunity/', TemplateView.as_view(template_name='pages/create-opportunity.html'), name='create-opportunity-page'),
     path('volunteer-profile/', TemplateView.as_view(template_name='pages/volunteer-profile.html'), name='volunteer-profile-page'),
     path('volunteer-attendance/', TemplateView.as_view(template_name='pages/volunteer-attendance.html'), name='volunteer-attendance-page'),
     path('volunteer-message/', TemplateView.as_view(template_name='pages/volunteer-message.html'), name='volunteer-message-page'),
+    path('volunteer-certificate/print/', TemplateView.as_view(template_name='pages/volunteer-certificate-print.html'), name='volunteer-certificate-print-page'),
     path('volunteer-certificate/', TemplateView.as_view(template_name='pages/volunteer-certificate.html'), name='volunteer-certificate-page'),
     path('volunteer-search/', TemplateView.as_view(template_name='pages/volunteer-search.html'), name='volunteer-search-page'),
     path('admin-volunteers/', TemplateView.as_view(template_name='pages/admin-volunteers.html'), name='admin-volunteers-page'),
@@ -90,6 +96,7 @@ path(
     path('admin-verification/', TemplateView.as_view(template_name='pages/admin-verification.html'), name='admin-verification'),
     path('admin-logs/', TemplateView.as_view(template_name='pages/admin-logs.html'), name='admin-logs'),
     path('admin-dashboard/', TemplateView.as_view(template_name='pages/admin-dashboard.html'), name='admin-dashboard'),
+    path('admin-moderation/', TemplateView.as_view(template_name='pages/admin-moderation.html'), name='admin-moderation'),
 ]
 
 if settings.DEBUG:

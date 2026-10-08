@@ -23,19 +23,19 @@
         HELPNET
     </a>
 
-    <a href="/dashboard/" class="back-link">
+    <a href="/dashboard/" class="back-link" data-i18n="backToDashboard">
         Back to dashboard
     </a>
-</header>
+<button id="langToggle" class="lang-toggle" data-i18n="langButton">English</button></header>
 
 
 <main class="user-search-page">
 
     <section class="user-search-card">
 
-        <h1>Find People</h1>
+        <h1 data-i18n="findPeople">Find People</h1>
 
-        <p class="hint">
+        <p class="hint" data-i18n="findPeopleHint">
             Search HELPNET members by name, role or area.
         </p>
 
@@ -43,14 +43,14 @@
         <form id="userSearchForm">
 
             <div class="field">
-                <label for="userSearchInput">
+                <label for="userSearchInput" data-i18n="search">
                     Search
                 </label>
 
                 <input
                     id="userSearchInput"
                     type="search"
-                    placeholder="Name, role or area..."
+                    placeholder="Name, role or area..." data-i18n-placeholder="searchPlaceholder"
                     autocomplete="off"
                 >
             </div>
@@ -58,6 +58,7 @@
             <button
                 type="submit"
                 class="btn"
+                data-i18n="search"
             >
                 🔎 Search
             </button>
@@ -86,5 +87,5 @@
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/user-search.js' %}"></script>
 
-</body>
+<script src="{% static 'js/i18n.js' %}"></script></body>
 </html>

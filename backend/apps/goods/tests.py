@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from rest_framework.test import APIClient
 
+from apps.reports.models import Report
 from .models import GoodsInterest, GoodsListing, GoodsReport
 
 
@@ -88,7 +89,10 @@ class GoodsExchangeTests(TestCase):
             "description": "The listed condition does not match the details.",
         }, format="json")
         self.assertEqual(reported.status_code, 201)
-        self.assertEqual(GoodsReport.objects.count(), 1)
+        shared_report = Report.objects.get(content_type__app_label="goods", object_id=str(self.listing.pk))
+        self.assertEqual(shared_report.reporter, self.other)
+        self.assertEqual(shared_report.reported_user, self.owner)
+        self.assertEqual(shared_report.content_object, self.listing)
 
         guest = APIClient()
         self.assertEqual(guest.get("/api/goods/listings/").status_code, 401)

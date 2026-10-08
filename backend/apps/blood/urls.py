@@ -10,5 +10,6 @@ urlpatterns = [
     path("requests/<uuid:request_id>/matches/", views.BloodRequestMatchesView.as_view(), name="blood-request-matches"),
     path("requests/<uuid:request_id>/complete/", views.BloodRequestCompleteView.as_view(), name="blood-request-complete"),
     path("requests/<uuid:request_id>/close/", views.BloodRequestCloseView.as_view(), name="blood-request-close"),
+    path("requests/<uuid:request_id>/reports/", views.BloodRequestReportView.as_view(), name="blood-request-report"),
     path("donations/", views.DonationHistoryView.as_view(), name="donation-history"),
 ]
