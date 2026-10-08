@@ -97,7 +97,8 @@ WSGI_APPLICATION = 'helpnet.wsgi.application'
 
 import sys
 
-if 'test' in sys.argv:
+IS_TESTING = any('pytest' in arg or 'test' in arg for arg in sys.argv)
+if IS_TESTING:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -164,6 +165,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Media files (user uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+PRIVATE_MEDIA_ROOT = BASE_DIR / 'private_media'
 
 # Default primary key field type
 

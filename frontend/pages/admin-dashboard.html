@@ -167,7 +167,7 @@
             <!-- USERS -->
 
             <a
-                href="#"
+                href="/admin-volunteers/"
                 class="service-card">
 
                 <div class="service-icon">
@@ -175,7 +175,7 @@
                 </div>
 
                 <span>
-                    Users
+                    Volunteers
                 </span>
 
             </a>
@@ -184,7 +184,7 @@
             <!-- REPORTS -->
 
             <a
-                href="#"
+                href="/admin-moderation/"
                 class="service-card">
 
                 <div class="service-icon">
@@ -196,24 +196,6 @@
                 </span>
 
             </a>
-
-
-            <!-- MODERATION -->
-
-            <a
-                href="#"
-                class="service-card">
-
-                <div class="service-icon">
-                    🛡️
-                </div>
-
-                <span>
-                    Moderation
-                </span>
-
-            </a>
-
 
             <!-- AUDIT LOGS -->
 
@@ -313,7 +295,7 @@
 
 <script>
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
 
     /*
      * Get logged-in user.
@@ -366,6 +348,51 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+
+    /* =====================================================
+   PENDING VERIFICATION COUNT
+   ===================================================== */
+
+    const pendingVerificationCount =
+        document.getElementById("pendingVerificationCount");
+
+    if (pendingVerificationCount) {
+
+        try {
+
+            const response = await fetch("/api/verification/admin/", {
+                headers: {
+                    Authorization:
+                        "Bearer " +
+                        localStorage.getItem("helpnet_token")
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+
+                pendingVerificationCount.textContent =
+                    Array.isArray(result.data)
+                        ? result.data.length
+                        : 0;
+
+            } else {
+
+                pendingVerificationCount.textContent = "0";
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Failed to load pending verification count:",
+                error
+            );
+
+            pendingVerificationCount.textContent = "0";
+        }
+    }
 
     /*
      * Admin name.

@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.reports.models import Report
+from apps.reports.serializers import ReportSerializer
 from .models import GoodsInterest, GoodsListing, GoodsReport
 from .serializers import GoodsInterestSerializer, GoodsListingSerializer, GoodsReportSerializer
 
@@ -75,8 +77,15 @@ class GoodsReportCreateView(APIView):
 
     def post(self, request, listing_id):
         listing = get_object_or_404(GoodsListing, pk=listing_id)
-        serializer = GoodsReportSerializer(data=request.data)
-        if serializer.is_valid():
-            report = serializer.save(listing=listing, reporter=request.user)
-            return Response({"success": True, "data": GoodsReportSerializer(report).data, "message": "Listing reported."}, status=201)
-        return Response({"success": False, "data": None, "message": serializer.errors}, status=400)
+        reason = str(request.data.get("reason", "")).strip()
+        description = str(request.data.get("description", "")).strip()
+        if not reason:
+            return Response({"success": False, "data": None, "message": "A report reason is required."}, status=400)
+        report = Report.objects.create(
+            reporter=request.user,
+            reported_user=listing.seller,
+            content_object=listing,
+            category=Report.Category.FRAUD,
+            description=f"{reason}\n{description}".strip(),
+        )
+        return Response({"success": True, "data": ReportSerializer(report).data, "message": "Listing reported."}, status=201)

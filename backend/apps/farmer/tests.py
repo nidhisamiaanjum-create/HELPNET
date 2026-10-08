@@ -117,3 +117,49 @@ class FarmerMarketTests(APITestCase):
 
         del_res = self.client.delete(detail_url)
         self.assertEqual(del_res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_price_range_uses_only_other_farmers_active_listings_in_same_category_and_area(self):
+        current = ProduceListing.objects.create(
+            farmer=self.farmer, produce_name="Tomato", category="Vegetables", price=45,
+            unit="kg", quantity="10 kg", location="Savar, Dhaka",
+        )
+        ProduceListing.objects.create(
+            farmer=self.farmer, produce_name="Tomato", category="Vegetables", price=90,
+            unit="kg", quantity="5 kg", location="Savar, Dhaka",
+        )
+        ProduceListing.objects.create(
+            farmer=self.other_farmer, produce_name="Tomato", category="Vegetables", price=55,
+            unit="kg", quantity="5 kg", location="Savar, Dhaka",
+        )
+        ProduceListing.objects.create(
+            farmer=self.other_farmer, produce_name="Tomato", category="Vegetables", price=75,
+            unit="kg", quantity="5 kg", location="Bogura",
+        )
+        unavailable = ProduceListing.objects.create(
+            farmer=self.other_farmer, produce_name="Tomato", category="Vegetables", price=10,
+            unit="kg", quantity="5 kg", location="Savar, Dhaka", availability="Unavailable",
+        )
+        self.client.force_authenticate(user=self.farmer)
+        response = self.client.get(reverse("farmer-produce-price-range", kwargs={"id": current.id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["data"]["count"], 1)
+        self.assertEqual(float(response.data["data"]["minimum"]), 55.0)
+        self.assertEqual(float(response.data["data"]["maximum"]), 55.0)
+        self.assertNotEqual(unavailable.price, response.data["data"]["minimum"])
+
+    def test_user_can_report_a_farmer_listing(self):
+        from apps.reports.models import Report
+
+        listing = ProduceListing.objects.create(
+            farmer=self.farmer, produce_name="Tomato", category="Vegetables", price=45,
+            unit="kg", quantity="10 kg", location="Savar, Dhaka",
+        )
+        self.client.force_authenticate(user=self.consumer)
+        response = self.client.post(
+            reverse("farmer-produce-report", kwargs={"id": listing.id}),
+            {"description": "This listing appears suspicious."},
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        report = Report.objects.get(pk=response.data["data"]["id"])
+        self.assertEqual(report.reporter, self.consumer)
+        self.assertEqual(report.content_object, listing)

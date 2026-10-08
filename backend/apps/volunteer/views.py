@@ -1,7 +1,7 @@
 from datetime import date
 from django.db import IntegrityError, transaction
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -10,8 +10,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from reportlab.pdfgen import canvas
 from io import BytesIO
-from .models import VolunteerOpportunity, VolunteerProfile, VolunteerSignup, VolunteerAttendance, VolunteerMessage, VolunteerCertificate
-from .serializers import VolunteerOpportunitySerializer, VolunteerProfileSerializer, VolunteerSignupSerializer, VolunteerAttendanceSerializer, VolunteerMessageSerializer, VolunteerCertificateSerializer
+import csv
+import mimetypes
+from pathlib import Path
+from .models import VolunteerOpportunity, VolunteerProfile, VolunteerProfileDocument, VolunteerSignup, VolunteerAttendance, VolunteerMessage, VolunteerCertificate
+from .serializers import VolunteerOpportunitySerializer, VolunteerProfileSerializer, VolunteerProfileDocumentSerializer, VolunteerSignupSerializer, VolunteerAttendanceSerializer, VolunteerMessageSerializer, VolunteerCertificateSerializer
 
 
 def coordinator(user):
@@ -32,7 +35,7 @@ class OpportunityListCreateView(APIView):
         return Response({"success": True, "data": VolunteerOpportunitySerializer(events, many=True).data})
 
     def post(self, request):
-        if not coordinator(request.user):
+        if request.user.role != "NGO":
             return Response({"success": False, "message": "Only NGO coordinators can create opportunities."}, status=403)
         serializer = VolunteerOpportunitySerializer(data=request.data)
         if serializer.is_valid():
@@ -94,7 +97,10 @@ class VolunteerSignupView(APIView):
             # Isolate the unique-constraint violation so a duplicate signup does
             # not leave an enclosing request/test transaction unusable.
             with transaction.atomic():
-                signup = VolunteerSignup.objects.create(volunteer=request.user, event=event)
+                locked_event = VolunteerOpportunity.objects.select_for_update().get(pk=event.pk)
+                if locked_event.signups.count() >= locked_event.required_volunteers:
+                    return Response({"success": False, "message": "This opportunity has reached capacity."}, status=400)
+                signup = VolunteerSignup.objects.create(volunteer=request.user, event=locked_event)
         except IntegrityError:
             return Response({"success": False, "message": "You have already signed up."}, status=400)
         return Response({"success": True, "data": VolunteerSignupSerializer(signup).data}, status=201)
@@ -116,6 +122,53 @@ class VolunteerProfileView(APIView):
         return Response({"success": False, "message": serializer.errors}, status=400)
 
 
+class VolunteerProfileDocumentsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.role != "Volunteer":
+            return Response({"success": False, "message": "Only volunteers can upload certificates."}, status=403)
+        uploaded = request.FILES.get("file")
+        if not uploaded:
+            return Response({"success": False, "message": "Choose a certificate file."}, status=400)
+        allowed_extensions = {".pdf", ".jpg", ".jpeg", ".png"}
+        if Path(uploaded.name).suffix.lower() not in allowed_extensions:
+            return Response({"success": False, "message": "Use a PDF, JPG, or PNG certificate (maximum 5 MB)."}, status=400)
+        if not uploaded.size or uploaded.size > 5 * 1024 * 1024:
+            return Response({"success": False, "message": "Certificate files must be 5 MB or smaller."}, status=400)
+        uploaded.seek(0)
+        signature = uploaded.read(8)
+        uploaded.seek(0)
+        extension = Path(uploaded.name).suffix.lower()
+        valid_signature = (
+            (extension == ".pdf" and signature.startswith(b"%PDF-"))
+            or (extension in {".jpg", ".jpeg"} and signature.startswith(b"\xff\xd8\xff"))
+            or (extension == ".png" and signature.startswith(b"\x89PNG\r\n\x1a\n"))
+        )
+        if not valid_signature:
+            return Response({"success": False, "message": "The file contents do not match a supported certificate format."}, status=400)
+        profile, _ = VolunteerProfile.objects.get_or_create(user=request.user)
+        document = VolunteerProfileDocument.objects.create(profile=profile, file=uploaded, original_name=Path(uploaded.name).name)
+        return Response({"success": True, "data": VolunteerProfileDocumentSerializer(document).data}, status=201)
+
+    def get(self, request):
+        if request.user.role != "Volunteer":
+            return Response({"success": False, "message": "Only volunteers can view their certificates."}, status=403)
+        profile, _ = VolunteerProfile.objects.get_or_create(user=request.user)
+        return Response({"success": True, "data": VolunteerProfileDocumentSerializer(profile.documents.all(), many=True).data})
+
+
+class VolunteerProfileDocumentDownloadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, document_id):
+        if request.user.role != "Volunteer":
+            return Response({"success": False, "message": "Only volunteers can download their certificates."}, status=403)
+        document = get_object_or_404(VolunteerProfileDocument, pk=document_id, profile__user=request.user)
+        content_type = mimetypes.guess_type(document.original_name)[0] or "application/octet-stream"
+        return FileResponse(document.file.open("rb"), as_attachment=True, filename=document.original_name, content_type=content_type)
+
+
 class AttendanceView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, event_id):
@@ -134,10 +187,14 @@ class AttendanceView(APIView):
         attendance, _ = VolunteerAttendance.objects.get_or_create(event=event, volunteer=volunteer)
         action = request.data.get("action")
         if action == "check_in":
+            if attendance.check_in_time:
+                return Response({"success": False, "message": "This volunteer is already checked in."}, status=400)
             attendance.check_in_time = timezone.now()
         elif action == "check_out":
             if not attendance.check_in_time:
                 return Response({"success": False, "message": "Check in this volunteer first."}, status=400)
+            if attendance.check_out_time:
+                return Response({"success": False, "message": "This volunteer is already checked out."}, status=400)
             attendance.check_out_time = timezone.now()
         else:
             return Response({"success": False, "message": "Action must be check_in or check_out."}, status=400)
@@ -227,6 +284,15 @@ class VolunteerSearchView(APIView):
             value = request.query_params.get(field, "").strip()
             if value:
                 profiles = profiles.filter(**{f"{field}__icontains": value})
+        participation = request.query_params.get("participation_history", "").strip().lower()
+        event_id = request.query_params.get("event_id", "").strip()
+        if participation in {"yes", "true", "participated"}:
+            profiles = profiles.filter(user__volunteer_signups__isnull=False)
+        elif participation in {"no", "false", "none"}:
+            profiles = profiles.filter(user__volunteer_signups__isnull=True)
+        if event_id:
+            profiles = profiles.filter(user__volunteer_signups__event_id=event_id)
+        profiles = profiles.distinct()
         return Response({"success": True, "data": [{**VolunteerProfileSerializer(p).data, "email": p.user.email, "phone_number": p.user.phone_number} for p in profiles]})
 
 
@@ -242,3 +308,32 @@ class AdminVolunteersView(APIView):
                 profiles = profiles.filter(**{f"{field}__icontains": value})
         data = [{**VolunteerProfileSerializer(p).data, "email": p.user.email, "phone_number": p.user.phone_number} for p in profiles]
         return Response({"success": True, "data": data})
+
+
+class VolunteerCsvExportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not (request.user.role == "Admin" or request.user.is_staff or request.user.is_superuser):
+            return Response({"success": False, "message": "Administrator access required."}, status=403)
+        profiles = VolunteerProfile.objects.select_related("user").filter(user__role="Volunteer")
+        for field in ("skills", "availability", "location"):
+            value = request.query_params.get(field, "").strip()
+            if value:
+                profiles = profiles.filter(**{f"{field}__icontains": value})
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="helpnet-volunteers.csv"'
+        response.write("\ufeff")
+        writer = csv.writer(response)
+        writer.writerow(["Full name", "Skills", "Availability", "Location", "Signup count", "Completed events"])
+        for profile in profiles.distinct():
+            signups = profile.user.volunteer_signups.all()
+            writer.writerow([
+                profile.user.full_name,
+                profile.skills,
+                profile.availability,
+                profile.location,
+                signups.count(),
+                signups.filter(event__attendance__volunteer=profile.user, event__attendance__check_in_time__isnull=False, event__attendance__check_out_time__isnull=False).distinct().count(),
+            ])
+        return response

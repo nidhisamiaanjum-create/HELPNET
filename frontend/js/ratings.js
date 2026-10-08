@@ -69,13 +69,13 @@ async function loadRatings() {
     }
 
     try {
-        const [profile, average, ratings] = await Promise.all([
-            apiRequest(`/api/users/${ratedUserId}/`),
-            apiRequest(`/api/ratings/users/${ratedUserId}/average/`),
-            apiRequest(`/api/ratings/users/${ratedUserId}/`),
-        ]);
+        const profile = await apiRequest(`/api/users/${ratedUserId}/`);
+        const average = await apiRequest(`/api/ratings/users/${ratedUserId}/average/`);
+        const ratings = await apiRequest(`/api/ratings/users/${ratedUserId}/`);
         document.getElementById("ratingsContent").hidden = false;
         document.getElementById("ratedUserName").textContent = `${profile.data.full_name}'s ratings`;
+        document.getElementById("ratedUserRole").textContent = profile.data.role || "";
+        document.getElementById("ratedUserArea").textContent = profile.data.location || "";
         const verification = document.getElementById("ratedUserVerification");
         verification.hidden = !profile.data.is_verified;
         const averageValue = average.data.average_rating;
@@ -107,11 +107,11 @@ async function submitRating(event) {
             rating: selectedRating,
             comment: document.getElementById("ratingComment").value.trim(),
         });
-        showRatingsMessage("Rating submitted successfully.", "success");
         selectedRating = 0;
         document.getElementById("ratingComment").value = "";
         renderRatingPicker();
         await loadRatings();
+        showRatingsMessage("Rating submitted successfully.", "success");
     } catch (error) {
         showRatingsMessage(error.message, "error");
     }

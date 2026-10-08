@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.ratings.models import Rating
+from apps.reports.models import Report
 from .models import BloodRequest, DonationHistory, DonorProfile
 
 
@@ -200,5 +201,27 @@ class BloodApiTests(APITestCase):
 		self.client.credentials()
 		response = self.client.get("/api/blood/requests/")
 		self.assertEqual(response.status_code, 401)
+
+	def test_authenticated_user_can_report_blood_request(self):
+		created = self.create_request()
+		request_id = created.data["data"]["id"]
+		response = self.client.post(
+			f"/api/blood/requests/{request_id}/reports/",
+			{"description": "The request details appear suspicious."},
+			format="json",
+		)
+		self.assertEqual(response.status_code, 201)
+		report = Report.objects.get(pk=response.data["data"]["id"])
+		self.assertEqual(report.reporter, self.requester)
+		self.assertEqual(report.reported_user, self.requester)
+		self.assertEqual(report.content_object, BloodRequest.objects.get(pk=request_id))
+		self.assertEqual(report.description, "The request details appear suspicious.")
+
+	def test_blood_screens_have_no_promotional_or_leaderboard_content(self):
+		response = self.client.get("/blood-requests/")
+		self.assertEqual(response.status_code, 200)
+		self.assertNotContains(response, "leaderboard")
+		self.assertNotContains(response, "advertisement")
+		self.assertNotContains(response, "sponsored")
 
 # Create your tests here.

@@ -98,3 +98,9 @@ class HealthCommunityApiTests(APITestCase):
         verified = self.client.patch(path, {"verification_status": "verified"}, format="json")
         self.assertEqual(verified.status_code, 200)
         self.assertTrue(verified.data["data"]["is_verified"])
+
+    def test_health_pages_show_non_endorsement_disclaimer(self):
+        for url in ("/health-professionals/", "/health-questions/", "/create-health-question/", "/health-question-details/"):
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, 'data-i18n="healthDisclaimer"')

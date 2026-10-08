@@ -4,7 +4,7 @@
    Backend: Django REST Framework
    ============================================================ */
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = (typeof window !== "undefined" && window.location && window.location.origin && window.location.origin.startsWith("http")) ? window.location.origin : "http://127.0.0.1:8000";
 
 const TOKEN_KEY = "helpnet_token";
 const USER_KEY = "helpnet_user";
@@ -68,14 +68,9 @@ function isLoggedIn() {
 
 
 function clearSession() {
-
-    localStorage.removeItem(
-        TOKEN_KEY
-    );
-
-    localStorage.removeItem(
-        USER_KEY
-    );
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem("refreshToken");
 }
 
 
@@ -83,271 +78,152 @@ function clearSession() {
    API REQUEST
    ============================================================ */
 
-async function apiRequest(
-    path,
-    method = "GET",
-    body = null
-) {
+function isPublicAuthEndpoint(path) {
+    const cleanPath = path.split("?")[0].replace(/\/+$/, "") + "/";
 
-    const url =
-        API_BASE + path;
+    const publicEndpoints = [
+        "/api/auth/login/",
+        "/api/auth/register/",
+        "/api/auth/forgot-password/",
+        "/api/auth/reset-password/"
+    ];
 
-    console.log(
-        "API REQUEST URL:",
-        url
-    );
+    return publicEndpoints.includes(cleanPath);
+}
 
-    console.log(
-        "API REQUEST METHOD:",
-        method
-    );
+function formatApiError(data) {
+    if (!data) {
+        return "Request failed. Please try again.";
+    }
 
-    console.log(
-        "API REQUEST BODY:",
-        body
-    );
+    // SimpleJWT error
+    if (data.detail && typeof data.detail === "string") {
+        return data.detail;
+    }
 
+    if (data.message) {
+        if (typeof data.message === "string") {
+            return data.message;
+        }
+
+        if (typeof data.message === "object") {
+            return formatApiError(data.message);
+        }
+    }
+
+    if (typeof data === "object") {
+        const errors = [];
+
+        Object.keys(data).forEach(function (field) {
+            const value = data[field];
+
+            if (Array.isArray(value)) {
+                value.forEach(function (item) {
+                    if (typeof item === "object" && item !== null) {
+                        if (item.message) {
+                            errors.push(String(item.message));
+                        }
+                    } else {
+                        errors.push(String(item));
+                    }
+                });
+            } else if (typeof value === "object" && value !== null) {
+                if (value.message) {
+                    errors.push(String(value.message));
+                }
+            } else {
+                errors.push(String(value));
+            }
+        });
+
+        if (errors.length > 0) {
+            return errors.join(" ");
+        }
+    }
+
+    return "Request failed. Please try again.";
+}
+
+
+async function apiRequest(path, method = "GET", body = null) {
+    const url = API_BASE + path;
+
+    console.log("API REQUEST URL:", url);
+    console.log("API REQUEST METHOD:", method);
+    console.log("API REQUEST BODY:", body);
 
     const options = {
-
         method: method,
-
-        headers: {
-            "Content-Type":
-                "application/json"
-        }
+        headers: {}
     };
 
+    const token = getToken();
 
-    const token =
-        getToken();
-
-
-    if (token) {
-
-        options.headers[
-            "Authorization"
-        ] =
-            "Bearer " + token;
+    // IMPORTANT:
+    // Never send an old JWT to public authentication endpoints.
+    if (token && !isPublicAuthEndpoint(path)) {
+        options.headers["Authorization"] = "Bearer " + token;
     }
-
 
     if (body) {
-
-        options.body =
-            JSON.stringify(body);
+        if (body instanceof FormData) {
+            options.body = body;
+        } else {
+            options.headers["Content-Type"] = "application/json";
+            options.body = JSON.stringify(body);
+        }
     }
 
-
-    console.log(
-        "Sending fetch request..."
-    );
-
+    console.log("Sending fetch request...");
 
     let response;
 
-
     try {
-
-        response =
-            await fetch(
-                url,
-                options
-            );
-
-        console.log(
-            "Fetch completed. HTTP status:",
-            response.status
-        );
-
+        response = await fetch(url, options);
+        console.log("Fetch completed. HTTP status:", response.status);
     } catch (error) {
-
-        console.error(
-            "FETCH ERROR:",
-            error
-        );
-
-        throw new Error(
-            "Could not connect to the HELPNET server."
-        );
+        console.error("FETCH ERROR:", error);
+        throw new Error("Could not connect to the HELPNET server.");
     }
-
-
-    /* ========================================================
-       READ RESPONSE
-       ======================================================== */
 
     let data = null;
 
-
     try {
-
-        data =
-            await response.json();
-
-        console.log(
-            "API RESPONSE DATA:",
-            data
-        );
-
+        data = await response.json();
+        console.log("API RESPONSE DATA:", data);
     } catch (error) {
-
-        console.error(
-            "Could not parse JSON response:",
-            error
-        );
-
-        data = null;
+        console.error("Could not parse JSON response:", error);
     }
-
-
-    /* ========================================================
-       HANDLE ERRORS
-       ======================================================== */
 
     if (!response.ok) {
 
-        let message =
-            "Request failed. Please try again.";
+        // Invalid/expired JWT on a protected request
+        if (
+            response.status === 401 &&
+            data &&
+            (
+                data.code === "token_not_valid" ||
+                data.detail === "Given token not valid for any token type"
+            ) &&
+            !isPublicAuthEndpoint(path)
+        ) {
+            console.warn("Invalid/expired JWT detected. Clearing session.");
 
+            clearSession();
 
-        if (data) {
-
-            /* Django response with message */
-
-            if (data.message) {
-
-                if (
-                    typeof data.message ===
-                    "string"
-                ) {
-
-                    message =
-                        data.message;
-
-                }
-
-                else if (
-                    typeof data.message ===
-                    "object"
-                ) {
-
-                    const errors = [];
-
-
-                    Object.keys(
-                        data.message
-                    ).forEach(
-                        function (field) {
-
-                            const value =
-                                data.message[field];
-
-
-                            if (
-                                Array.isArray(
-                                    value
-                                )
-                            ) {
-
-                                errors.push(
-                                    value.join(" ")
-                                );
-
-                            }
-
-                            else {
-
-                                errors.push(
-                                    String(value)
-                                );
-                            }
-                        }
-                    );
-
-
-                    if (
-                        errors.length > 0
-                    ) {
-
-                        message =
-                            errors.join(" ");
-                    }
-                }
-            }
-
-
-            /* Direct DRF errors */
-
-            else if (
-                typeof data ===
-                "object"
-            ) {
-
-                const errors = [];
-
-
-                Object.keys(data)
-                    .forEach(
-                        function (field) {
-
-                            const value =
-                                data[field];
-
-
-                            if (
-                                Array.isArray(
-                                    value
-                                )
-                            ) {
-
-                                errors.push(
-                                    value.join(" ")
-                                );
-
-                            }
-
-                            else {
-
-                                errors.push(
-                                    String(value)
-                                );
-                            }
-                        }
-                    );
-
-
-                if (
-                    errors.length > 0
-                ) {
-
-                    message =
-                        errors.join(" ");
-                }
-            }
+            throw new Error(
+                "Your session has expired. Please log in again."
+            );
         }
 
+        const message = formatApiError(data);
 
-        console.error(
-            "API ERROR:",
-            message
-        );
+        console.error("API ERROR:", message);
 
-
-        throw new Error(
-            message
-        );
+        throw new Error(message);
     }
 
-
-    /* ========================================================
-       SUCCESS
-       ======================================================== */
-
-    console.log(
-        "API REQUEST SUCCESS"
-    );
-
+    console.log("API REQUEST SUCCESS");
 
     return data;
 }

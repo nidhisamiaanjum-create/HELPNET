@@ -3,6 +3,8 @@
    Frontend Logic for farmer marketplace pages
    ============================================================ */
 
+let farmerPriceRangeData = null;
+
 document.addEventListener("DOMContentLoaded", function () {
     if (typeof requireLogin === "function" && !requireLogin()) {
         return;
@@ -290,6 +292,8 @@ async function initProduceDetailPage(user) {
             document.getElementById("detailLocation").textContent = p.location;
             document.getElementById("detailCategory").textContent = p.category || "General";
             document.getElementById("detailDesc").textContent = p.description || "No specific details provided.";
+            loadProducePriceRange(p.id);
+            setupProduceReportForm(p);
 
             const availBadge = document.getElementById("detailAvailability");
             if (availBadge) {
@@ -331,6 +335,61 @@ async function initProduceDetailPage(user) {
         showAlert("detailAlert", err.message || "Failed to load produce details.", "error");
     }
 }
+
+function setupProduceReportForm(produce) {
+    const section = document.getElementById("produceReportSection");
+    const form = document.getElementById("produceReportForm");
+    if (!section || !form) return;
+    if (produce.is_owner || (getStoredUser() && getStoredUser().user_id === produce.farmer)) {
+        section.hidden = true;
+        return;
+    }
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const message = document.getElementById("produceReportMessage");
+        try {
+            const response = await apiRequest(`/api/farmer/produce/${encodeURIComponent(produce.id)}/reports/`, "POST", {
+                description: document.getElementById("produceReportDescription").value.trim(),
+            });
+            message.textContent = t("bloodReportSuccess");
+            message.className = "form-message success";
+            form.reset();
+        } catch (error) {
+            message.textContent = t("bloodReportFailed");
+            message.className = "form-message error";
+        }
+    });
+}
+
+async function loadProducePriceRange(produceId) {
+    const target = document.getElementById("farmerPriceRange");
+    if (!target) return;
+    try {
+        const response = await apiRequest(`/api/farmer/produce/${encodeURIComponent(produceId)}/price-range/`);
+        farmerPriceRangeData = response.data;
+        renderProducePriceRange();
+    } catch (error) {
+        farmerPriceRangeData = null;
+        target.textContent = t("farmerPriceRangeUnavailable");
+    }
+}
+
+function renderProducePriceRange() {
+    const target = document.getElementById("farmerPriceRange");
+    const summary = farmerPriceRangeData;
+    if (!target || !summary) {
+        if (target) target.textContent = t("farmerPriceRangeUnavailable");
+        return;
+    }
+        if (!summary.count) {
+            target.textContent = t("farmerPriceRangeUnavailable");
+            return;
+        }
+        const currency = new Intl.NumberFormat(getLanguage() === "bn" ? "bn-BD" : "en-BD", { maximumFractionDigits: 2 });
+        target.textContent = `${t("farmerPriceRangeMin")}: ৳${currency.format(summary.minimum)} · ${t("farmerPriceRangeMax")}: ৳${currency.format(summary.maximum)} · ${t("farmerPriceRangeAverage")}: ৳${currency.format(summary.average)}`;
+}
+
+document.addEventListener("helpnet:languagechange", renderProducePriceRange);
 
 function setupOwnerControls(produce) {
     const toggleBtn = document.getElementById("toggleAvailBtn");
