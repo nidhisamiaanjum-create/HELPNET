@@ -1,1 +1,39 @@
-{% load static %}<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Event messages | HELPNET</title><link rel="stylesheet" href="{% static 'css/style.css' %}"></head><body><header class="site-header"><a href="/dashboard/" class="logo">HELPNET</a><button id="langToggle" class="lang-toggle" data-i18n="langButton">English</button></header><main class="blood-page"><section class="blood-card"><h1 data-i18n="eventMessages">Event messages</h1><p data-i18n="chooseEvent">Choose one of your events or volunteer signups.</p><div class="field"><label for="messageEventId" data-i18n="coordinatedEvent">Event</label><select id="messageEventId" required><option value="" data-i18n="loadingEvents">Loading your events…</option></select></div><p id="volunteerMessage" class="form-message" aria-live="polite"></p><div id="messageList"></div><form id="eventMessageForm"><div class="field"><label for="eventMessage" data-i18n="eventMessageText">Message</label><textarea id="eventMessage" maxlength="2000" required></textarea></div><button class="btn" data-i18n="messageSend">Send message</button></form></section></main><script src="{% static 'js/api.js' %}"></script><script src="{% static 'js/auth.js' %}"></script><script src="{% static 'js/volunteer.js' %}"></script><script src="{% static 'js/i18n.js' %}"></script></body></html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Event messages | HELPNET</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <header class="site-header"><a href="/dashboard/" class="logo">HELPNET</a><a href="/volunteer-opportunities/"
+            class="back-link">Opportunities</a><button id="langToggle" class="lang-toggle"
+            data-i18n="langButton">English</button></header>
+    <main class="blood-page">
+        <section class="blood-card">
+            <h1 data-i18n="eventMessages">Event messages</h1>
+            <p data-i18n="chooseEvent">Choose one of your events or volunteer signups.</p>
+            <div class="field"><label for="messageEventId" data-i18n="coordinatedEvent">Event</label><select
+                    id="messageEventId" required>
+                    <option value="" data-i18n="loadingEvents">Loading your events…</option>
+                </select></div>
+            <p id="volunteerMessage" class="form-message" aria-live="polite"></p>
+            <div id="messageList"></div>
+            <form id="eventMessageForm">
+                <div class="field"><label for="eventMessage" data-i18n="eventMessageText">Message</label><textarea
+                        id="eventMessage" maxlength="2000" required></textarea></div><button class="btn"
+                    data-i18n="messageSend">Send message</button>
+            </form>
+        </section>
+    </main>
+    <script src="{% static 'js/api.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/volunteer.js' %}"></script>
+    <script src="{% static 'js/i18n.js' %}"></script>
+</body>
+
+</html>
