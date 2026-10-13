@@ -71,6 +71,19 @@ class GoodsExchangeTests(TestCase):
         self.assertEqual(duplicate.status_code, 400)
         self.assertEqual(GoodsInterest.objects.filter(listing=self.listing, interested_user=self.other).count(), 1)
 
+    def test_interest_reveals_contact_details_only_after_interest_is_confirmed(self):
+        self.api.force_authenticate(self.other)
+        detail_before = self.api.get(f"/api/goods/listings/{self.listing.pk}/")
+        self.assertNotIn("phone_number", detail_before.data["data"]["seller_contact"])
+        self.assertNotIn("email", detail_before.data["data"]["seller_contact"])
+
+        interest = self.api.post(f"/api/goods/listings/{self.listing.pk}/interest/", {}, format="json")
+        self.assertEqual(interest.status_code, 201)
+
+        detail_after = self.api.get(f"/api/goods/listings/{self.listing.pk}/")
+        self.assertEqual(detail_after.data["data"]["seller_contact"]["phone_number"], self.owner.phone_number)
+        self.assertEqual(detail_after.data["data"]["seller_contact"]["email"], self.owner.email)
+
     def test_only_owner_can_change_listing_status(self):
         self.api.force_authenticate(self.other)
         denied = self.api.patch(f"/api/goods/listings/{self.listing.pk}/status/", {"status": "Reserved"}, format="json")
@@ -81,6 +94,13 @@ class GoodsExchangeTests(TestCase):
         self.assertEqual(updated.status_code, 200)
         self.assertEqual(updated.data["data"]["status"], GoodsListing.Status.RESERVED)
         self.assertNotIn(self.listing.pk, [item["id"] for item in self.api.get("/api/goods/listings/").data["data"]])
+
+        reopened = self.api.patch(f"/api/goods/listings/{self.listing.pk}/status/", {"status": "Available"}, format="json")
+        self.assertEqual(reopened.status_code, 200)
+
+        invalid = self.api.patch(f"/api/goods/listings/{self.listing.pk}/status/", {"status": "Exchanged"}, format="json")
+        self.assertEqual(invalid.status_code, 400)
+        self.assertEqual(invalid.data["message"], "Status cannot change from Available to Exchanged.")
 
     def test_report_and_unauthenticated_protected_actions_and_disclaimer(self):
         self.api.force_authenticate(self.other)

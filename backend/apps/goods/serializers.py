@@ -20,13 +20,21 @@ class GoodsListingSerializer(serializers.ModelSerializer):
     def get_seller_contact(self, listing):
         request = self.context.get("request")
         seller = listing.seller
-        is_self = request and request.user.is_authenticated and request.user.pk == seller.pk
+        user = getattr(request, "user", None) if request else None
+        is_self = bool(user and user.is_authenticated and user.pk == seller.pk)
+        has_interest = bool(
+            user and user.is_authenticated and GoodsInterest.objects.filter(listing=listing, interested_user=user).exists()
+        )
+
+        if not is_self and not has_interest:
+            return {"full_name": seller.full_name}
+
         contact = {"full_name": seller.full_name}
-        if is_self or seller.is_location_visible:
+        if seller.location:
             contact["location"] = seller.location
-        if is_self or seller.is_phone_visible:
+        if seller.phone_number:
             contact["phone_number"] = seller.phone_number
-        if is_self or seller.is_email_visible:
+        if seller.email:
             contact["email"] = seller.email
         return contact
 

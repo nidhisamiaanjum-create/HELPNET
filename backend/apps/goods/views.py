@@ -11,6 +11,14 @@ from .models import GoodsInterest, GoodsListing, GoodsReport
 from .serializers import GoodsInterestSerializer, GoodsListingSerializer, GoodsReportSerializer
 
 
+VALID_GOODS_STATUS_TRANSITIONS = {
+    GoodsListing.Status.AVAILABLE: {GoodsListing.Status.RESERVED, GoodsListing.Status.REMOVED},
+    GoodsListing.Status.RESERVED: {GoodsListing.Status.AVAILABLE, GoodsListing.Status.EXCHANGED, GoodsListing.Status.REMOVED},
+    GoodsListing.Status.EXCHANGED: {GoodsListing.Status.REMOVED},
+    GoodsListing.Status.REMOVED: set(),
+}
+
+
 class GoodsListingListCreateView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [JSONParser, FormParser, MultiPartParser]
@@ -36,6 +44,8 @@ class GoodsListingDetailView(APIView):
 
     def get(self, request, listing_id):
         listing = get_object_or_404(GoodsListing.objects.select_related("seller"), pk=listing_id)
+        if listing.status != GoodsListing.Status.AVAILABLE and listing.seller_id != request.user.pk:
+            return Response({"success": False, "data": None, "message": "This listing is no longer available."}, status=404)
         serializer = GoodsListingSerializer(listing, context={"request": request})
         return Response({"success": True, "data": serializer.data, "message": "Listing loaded."})
 
@@ -50,6 +60,9 @@ class GoodsListingStatusView(APIView):
         new_status = request.data.get("status")
         if new_status not in GoodsListing.Status.values:
             return Response({"success": False, "data": None, "message": "Select a valid listing status."}, status=400)
+        allowed_next = VALID_GOODS_STATUS_TRANSITIONS.get(listing.status, set())
+        if new_status not in allowed_next:
+            return Response({"success": False, "data": None, "message": f"Status cannot change from {listing.status} to {new_status}."}, status=400)
         listing.status = new_status
         listing.save(update_fields=["status"])
         serializer = GoodsListingSerializer(listing, context={"request": request})
@@ -61,6 +74,8 @@ class GoodsInterestCreateView(APIView):
 
     def post(self, request, listing_id):
         listing = get_object_or_404(GoodsListing, pk=listing_id)
+        if listing.seller_id == request.user.pk:
+            return Response({"success": False, "data": None, "message": "You cannot express interest in your own listing."}, status=400)
         if listing.status != GoodsListing.Status.AVAILABLE:
             return Response({"success": False, "data": None, "message": "This listing is not available for interest."}, status=400)
         try:

@@ -1,4 +1,4 @@
-const GOODS_DISCLAIMER = "HELPNET does not handle payments and does not guarantee item condition. Exchanges are arranged directly between users.";
+const GOODS_DISCLAIMER = "HELPNET does not handle payments and does not guarantee item condition. Exchanges are arranged directly between users. HELPNET does not process or guarantee payments. HELPNET does not guarantee item condition, authenticity, ownership, or quality. Buyers and sellers arrange exchanges directly between themselves, and users should inspect items carefully before agreeing to any exchange.";
 
 function goodsShowMessage(elementId, message, type = "") {
     const element = document.getElementById(elementId);
@@ -105,7 +105,9 @@ function renderSellerContact(container, contact) {
     if (contact.location) goodsAddText(container, "p", `Location: ${contact.location}`);
     if (contact.phone_number) goodsAddText(container, "p", `Phone: ${contact.phone_number}`);
     if (contact.email) goodsAddText(container, "p", `Email: ${contact.email}`);
-    if (!contact.phone_number && !contact.email) goodsAddText(container, "p", "The seller has not made contact details public.", "hint");
+    if (!contact.phone_number && !contact.email) {
+        goodsAddText(container, "p", "Contact details are shared only after a valid interest request is confirmed.", "hint");
+    }
 }
 
 async function loadGoodsDetails() {
@@ -152,8 +154,11 @@ async function expressGoodsInterest() {
         const response = await goodsRequest(`/api/goods/listings/${encodeURIComponent(listingId)}/interest/`, "POST", {});
         goodsShowMessage("goodsMessage", response.message || "Interest sent.", "success");
         const button = document.getElementById("goodsInterestButton");
-        button.disabled = true;
-        button.textContent = "Interest sent";
+        if (button) {
+            button.disabled = true;
+            button.textContent = "Interest sent";
+        }
+        await loadGoodsDetails();
     } catch (error) {
         goodsShowMessage("goodsMessage", error.message, "error");
     }
