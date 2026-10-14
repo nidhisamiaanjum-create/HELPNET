@@ -82,6 +82,8 @@ async function loadGoodsList() {
 
 async function createGoodsListing(event) {
     event.preventDefault();
+    const submitButton = event.currentTarget.querySelector('[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
     const formData = new FormData();
     formData.append("title", document.getElementById("goodsTitle").value.trim());
     formData.append("description", document.getElementById("goodsDescription").value.trim());
@@ -89,6 +91,19 @@ async function createGoodsListing(event) {
     formData.append("asking_price", document.getElementById("goodsPrice").value);
     formData.append("location", document.getElementById("goodsLocation").value.trim());
     const image = document.getElementById("goodsImage").files[0];
+    if (image) {
+        const acceptedTypes = ["image/jpeg", "image/png", "image/webp"];
+        if (!acceptedTypes.includes(image.type)) {
+            goodsShowMessage("goodsMessage", "Only JPG, PNG, and WebP images are allowed.", "error");
+            if (submitButton) submitButton.disabled = false;
+            return;
+        }
+        if (image.size > 5 * 1024 * 1024) {
+            goodsShowMessage("goodsMessage", "Image size must not exceed 5 MB.", "error");
+            if (submitButton) submitButton.disabled = false;
+            return;
+        }
+    }
     if (image) formData.append("image", image);
     try {
         const response = await goodsRequest("/api/goods/listings/", "POST", formData);
@@ -96,6 +111,8 @@ async function createGoodsListing(event) {
         window.location.href = `/goods-details/?listing_id=${encodeURIComponent(response.data.id)}`;
     } catch (error) {
         goodsShowMessage("goodsMessage", error.message, "error");
+    } finally {
+        if (submitButton) submitButton.disabled = false;
     }
 }
 
@@ -167,6 +184,9 @@ async function expressGoodsInterest() {
 async function updateGoodsStatus() {
     const listingId = goodsListingId();
     if (!listingId) return goodsShowMessage("goodsMessage", "This listing link is missing its ID.", "error");
+    const button = document.getElementById("saveGoodsStatus");
+    if (button) button.disabled = true;
+    goodsShowMessage("goodsMessage", "Updating listing status…");
     try {
         const response = await goodsRequest(`/api/goods/listings/${encodeURIComponent(listingId)}/status/`, "PATCH", {
             status: document.getElementById("goodsStatus").value,
@@ -175,6 +195,8 @@ async function updateGoodsStatus() {
         await loadGoodsDetails();
     } catch (error) {
         goodsShowMessage("goodsMessage", error.message, "error");
+    } finally {
+        if (button) button.disabled = false;
     }
 }
 

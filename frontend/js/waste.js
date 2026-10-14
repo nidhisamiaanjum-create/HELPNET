@@ -270,6 +270,9 @@ async function loadAvailableCollectors(area) {
         return;
     }
 
+    container.textContent = "Loading collectors…";
+    if (emptyNotice) emptyNotice.hidden = true;
+
     try {
         const query = area
             ? "?area=" + encodeURIComponent(area)
@@ -491,6 +494,9 @@ async function loadMyRequests() {
     if (!container) {
         return;
     }
+
+    container.textContent = "Loading pickup requests…";
+    if (emptyNotice) emptyNotice.hidden = true;
 
     try {
         const res = await apiRequest(
@@ -719,6 +725,7 @@ async function loadMyRequests() {
             "Error loading waste requests:",
             err
         );
+        container.textContent = "Failed to load pickup requests. Please try again.";
     }
 }
 

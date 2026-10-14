@@ -2218,6 +2218,18 @@ color: var(--text-muted);
     margin-top: auto;
 }
 
+.produce-price-unit-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 12px;
+}
+
+@media (max-width: 560px) {
+    .produce-price-unit-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .ratings-page {
     width: min(100% - 32px, 720px);
     margin: 32px auto 60px;
