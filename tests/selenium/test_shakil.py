@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from django.contrib.auth import get_user_model
 from apps.farmer.models import ProduceListing
 from apps.waste.models import WastePickupRequest
+from apps.volunteer.models import VolunteerOpportunity, VolunteerSignup, VolunteerMessage
 
 User = get_user_model()
 
@@ -69,6 +70,57 @@ def collector_user(db):
             "full_name": "Collector Shakil",
             "role": User.Role.VOLUNTEER,
             "location": "Dhanmondi, Dhaka",
+            "is_phone_visible": True,
+        },
+    )
+    user.set_password("Password123!")
+    user.save()
+    return user
+
+
+@pytest.fixture
+def ngo_user(db):
+    user, _ = User.objects.get_or_create(
+        phone_number="01755556666",
+        defaults={
+            "email": "ngo_shakil@example.com",
+            "full_name": "NGO Shakil Coordinator",
+            "role": User.Role.NGO,
+            "location": "Dhanmondi, Dhaka",
+            "is_phone_visible": True,
+        },
+    )
+    user.set_password("Password123!")
+    user.save()
+    return user
+
+
+@pytest.fixture
+def non_signed_up_volunteer(db):
+    user, _ = User.objects.get_or_create(
+        phone_number="01766667777",
+        defaults={
+            "email": "outsider_shakil@example.com",
+            "full_name": "Outsider Volunteer Shakil",
+            "role": User.Role.VOLUNTEER,
+            "location": "Gulshan, Dhaka",
+            "is_phone_visible": True,
+        },
+    )
+    user.set_password("Password123!")
+    user.save()
+    return user
+
+
+@pytest.fixture
+def signed_up_volunteer(db):
+    user, _ = User.objects.get_or_create(
+        phone_number="01777778888",
+        defaults={
+            "email": "member_shakil@example.com",
+            "full_name": "Member Volunteer Shakil",
+            "role": User.Role.VOLUNTEER,
+            "location": "Mirpur, Dhaka",
             "is_phone_visible": True,
         },
     )
@@ -413,3 +465,135 @@ def test_protected_action_unauthenticated(driver, live_server):
     # Expected: Redirected to login page
     wait.until(lambda d: "/login/" in d.current_url)
     assert "/login/" in driver.current_url
+
+
+# ==============================================================================
+# ST 32 / S4-T29 — Event Messages & Access Control Tests
+# ==============================================================================
+
+@pytest.mark.django_db(transaction=True)
+def test_message_thread_button_availability(driver, live_server, ngo_user, non_signed_up_volunteer):
+    """ST 32 / S4-T29: Message-thread UI/button is hidden for non-signed-up users and appears after signup."""
+    opportunity = VolunteerOpportunity.objects.create(
+        title="Tree Plantation Campaign",
+        description="Planting trees across Dhanmondi lake area.",
+        date="2026-11-20",
+        location="Dhanmondi, Dhaka",
+        required_volunteers=10,
+        coordinator=ngo_user,
+    )
+
+    # Login as volunteer who is not yet signed up
+    perform_login(driver, live_server.url, non_signed_up_volunteer.phone_number, "Password123!")
+
+    # 1. View opportunity details before signup
+    driver.get(f"{live_server.url}/volunteer-opportunity-details/?event_id={opportunity.id}")
+    wait = WebDriverWait(driver, 10)
+
+    wait.until(lambda d: "tree plantation campaign" in d.find_element(By.ID, "opportunityDetail").text.lower())
+
+    # Message-thread button must NOT be shown before signup
+    assert len(driver.find_elements(By.ID, "messageThreadBtn")) == 0
+
+    # 2. Sign up for the opportunity
+    signup_btn = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Sign up')]")))
+    click_element(driver, signup_btn)
+
+    # Wait for signup confirmation
+    wait.until(lambda d: "signed up" in d.find_element(By.ID, "opportunityDetail").text.lower())
+
+    # 3. Message-thread UI/button must now appear and be visible
+    thread_btn = wait.until(EC.visibility_of_element_located((By.ID, "messageThreadBtn")))
+    assert thread_btn.is_displayed()
+    assert f"event_id={opportunity.id}" in thread_btn.get_attribute("href")
+
+    # 4. Clicking the message-thread button navigates to the event message thread
+    click_element(driver, thread_btn)
+    wait.until(lambda d: "/volunteer-message/" in d.current_url)
+    assert f"event_id={opportunity.id}" in driver.current_url
+
+
+@pytest.mark.django_db(transaction=True)
+def test_non_signed_up_user_cannot_read_or_post(driver, live_server, ngo_user, signed_up_volunteer, non_signed_up_volunteer):
+    """ST 32 / S4-T29: Verify that a non-signed-up user cannot read or post messages, while signed-up user can."""
+    opportunity = VolunteerOpportunity.objects.create(
+        title="Flood Relief Distribution",
+        description="Distribute relief materials to flood victims.",
+        date="2026-11-25",
+        location="Sylhet",
+        required_volunteers=5,
+        coordinator=ngo_user,
+    )
+    VolunteerSignup.objects.create(volunteer=signed_up_volunteer, event=opportunity)
+
+    # Coordinator posts a message to the event thread
+    VolunteerMessage.objects.create(
+        sender=ngo_user,
+        event=opportunity,
+        message="Coordination meeting at the central shelter at 8:00 AM.",
+    )
+
+    wait = WebDriverWait(driver, 10)
+
+    # --------------------------------------------------------------------------
+    # Part 1: Non-signed-up user cannot read messages
+    # --------------------------------------------------------------------------
+    perform_login(driver, live_server.url, non_signed_up_volunteer.phone_number, "Password123!")
+
+    # Directly open the message thread page for this event
+    driver.get(f"{live_server.url}/volunteer-message/?event_id={opportunity.id}")
+
+    # Refusal notice must be displayed
+    wait.until(lambda d: "sign up for this event" in d.find_element(By.ID, "volunteerMessage").text.lower())
+    notice = driver.find_element(By.ID, "volunteerMessage").text.lower()
+    assert "sign up for this event" in notice
+
+    # Message list must NOT disclose the event messages
+    message_content = driver.find_element(By.ID, "messageList").text.lower()
+    assert "coordination meeting at the central shelter" not in message_content
+
+    # --------------------------------------------------------------------------
+    # Part 2: Non-signed-up user cannot post messages
+    # --------------------------------------------------------------------------
+    message_input = wait.until(EC.presence_of_element_located((By.ID, "eventMessage")))
+    message_input.clear()
+    message_input.send_keys("Unauthorized message from non-member!")
+
+    send_btn = wait.until(EC.element_to_be_clickable((By.ID, "sendMessageBtn")))
+    click_element(driver, send_btn)
+
+    # Posting must be rejected with error notice
+    wait.until(lambda d: "only event participants" in d.find_element(By.ID, "volunteerMessage").text.lower() or "sign up" in d.find_element(By.ID, "volunteerMessage").text.lower())
+
+    # Unauthorized message must not be in the DOM or database
+    assert "unauthorized message from non-member!" not in driver.find_element(By.ID, "messageList").text.lower()
+    assert VolunteerMessage.objects.filter(message="Unauthorized message from non-member!").count() == 0
+
+    # --------------------------------------------------------------------------
+    # Part 3: Signed-up volunteer CAN read and post messages
+    # --------------------------------------------------------------------------
+    perform_login(driver, live_server.url, signed_up_volunteer.phone_number, "Password123!")
+
+    # Open details page and access message thread via the newly available button
+    driver.get(f"{live_server.url}/volunteer-opportunity-details/?event_id={opportunity.id}")
+    thread_btn = wait.until(EC.visibility_of_element_located((By.ID, "messageThreadBtn")))
+    click_element(driver, thread_btn)
+
+    wait.until(lambda d: "/volunteer-message/" in d.current_url)
+
+    # Signed-up user can read coordinator message
+    wait.until(lambda d: "coordination meeting at the central shelter" in d.find_element(By.ID, "messageList").text.lower())
+    assert "coordination meeting at the central shelter" in driver.find_element(By.ID, "messageList").text.lower()
+
+    # Signed-up user can post a new message
+    msg_input = wait.until(EC.presence_of_element_located((By.ID, "eventMessage")))
+    msg_input.clear()
+    msg_input.send_keys("I will arrive with 3 emergency kits.")
+
+    send_button = wait.until(EC.element_to_be_clickable((By.ID, "sendMessageBtn")))
+    click_element(driver, send_button)
+
+    # Verify message posted successfully
+    wait.until(lambda d: "emergency kits" in d.find_element(By.ID, "messageList").text.lower())
+    assert "emergency kits" in driver.find_element(By.ID, "messageList").text.lower()
+    assert VolunteerMessage.objects.filter(event=opportunity, sender=signed_up_volunteer).exists()

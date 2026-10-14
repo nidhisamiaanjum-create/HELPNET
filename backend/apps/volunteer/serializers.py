@@ -6,14 +6,21 @@ from .models import VolunteerOpportunity, VolunteerProfile, VolunteerProfileDocu
 class VolunteerOpportunitySerializer(serializers.ModelSerializer):
     coordinator_name = serializers.CharField(source="coordinator.full_name", read_only=True)
     signup_count = serializers.SerializerMethodField()
+    is_signed_up = serializers.SerializerMethodField()
 
     def get_signup_count(self, event):
         return event.signups.count()
 
+    def get_is_signed_up(self, event):
+        request = self.context.get("request")
+        if not request or not request.user or not request.user.is_authenticated:
+            return False
+        return event.signups.filter(volunteer=request.user).exists()
+
     class Meta:
         model = VolunteerOpportunity
-        fields = ["id", "title", "description", "date", "location", "required_volunteers", "status", "coordinator", "coordinator_name", "signup_count", "created_at"]
-        read_only_fields = ["id", "coordinator", "created_at", "coordinator_name", "signup_count"]
+        fields = ["id", "title", "description", "date", "location", "required_volunteers", "status", "coordinator", "coordinator_name", "signup_count", "is_signed_up", "created_at"]
+        read_only_fields = ["id", "coordinator", "created_at", "coordinator_name", "signup_count", "is_signed_up"]
 
 
 class VolunteerProfileSerializer(serializers.ModelSerializer):
