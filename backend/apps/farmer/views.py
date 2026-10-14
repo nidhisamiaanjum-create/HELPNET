@@ -34,17 +34,34 @@ class ProduceListingListCreateView(generics.ListCreateAPIView):
                 | Q(location__icontains=search)
                 | Q(farmer__full_name__icontains=search)
             )
+
         if location:
             queryset = queryset.filter(location__icontains=location)
+
         if category:
             queryset = queryset.filter(category__iexact=category)
+
         if availability:
             queryset = queryset.filter(availability__iexact=availability)
 
         return queryset
 
+    def create(self, request, *args, **kwargs):
+        if request.user.role != "Farmer":
+            return Response(
+                {
+                    "success": False,
+                    "message": "Only farmers can create produce listings."
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         serializer.save(farmer=self.request.user)
+
+    
 
 
 class ProduceListingDetailView(generics.RetrieveUpdateDestroyAPIView):
