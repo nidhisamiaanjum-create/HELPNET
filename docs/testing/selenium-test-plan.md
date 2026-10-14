@@ -207,10 +207,22 @@ pytest tests\selenium\test_annotoma.py -v
 
 ## Assigned Stories
 
+* ST-32 (S4-T29 - Event messages access control)
 * ST-41 to ST-45
 * ST-47
 
 ## Test Areas
+
+### Volunteer Event Messages (ST-32 / S4-T29)
+
+Test:
+
+1. Opportunity details displays message-thread UI/button for signed-up participants and coordinators.
+2. Message-thread UI/button is not displayed for non-signed-up users prior to signup.
+3. Message-thread button appears immediately upon successful signup and navigates to the event thread.
+4. Non-signed-up user cannot read messages in the event thread (refusal error is displayed).
+5. Non-signed-up user cannot post messages in the event thread (unauthorized submission rejected).
+6. Signed-up participant can read existing event messages and post new messages successfully.
 
 ### Waste Management
 

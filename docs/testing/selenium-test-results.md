@@ -117,6 +117,7 @@ Explicit waits were used where required to allow pages and frontend actions to c
 | ST-50 | Health Reply | Annotoma | PASS |
 | ST-51 | Health Verification / Reputation | Annotoma | PASS |
 | ST-52 | Health Professional Directory | Annotoma | PASS |
+| ST-32 | Message-Thread UI & Non-Signed-Up User Access (S4-T29) | Shakil | PASS |
 | — | Protected Action / Unauthenticated Access | Shakil | PASS |
 
 ---
@@ -336,9 +337,9 @@ The following disclaimer was successfully displayed:
 
 ---
 
-## 10. Shakil — Waste Collection & Farmer Services
+## 10. Shakil — Waste Collection, Farmer Services & Volunteer Event Messages
 
-Shakil executed tests covering waste collection, collector rating/reporting, farmer marketplace functionality, responsive UI, disclaimers, and protected actions.
+Shakil executed tests covering waste collection, collector rating/reporting, farmer marketplace functionality, responsive UI, disclaimers, protected actions, and volunteer event message thread access control (ST-32 / S4-T29).
 
 | Story / Test | Feature | Result |
 |---|---|---|
@@ -348,15 +349,27 @@ Shakil executed tests covering waste collection, collector rating/reporting, far
 | ST-44 | Consumer Contact Farmer | PASS |
 | ST-45 | Farmer UI / Responsive Layout | PASS |
 | ST-47 | Farmer Disclaimer | PASS |
+| ST-32 | Message-Thread Button Availability | PASS |
+| ST-32 | Non-Signed-Up User Cannot Read or Post (S4-T29) | PASS |
 | — | Protected Action / Unauthenticated Access | PASS |
+
+### ST-32 / S4-T29 Resolution Details
+
+* **Sprint Task:** S4-T29 - Test that a non-signed-up user cannot read or post (BL-5).
+* **Previous Status:** Partially Completed / Incomplete (Dependent on the message-thread UI/button being available; button was not showing up).
+* **Resolution Implemented:**
+  1. Serializer & Backend: Added `is_signed_up` check to `VolunteerOpportunitySerializer` with request context propagation in opportunity listing, detail, and joined views.
+  2. UI Integration: Rendered the `#messageThreadBtn` ("Message thread") button dynamically on opportunity details and browse cards when the viewing user is a signed-up volunteer or coordinator. For non-signed-up users, the message-thread button is kept hidden prior to signing up.
+  3. Form Accessibility: Added explicit `id="sendMessageBtn"` to the message compose form on `volunteer-message.html`.
+  4. Access Control Verification: Verified via Selenium that non-signed-up users navigating directly to `/volunteer-message/?event_id=X` cannot view messages (refusal banner shown, message list empty) and cannot post messages (posting rejected with refusal notice, zero database records saved). Signed-up volunteers immediately receive access to view the thread and post new messages.
 
 ### Execution Result
 
 ```text
-9 passed in 49.92s
+11 passed in 98.17s
 ```
 
-All reported Shakil tests passed successfully.
+All 11 reported Shakil tests passed successfully.
 
 ---
 
@@ -386,15 +399,15 @@ Based on the test results supplied by all team members:
 | Annotoma | Volunteer Management | 8 |
 | Annotoma | Goods Exchange | 5 |
 | Annotoma | Health Services | 4 |
-| Shakil | Waste & Farmer Services | 9 |
-| **Total** | **All Reported Automated Tests** | **52** |
+| Shakil | Waste, Farmer Services & Event Messages | 11 |
+| **Total** | **All Reported Automated Tests** | **54** |
 
 ### Overall Result
 
 | Metric | Result |
 |---|---:|
-| Total Automated Tests | **52** |
-| Passed | **52** |
+| Total Automated Tests | **54** |
+| Passed | **54** |
 | Failed | **0** |
 | Pass Rate | **100%** |
 | Overall Status | **PASS** |
@@ -418,7 +431,7 @@ Based on the test results supplied by all team members:
 ### Shakil
 
 ```text
-9 passed in 49.92s
+11 passed in 98.17s
 ```
 
 ### Annotoma

@@ -32,22 +32,22 @@ class OpportunityListCreateView(APIView):
         events = VolunteerOpportunity.objects.select_related("coordinator")
         if request.query_params.get("all") != "true":
             events = events.filter(status=VolunteerOpportunity.Status.OPEN)
-        return Response({"success": True, "data": VolunteerOpportunitySerializer(events, many=True).data})
+        return Response({"success": True, "data": VolunteerOpportunitySerializer(events, many=True, context={"request": request}).data})
 
     def post(self, request):
         if request.user.role != "NGO":
             return Response({"success": False, "message": "Only NGO coordinators can create opportunities."}, status=403)
-        serializer = VolunteerOpportunitySerializer(data=request.data)
+        serializer = VolunteerOpportunitySerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             event = serializer.save(coordinator=request.user)
-            return Response({"success": True, "data": VolunteerOpportunitySerializer(event).data}, status=201)
+            return Response({"success": True, "data": VolunteerOpportunitySerializer(event, context={"request": request}).data}, status=201)
         return Response({"success": False, "message": serializer.errors}, status=400)
 
 
 class OpportunityDetailView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, event_id):
-        return Response({"success": True, "data": VolunteerOpportunitySerializer(event_or_404(event_id)).data})
+        return Response({"success": True, "data": VolunteerOpportunitySerializer(event_or_404(event_id), context={"request": request}).data})
     def patch(self, request, event_id):
         event = event_or_404(event_id)
         if not coordinator(request.user) or event.coordinator_id != request.user.user_id:
@@ -57,7 +57,7 @@ class OpportunityDetailView(APIView):
             return Response({"success": False, "message": "Status must be Open or Closed."}, status=400)
         event.status = new_status
         event.save(update_fields=["status"])
-        return Response({"success": True, "data": VolunteerOpportunitySerializer(event).data})
+        return Response({"success": True, "data": VolunteerOpportunitySerializer(event, context={"request": request}).data})
 
 
 class MyVolunteerEventsView(APIView):
@@ -75,7 +75,7 @@ class MyVolunteerEventsView(APIView):
                 Q(coordinator=request.user) | Q(signups__volunteer=request.user)
             )
         events = events.select_related("coordinator").distinct()
-        return Response({"success": True, "data": VolunteerOpportunitySerializer(events, many=True).data})
+        return Response({"success": True, "data": VolunteerOpportunitySerializer(events, many=True, context={"request": request}).data})
 
 
 class VolunteerSignupView(APIView):

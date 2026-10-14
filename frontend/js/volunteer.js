@@ -17,22 +17,34 @@ async function loadOpportunities() {
             volunteerText(target, "p", isVolunteerCoordinator() ? "You have not created any opportunities yet." : "No open opportunities at the moment.");
             return;
         }
+        const currentUser = getStoredUser();
+        const currentUserId = currentUser?.user_id || currentUser?.id;
         events.forEach(event => {
             const card = document.createElement("article"); card.className = "admin-item";
             volunteerText(card, "h3", event.title); volunteerText(card, "p", `${event.date} · ${event.location} · ${event.signup_count}/${event.required_volunteers} volunteers`);
             volunteerText(card, "p", event.description); volunteerText(card, "p", `Coordinator: ${event.coordinator_name} · ${event.status}`);
             const detailsLink = document.createElement("a"); detailsLink.className = "small-btn"; detailsLink.href = `/volunteer-opportunity-details/?event_id=${encodeURIComponent(event.id)}`; detailsLink.textContent = "View details";
             card.appendChild(detailsLink);
+            const isParticipant = Boolean(event.is_signed_up || (isVolunteerCoordinator() && String(event.coordinator) === String(currentUserId)));
+            if (isParticipant) {
+                const messageBtn = document.createElement("a");
+                messageBtn.className = "small-btn message-thread-btn";
+                messageBtn.href = `/volunteer-message/?event_id=${encodeURIComponent(event.id)}`;
+                messageBtn.textContent = "Message thread";
+                card.appendChild(messageBtn);
+            }
             if (isVolunteerCoordinator()) {
                 const actions = document.createElement("div"); actions.className = "admin-actions";
                 const statusButton = document.createElement("button"); statusButton.type = "button"; statusButton.className = "small-btn"; statusButton.textContent = event.status === "Open" ? "Close opportunity" : "Reopen opportunity";
                 statusButton.addEventListener("click", async () => { try { await apiRequest(`/api/volunteer/opportunities/${event.id}/`, "PATCH", {status: event.status === "Open" ? "Closed" : "Open"}); volunteerNotice("Opportunity status updated.", "success"); await loadOpportunities(); } catch (e) { volunteerNotice(e.message, "error"); } });
                 const attendanceLink = document.createElement("a"); attendanceLink.className = "small-btn"; attendanceLink.href = `/volunteer-attendance/?event_id=${encodeURIComponent(event.id)}`; attendanceLink.textContent = "Manage attendance";
                 actions.append(statusButton, attendanceLink); card.appendChild(actions);
-            } else if (volunteerRole() === "volunteer" && event.status === "Open" && event.signup_count < event.required_volunteers) {
+            } else if (volunteerRole() === "volunteer" && event.status === "Open" && !event.is_signed_up && event.signup_count < event.required_volunteers) {
                 const signup = document.createElement("button"); signup.type = "button"; signup.className = "small-btn"; signup.textContent = "Sign up";
                 signup.addEventListener("click", async () => { try { await apiRequest(`/api/volunteer/opportunities/${event.id}/signup/`, "POST", {}); volunteerNotice("You signed up successfully.", "success"); await loadOpportunities(); } catch (e) { volunteerNotice(e.message, "error"); } });
                 card.appendChild(signup);
+            } else if (volunteerRole() === "volunteer" && event.is_signed_up) {
+                volunteerText(card, "p", "Signed up");
             } else if (volunteerRole() === "volunteer" && event.status === "Open") {
                 volunteerText(card, "p", "This opportunity is full.");
             }
@@ -57,7 +69,20 @@ async function loadOpportunityDetails() {
         volunteerText(target, "p", event.description);
         volunteerText(target, "p", `Coordinator: ${event.coordinator_name}`);
         volunteerText(target, "p", `${event.status} · ${event.signup_count}/${event.required_volunteers} volunteers`);
-        if (volunteerRole() === "volunteer" && event.status === "Open") {
+        const currentUser = getStoredUser();
+        const currentUserId = currentUser?.user_id || currentUser?.id;
+        const isParticipant = Boolean(event.is_signed_up || (isVolunteerCoordinator() && String(event.coordinator) === String(currentUserId)));
+        if (isParticipant) {
+            const threadBtn = document.createElement("a");
+            threadBtn.id = "messageThreadBtn";
+            threadBtn.className = "btn message-thread-btn";
+            threadBtn.href = `/volunteer-message/?event_id=${encodeURIComponent(event.id)}`;
+            threadBtn.textContent = "Message thread";
+            target.appendChild(threadBtn);
+        }
+        if (volunteerRole() === "volunteer" && event.is_signed_up) {
+            volunteerText(target, "p", "You are signed up for this opportunity.");
+        } else if (volunteerRole() === "volunteer" && event.status === "Open") {
             const signup = document.createElement("button");
             signup.type = "button";
             signup.className = "btn";
@@ -122,8 +147,25 @@ async function loadAttendanceEvents() {
 async function loadMessages() {
     const id = volunteerEventId(), target = document.getElementById("messageList");
     if (!id || !target) { volunteerNotice("Enter an event ID to load messages.", "error"); return; }
-    try { const response = await apiRequest(`/api/volunteer/opportunities/${id}/messages/`); target.replaceChildren(); response.data.forEach(item => { const row = document.createElement("p"); row.textContent = `${item.sender_name} · ${new Date(item.timestamp).toLocaleString()}: ${item.message}`; target.appendChild(row); }); }
-    catch (e) { volunteerNotice(e.message, "error"); }
+    try {
+        const response = await apiRequest(`/api/volunteer/opportunities/${id}/messages/`);
+        target.replaceChildren();
+        const items = response.data || [];
+        if (items.length) {
+            items.forEach(item => {
+                const row = document.createElement("p");
+                row.className = "event-message-item";
+                row.textContent = `${item.sender_name} · ${new Date(item.timestamp).toLocaleString()}: ${item.message}`;
+                target.appendChild(row);
+            });
+        } else {
+            volunteerText(target, "p", "No messages yet in this event thread.");
+        }
+        volunteerNotice("", "");
+    } catch (e) {
+        target.replaceChildren();
+        volunteerNotice(e.message, "error");
+    }
 }
 
 async function loadCertificateVolunteers() {
@@ -141,20 +183,29 @@ async function loadCertificateVolunteers() {
 
 async function loadMessageEvents() {
     const select = document.getElementById("messageEventId");
+    const requested = new URLSearchParams(location.search).get("event_id");
     try {
         const response = await apiRequest("/api/volunteer/my-events/");
         select.replaceChildren();
-        if (!response.data.length) {
+        const events = response.data || [];
+        if (!events.length && !requested) {
             const option = document.createElement("option"); option.value = ""; option.textContent = "No coordinated or joined events"; select.appendChild(option);
             volunteerNotice("You need to coordinate an event or sign up for one before messaging.", "");
             return;
         }
-        response.data.forEach(event => {
+        events.forEach(event => {
             const option = document.createElement("option"); option.value = event.id;
             option.textContent = `${event.title} · ${event.date} · ${event.location}`; select.appendChild(option);
         });
-        const requested = new URLSearchParams(location.search).get("event_id");
-        if (requested && response.data.some(event => String(event.id) === requested)) select.value = requested;
+        if (requested) {
+            if (!events.some(event => String(event.id) === String(requested))) {
+                const option = document.createElement("option");
+                option.value = requested;
+                option.textContent = `Event #${requested}`;
+                select.appendChild(option);
+            }
+            select.value = requested;
+        }
         await loadMessages();
     } catch (error) { volunteerNotice(error.message, "error"); }
 }
@@ -180,6 +231,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!requireLogin()) return;
     if (document.getElementById("opportunityDetail")) loadOpportunityDetails();
     if (document.getElementById("opportunityList")) {
+        const messageNavBtn = document.createElement("a");
+        messageNavBtn.href = "/volunteer-message/";
+        messageNavBtn.className = "btn";
+        messageNavBtn.id = "eventMessagesLink";
+        messageNavBtn.textContent = "Event messages";
+        messageNavBtn.style.marginRight = "10px";
+        document.getElementById("opportunityList").before(messageNavBtn);
         if (isVolunteerCoordinator()) {
             const createLink = document.createElement("a"); createLink.href = "/create-opportunity/"; createLink.className = "btn"; createLink.textContent = "Create opportunity";
             document.getElementById("opportunityList").before(createLink);
