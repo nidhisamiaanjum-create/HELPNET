@@ -1,4 +1,9 @@
+from io import BytesIO
+from tempfile import TemporaryDirectory
+
+from PIL import Image
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from rest_framework.test import APIClient
 
@@ -62,6 +67,57 @@ class GoodsExchangeTests(TestCase):
         self.assertNotIn("phone_number", public_detail.data["data"]["seller_contact"])
         self.assertNotIn("email", public_detail.data["data"]["seller_contact"])
 
+    def test_listing_image_is_validated_and_persisted(self):
+        self.api.force_authenticate(self.owner)
+        image_bytes = BytesIO()
+        Image.new("RGB", (2, 2), color="teal").save(image_bytes, format="PNG")
+        valid_image = SimpleUploadedFile(
+            "item.png", image_bytes.getvalue(), content_type="image/png"
+        )
+
+        with TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            created = self.api.post("/api/goods/listings/", {
+                "title": "Chair with photo",
+                "description": "A chair.",
+                "condition": "Good",
+                "asking_price": "50.00",
+                "location": "Dhaka",
+                "image": valid_image,
+            }, format="multipart")
+            self.assertEqual(created.status_code, 201, created.data)
+            listing = GoodsListing.objects.get(pk=created.data["data"]["id"])
+            self.assertTrue(listing.image)
+            self.assertTrue(listing.image.storage.exists(listing.image.name))
+
+            invalid_image = SimpleUploadedFile(
+                "fake.png", b"not an image", content_type="image/png"
+            )
+            rejected = self.api.post("/api/goods/listings/", {
+                "title": "Invalid photo",
+                "description": "A chair.",
+                "condition": "Good",
+                "asking_price": "50.00",
+                "location": "Dhaka",
+                "image": invalid_image,
+            }, format="multipart")
+            self.assertEqual(rejected.status_code, 400)
+            self.assertIn("image", rejected.data["message"])
+
+            oversized_image = SimpleUploadedFile(
+                "large.png", b"x" * (5 * 1024 * 1024 + 1),
+                content_type="image/png",
+            )
+            oversized = self.api.post("/api/goods/listings/", {
+                "title": "Oversized photo",
+                "description": "A chair.",
+                "condition": "Good",
+                "asking_price": "50.00",
+                "location": "Dhaka",
+                "image": oversized_image,
+            }, format="multipart")
+            self.assertEqual(oversized.status_code, 400)
+            self.assertIn("image", oversized.data["message"])
+
     def test_interest_is_created_once_per_user_and_listing(self):
         self.api.force_authenticate(self.other)
         url = f"/api/goods/listings/{self.listing.pk}/interest/"
@@ -114,8 +170,28 @@ class GoodsExchangeTests(TestCase):
         self.assertEqual(shared_report.reported_user, self.owner)
         self.assertEqual(shared_report.content_object, self.listing)
 
+        admin = User.objects.create_user(
+            phone_number="01000000013",
+            email="goods-admin@example.test",
+            full_name="Goods Admin",
+            password="test-password-123",
+            role="Admin",
+        )
+        self.api.force_authenticate(admin)
+        queue = self.api.get("/api/reports/")
+        self.assertEqual(queue.status_code, 200)
+        self.assertIn(str(shared_report.pk), [str(item["id"]) for item in queue.data])
+        moderated = self.api.post("/api/reports/moderation/", {
+            "report_id": str(shared_report.pk),
+            "action": "review",
+        }, format="json")
+        self.assertEqual(moderated.status_code, 200)
+        shared_report.refresh_from_db()
+        self.assertEqual(shared_report.status, Report.Status.REVIEWED)
+
         guest = APIClient()
         self.assertEqual(guest.get("/api/goods/listings/").status_code, 401)
+        self.assertEqual(guest.get(f"/api/goods/listings/{self.listing.pk}/").status_code, 401)
         self.assertEqual(guest.post("/api/goods/listings/", {"title": "Guest"}, format="json").status_code, 401)
         self.assertEqual(guest.post(f"/api/goods/listings/{self.listing.pk}/interest/", {}, format="json").status_code, 401)
         self.assertEqual(guest.patch(f"/api/goods/listings/{self.listing.pk}/status/", {"status": "Removed"}, format="json").status_code, 401)
@@ -125,7 +201,12 @@ class GoodsExchangeTests(TestCase):
     def test_goods_pages_load_and_disclaimer_is_present(self):
         client = Client()
         self.assertEqual(client.get("/goods-list/").status_code, 200)
-        self.assertEqual(client.get("/create-goods/").status_code, 200)
+        create_page = client.get("/create-goods/")
+        self.assertEqual(create_page.status_code, 200)
+        self.assertContains(create_page, 'enctype="multipart/form-data"')
+        self.assertContains(create_page, 'accept="image/jpeg,image/png,image/webp"')
         details = client.get("/goods-details/?listing_id=1")
         self.assertEqual(details.status_code, 200)
+        for value in ("Available", "Reserved", "Exchanged", "Removed"):
+            self.assertContains(details, f'value="{value}"')
         self.assertContains(details, "HELPNET does not handle payments and does not guarantee item condition. Exchanges are arranged directly between users.")

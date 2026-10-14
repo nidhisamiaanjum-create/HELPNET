@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from .models import WastePickupRequest
+from .models import WasteCollector, WasteCollectorRating, WastePickupRequest
 
 User = get_user_model()
 
@@ -110,6 +110,68 @@ class WastePickupTests(APITestCase):
         collector_names = [c["full_name"] for c in response.data["data"]]
         self.assertIn("Volunteer Collector", collector_names)
 
+    def test_collector_rating_is_bound_to_url_collector_and_authenticated_user(self):
+        collector = WasteCollector.objects.create(
+            name="Local Collector",
+            phone="01700000000",
+            area="Dhanmondi",
+            shared_by=self.citizen,
+        )
+        other_collector = WasteCollector.objects.create(
+            name="Other Collector",
+            phone="01700000001",
+            area="Gulshan",
+            shared_by=self.citizen,
+        )
+        self.client.force_authenticate(user=self.citizen)
+        url = reverse("waste-collector-ratings", kwargs={"collector_id": collector.id})
+
+        invalid = self.client.post(url, {"rating": 6, "review": "Too high"})
+        self.assertEqual(invalid.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(WasteCollectorRating.objects.count(), 0)
+
+        created = self.client.post(url, {
+            "rating": 5,
+            "review": "Helpful",
+            "collector": str(other_collector.id),
+            "user": str(self.volunteer.user_id),
+        })
+        self.assertEqual(created.status_code, status.HTTP_201_CREATED)
+        rating = WasteCollectorRating.objects.get()
+        self.assertEqual(rating.collector, collector)
+        self.assertEqual(rating.user, self.citizen)
+
+        duplicate = self.client.post(url, {"rating": 4, "review": "Again"})
+        self.assertEqual(duplicate.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_collector_and_pickup_results_use_saved_backend_records(self):
+        collector = WasteCollector.objects.create(
+            name="Mirpur Collector",
+            phone="01722223333",
+            area="Mirpur",
+            shared_by=self.citizen,
+        )
+        pickup = WastePickupRequest.objects.create(
+            requester=self.citizen,
+            waste_type="Organic",
+            area="Mirpur",
+            location="Road 1",
+            collector=collector,
+        )
+        self.client.force_authenticate(user=self.citizen)
+
+        collector_response = self.client.get(
+            reverse("waste-collector-profile", kwargs={"collector_id": collector.id})
+        )
+        self.assertEqual(collector_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(collector_response.data["data"]["phone"], collector.phone)
+
+        requests_response = self.client.get(reverse("waste-requests-list-create"))
+        self.assertEqual(requests_response.status_code, status.HTTP_200_OK)
+        result = next(item for item in requests_response.data if item["id"] == str(pickup.id))
+        self.assertEqual(result["collector_details"]["id"], str(collector.id))
+        self.assertEqual(result["collector_details"]["phone"], collector.phone)
+
 
 class EndToEndStoryTests(APITestCase):
     def setUp(self):
@@ -187,6 +249,9 @@ class EndToEndStoryTests(APITestCase):
         produce_id = prod_res.data["id"]
 
         # 5 & 6. Consumer sees listing/details and farmer contact
+        self.farmer.is_phone_visible = True
+        self.farmer.is_location_visible = True
+        self.farmer.save(update_fields=["is_phone_visible", "is_location_visible"])
         self.client.force_authenticate(user=self.citizen)
         detail_res = self.client.get(reverse("farmer-produce-detail", kwargs={"id": produce_id}))
         self.assertEqual(detail_res.status_code, status.HTTP_200_OK)

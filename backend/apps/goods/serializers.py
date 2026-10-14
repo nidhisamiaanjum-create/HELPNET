@@ -1,3 +1,4 @@
+from PIL import Image, UnidentifiedImageError
 from rest_framework import serializers
 from .models import GoodsInterest, GoodsListing, GoodsReport
 
@@ -48,6 +49,28 @@ class GoodsListingSerializer(serializers.ModelSerializer):
     def get_is_owner(self, listing):
         request = self.context.get("request")
         return bool(request and request.user.is_authenticated and request.user.pk == listing.seller_id)
+
+    def validate_image(self, value):
+        max_size = 5 * 1024 * 1024
+        if value.size > max_size:
+            raise serializers.ValidationError("Image size must not exceed 5 MB.")
+        if getattr(value, "content_type", None) not in {
+            "image/jpeg", "image/png", "image/webp"
+        }:
+            raise serializers.ValidationError("Only JPG, PNG, and WebP images are allowed.")
+
+        # MIME type is supplied by the client, so also inspect the actual bytes.
+        try:
+            value.seek(0)
+            with Image.open(value) as image:
+                if image.format not in {"JPEG", "PNG", "WEBP"}:
+                    raise serializers.ValidationError("Only JPG, PNG, and WebP images are allowed.")
+                image.verify()
+        except (UnidentifiedImageError, OSError, ValueError):
+            raise serializers.ValidationError("The uploaded file is not a valid image.")
+        finally:
+            value.seek(0)
+        return value
 
 
 class GoodsInterestSerializer(serializers.ModelSerializer):

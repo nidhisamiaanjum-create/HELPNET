@@ -183,73 +183,173 @@ function updateStarUI(score) {
     });
 }
 
-async function loadCollectorData(collectorId) {
-    try {
-        const res = await apiRequest(`/api/ratings/summary/${collectorId}/`, "GET");
-        if (res && res.data) {
-            const data = res.data;
-            document.getElementById("collectorName").textContent = data.full_name || "Collector";
-            document.getElementById("collectorMeta").textContent = "📍 " + (data.location || "Area Collector") + " • " + (data.role || "Collector");
-            document.getElementById("collectorScore").textContent = "⭐ " + (data.average_rating || 5.0);
-            document.getElementById("collectorRatingCount").textContent = `(${data.total_ratings || 0} reviews)`;
 
-            if (data.user_has_rated && data.user_rating_score) {
-                selectedRatingScore = data.user_rating_score;
-                document.getElementById("ratingScore").value = data.user_rating_score;
-                updateStarUI(data.user_rating_score);
-                if (data.user_rating_comment) {
-                    document.getElementById("ratingComment").value = data.user_rating_comment;
+async function loadCollectorData(collectorId) {
+    // Load collector profile
+    try {
+        const colRes = await apiRequest(
+            `/api/waste/collectors/${collectorId}/`,
+            "GET"
+        );
+
+        if (colRes && colRes.data) {
+            const collector = colRes.data;
+
+            document.getElementById("collectorName").textContent =
+                collector.full_name || collector.name || "Collector";
+
+            document.getElementById("collectorMeta").textContent =
+                "📍 " +
+                (collector.location || collector.area || "Area Collector") +
+                " • Waste Collector";
+
+            const phone = collector.phone || collector.phone_number || "";
+            const phoneDiv = document.getElementById(
+                "collectorPhoneContainer"
+            );
+
+            if (phoneDiv) {
+                phoneDiv.innerHTML = "";
+
+                if (phone) {
+                    const link = document.createElement("a");
+                    link.href = `tel:${phone}`;
+                    link.className = "btn-sm btn-call";
+                    link.style.display = "inline-block";
+                    link.style.marginTop = "8px";
+                    link.textContent = `📞 Call ${phone}`;
+
+                    phoneDiv.appendChild(link);
                 }
-                const btn = document.getElementById("submitRatingBtn");
-                if (btn) btn.textContent = "Update My Rating";
             }
 
-            renderReviews(data.recent_reviews);
+            document.getElementById("collectorScore").textContent =
+                "⭐ " + (collector.average_rating ?? 0);
+
+            document.getElementById("collectorRatingCount").textContent =
+                `(${collector.rating_count ?? 0} reviews)`;
         }
     } catch (err) {
-        console.error("Error loading collector summary:", err);
+        console.error("Error loading collector profile:", err);
     }
 
-    // Also get phone number if available from collector profile
+    // Load ratings for this collector
     try {
-        const colRes = await apiRequest(`/api/waste/collectors/${collectorId}/`, "GET");
-        if (colRes && colRes.data && colRes.data.phone_number) {
-            const phoneDiv = document.getElementById("collectorPhoneContainer");
-            if (phoneDiv) {
-                phoneDiv.innerHTML = `<a href="tel:${colRes.data.phone_number}" class="btn-sm btn-call" style="display:inline-block; margin-top:8px;">📞 Call ${colRes.data.phone_number}</a>`;
+        const res = await apiRequest(
+            `/api/waste/collectors/${collectorId}/ratings/`,
+            "GET"
+        );
+
+        if (res) {
+            const ratings = Array.isArray(res)
+                ? res
+                : (Array.isArray(res.data) ? res.data : (res.results || []));
+
+            renderReviews(ratings);
+
+            const count = ratings.length;
+
+            const average = count
+                ? ratings.reduce(
+                    (total, item) => total + Number(item.rating || 0),
+                    0
+                ) / count
+                : 0;
+
+            document.getElementById("collectorScore").textContent =
+                "⭐ " + average.toFixed(1);
+
+            document.getElementById("collectorRatingCount").textContent =
+                `(${count} reviews)`;
+
+            const currentUser = typeof getStoredUser === "function"
+                ? getStoredUser()
+                : JSON.parse(localStorage.getItem("helpnet_user") || "{}");
+            const myRating = ratings.find(
+                item => String(item.user) === String(currentUser?.user_id || "")
+            );
+
+            if (myRating) {
+                selectedRatingScore = Number(myRating.rating);
+                document.getElementById("ratingScore").value =
+                    selectedRatingScore;
+
+                updateStarUI(selectedRatingScore);
+
+                document.getElementById("ratingComment").value =
+                    myRating.review || "";
+                const submitButton = document.getElementById("submitRatingBtn");
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = "Rating already submitted";
+                }
             }
         }
-    } catch (e) {
-        // Ignored
+    } catch (err) {
+        console.error("Error loading collector ratings:", err);
     }
 }
+
+
 
 function renderReviews(reviews) {
     const container = document.getElementById("reviewsList");
     const emptyNotice = document.getElementById("reviewsEmpty");
+
     if (!container) return;
 
     container.innerHTML = "";
-    if (!reviews || reviews.length === 0) {
-        if (emptyNotice) emptyNotice.hidden = false;
+
+    if (!Array.isArray(reviews) || reviews.length === 0) {
+        if (emptyNotice) {
+            emptyNotice.hidden = false;
+        }
         return;
     }
-    if (emptyNotice) emptyNotice.hidden = true;
+
+    if (emptyNotice) {
+        emptyNotice.hidden = true;
+    }
 
     reviews.forEach(r => {
         const item = document.createElement("div");
         item.className = "admin-item";
-        item.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <strong>${escapeHtml(r.rater_name || "Community Member")}</strong>
-                <span style="color:#efa926; font-weight:700;">★ ${r.score}/5</span>
-            </div>
-            ${r.comment ? `<p style="margin-top:6px; color:var(--text);">${escapeHtml(r.comment)}</p>` : `<p class="hint">No comment provided.</p>`}
-            <span class="hint">${r.created_at ? r.created_at.split("T")[0] : ""}</span>
-        `;
+
+        const header = document.createElement("div");
+        header.style.display = "flex";
+        header.style.justifyContent = "space-between";
+        header.style.alignItems = "center";
+
+        const name = document.createElement("strong");
+        name.textContent = r.user_name || "Community Member";
+
+        const rating = document.createElement("span");
+        rating.style.color = "#efa926";
+        rating.style.fontWeight = "700";
+        rating.textContent = `★ ${r.rating ?? 0}/5`;
+
+        header.appendChild(name);
+        header.appendChild(rating);
+        item.appendChild(header);
+
+        const review = document.createElement("p");
+        review.style.marginTop = "6px";
+        review.style.color = "var(--text)";
+        review.textContent = r.review || "No comment provided.";
+
+        item.appendChild(review);
+
+        const date = document.createElement("span");
+        date.className = "hint";
+        date.textContent = r.created_at
+            ? r.created_at.split("T")[0]
+            : "";
+
+        item.appendChild(date);
         container.appendChild(item);
     });
 }
+
 
 function setupRatingForm(collectorId) {
     const form = document.getElementById("ratingForm");
@@ -259,27 +359,54 @@ function setupRatingForm(collectorId) {
         e.preventDefault();
         hideAlert("collectorAlert");
 
-        const score = parseInt(document.getElementById("ratingScore").value, 10) || selectedRatingScore;
-        const comment = document.getElementById("ratingComment").value.trim();
+        const score =
+            parseInt(document.getElementById("ratingScore").value, 10) ||
+            selectedRatingScore;
+
+        const comment = document
+            .getElementById("ratingComment")
+            .value.trim();
+
         const submitBtn = document.getElementById("submitRatingBtn");
+        let ratingSubmitted = false;
 
         setBusy(submitBtn, true);
 
         try {
-            await apiRequest("/api/ratings/", "POST", {
-                rated_user: collectorId,
-                score: score,
-                comment: comment,
-            });
-            showAlert("collectorAlert", "Thank you! Your rating has been submitted.", "success");
-            loadCollectorData(collectorId);
+            await apiRequest(
+                `/api/waste/collectors/${collectorId}/ratings/`,
+                "POST",
+                {
+                    rating: score,
+                    review: comment,
+                }
+            );
+            ratingSubmitted = true;
+
+            showAlert(
+                "collectorAlert",
+                "Thank you! Your rating has been submitted.",
+                "success"
+            );
+
+            await loadCollectorData(collectorId);
+
         } catch (err) {
-            showAlert("collectorAlert", err.message || "Failed to submit rating.", "error");
+            showAlert(
+                "collectorAlert",
+                err.message || "Failed to submit rating.",
+                "error"
+            );
         } finally {
             setBusy(submitBtn, false);
+            if (ratingSubmitted && submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Rating already submitted";
+            }
         }
     });
 }
+
 
 function setupReportForm(collectorId) {
     const form = document.getElementById("reportForm");

@@ -22,6 +22,11 @@ class FarmerContactSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
 
+        if not getattr(instance, "is_phone_visible", False):
+            data["phone_number"] = None
+        if not getattr(instance, "is_location_visible", False):
+            data["location"] = None
+
         # Hide email if the farmer has not enabled email visibility.
         if not getattr(instance, "is_email_visible", False):
             data["email"] = None
@@ -35,14 +40,8 @@ class ProduceListingSerializer(serializers.ModelSerializer):
         source="farmer.full_name",
         read_only=True
     )
-    farmer_phone = serializers.CharField(
-        source="farmer.phone_number",
-        read_only=True
-    )
-    farmer_location = serializers.CharField(
-        source="farmer.location",
-        read_only=True
-    )
+    farmer_phone = serializers.SerializerMethodField()
+    farmer_location = serializers.SerializerMethodField()
     farmer_verified = serializers.BooleanField(
         source="farmer.is_verified",
         read_only=True
@@ -96,6 +95,12 @@ class ProduceListingSerializer(serializers.ModelSerializer):
             return obj.farmer_id == request.user.user_id
 
         return False
+
+    def get_farmer_phone(self, obj):
+        return obj.farmer.phone_number if obj.farmer.is_phone_visible else None
+
+    def get_farmer_location(self, obj):
+        return obj.farmer.location if obj.farmer.is_location_visible else None
 
     def create(self, validated_data):
         # Assign the listing to the authenticated farmer.

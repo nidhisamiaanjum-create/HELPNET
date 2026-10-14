@@ -112,6 +112,9 @@ class FarmerMarketTests(APITestCase):
             description="Freshly harvested sweet potatoes.",
             availability="Available",
         )
+        self.farmer.is_phone_visible = True
+        self.farmer.is_location_visible = True
+        self.farmer.save(update_fields=["is_phone_visible", "is_location_visible"])
         self.client.force_authenticate(user=self.consumer)
         detail_url = reverse("farmer-produce-detail", kwargs={"id": produce.id})
         response = self.client.get(detail_url)
@@ -119,6 +122,54 @@ class FarmerMarketTests(APITestCase):
         self.assertEqual(response.data["produce_name"], "Sweet Potatoes")
         self.assertEqual(response.data["farmer_name"], "Farmer Karim")
         self.assertEqual(response.data["farmer_phone"], "01711112222")
+        self.assertEqual(response.data["farmer_location"], "Savar, Dhaka")
+        listing_response = self.client.get(reverse("farmer-produce-list-create"))
+        self.assertEqual(listing_response.status_code, status.HTTP_200_OK)
+        self.assertIn(str(produce.id), [item["id"] for item in listing_response.data])
+
+    def test_farmer_contact_respects_profile_visibility_settings(self):
+        produce = ProduceListing.objects.create(
+            farmer=self.farmer,
+            produce_name="Potatoes",
+            price=30,
+            unit="kg",
+            quantity="10 kg",
+            location="Savar",
+        )
+        self.client.force_authenticate(user=self.consumer)
+        response = self.client.get(
+            reverse("farmer-produce-detail", kwargs={"id": produce.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(response.data["farmer_phone"])
+        self.assertIsNone(response.data["farmer_details"]["phone_number"])
+        self.assertIsNone(response.data["farmer_details"]["location"])
+
+    def test_missing_produce_detail_returns_not_found(self):
+        self.client.force_authenticate(user=self.consumer)
+        response = self.client.get(
+            reverse("farmer-produce-detail", kwargs={"id": "00000000-0000-0000-0000-000000000000"})
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_produce_browse_and_detail_require_authentication(self):
+        produce = ProduceListing.objects.create(
+            farmer=self.farmer,
+            produce_name="Potatoes",
+            price=30,
+            unit="kg",
+            quantity="10 kg",
+            location="Savar",
+        )
+        self.client.force_authenticate(user=None)
+        self.assertEqual(
+            self.client.get(reverse("farmer-produce-list-create")).status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+        self.assertEqual(
+            self.client.get(reverse("farmer-produce-detail", kwargs={"id": produce.id})).status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
 
     def test_farmer_can_update_and_delete_own_produce(self):
         produce = ProduceListing.objects.create(

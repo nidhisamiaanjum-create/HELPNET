@@ -70,6 +70,8 @@ async function loadMarketListings(params = {}) {
     const container = document.getElementById("produceGrid");
     const emptyNotice = document.getElementById("produceEmpty");
     if (!container) return;
+    container.textContent = t("loadingListings");
+    if (emptyNotice) emptyNotice.hidden = true;
 
     let queryString = "";
     const searchParams = new URLSearchParams();
@@ -109,19 +111,20 @@ async function loadMarketListings(params = {}) {
                 <h3 class="produce-card-title">${escapeHtml(p.produce_name)}</h3>
                 <p class="produce-card-price">৳${escapeHtml(p.price)} <span class="produce-unit">/ ${escapeHtml(p.unit || "kg")}</span></p>
                 <div class="produce-meta">
-                    <p>📦 Quantity: <strong>${escapeHtml(p.quantity)}</strong></p>
-                    <p>📍 Location: <strong>${escapeHtml(p.location)}</strong></p>
-                    <p>👨‍🌾 Farmer: <strong>${escapeHtml(p.farmer_name || "Local Farmer")}</strong></p>
+                <p>📦 ${escapeHtml(t("produceQuantity"))}: <strong>${escapeHtml(p.quantity)}</strong></p>
+                    <p>📍 ${escapeHtml(t("farmLocation"))}: <strong>${escapeHtml(p.location)}</strong></p>
+                    <p>👨‍🌾 ${escapeHtml(t("farmerLabel"))}: <strong>${escapeHtml(p.farmer_name || t("localFarmer"))}</strong></p>
                 </div>
                 ${p.description ? `<p class="produce-card-desc">${escapeHtml(p.description)}</p>` : ""}
                 <div class="produce-card-footer">
-                    <a href="/produce-details/?id=${p.id}" class="btn btn-sm">View Details & Contact</a>
+                    <a href="/produce-details/?id=${encodeURIComponent(p.id)}" class="btn btn-sm">${escapeHtml(t("viewDetailsContact"))}</a>
                 </div>
             `;
             container.appendChild(card);
         });
     } catch (err) {
         console.error("Error loading marketplace:", err);
+        container.textContent = t("marketLoadFailed");
     }
 }
 
@@ -129,6 +132,7 @@ async function loadMyProduceListings() {
     const container = document.getElementById("myProduceList");
     const emptyNotice = document.getElementById("myProduceEmpty");
     if (!container) return;
+    container.textContent = t("loadingListings");
 
     try {
         const res = await apiRequest("/api/farmer/my-produce/", "GET");
@@ -152,22 +156,23 @@ async function loadMyProduceListings() {
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
                     <div>
                         <h3>${escapeHtml(p.produce_name)} (৳${escapeHtml(p.price)} / ${escapeHtml(p.unit)})</h3>
-                        <p>📍 ${escapeHtml(p.location)} &bull; Quantity: ${escapeHtml(p.quantity)}</p>
+                        <p>📍 ${escapeHtml(p.location)} &bull; ${escapeHtml(t("produceQuantity"))}: ${escapeHtml(p.quantity)}</p>
                     </div>
                     <span class="status ${isAvail ? "status-approved" : "status-rejected"}">${escapeHtml(p.availability)}</span>
                 </div>
                 <div class="admin-actions" style="margin-top: 10px;">
                     <button class="btn-xs btn-outline" onclick="toggleProduceAvailability('${p.id}', '${isAvail ? "Unavailable" : "Available"}')">
-                        Set ${isAvail ? "Unavailable" : "Available"}
+                        ${escapeHtml(isAvail ? t("statusUnavailable") : t("statusAvailable"))}
                     </button>
-                    <a href="/produce-details/?id=${p.id}" class="btn-xs btn-outline" style="text-decoration:none; padding:8px 12px; display:inline-block;">Edit / View</a>
-                    <button class="btn-xs btn-danger" onclick="deleteProduceListing('${p.id}')">Delete</button>
+                    <a href="/produce-details/?id=${encodeURIComponent(p.id)}" class="btn-xs btn-outline" style="text-decoration:none; padding:8px 12px; display:inline-block;">${escapeHtml(t("editProduce"))}</a>
+                    <button class="btn-xs btn-danger" onclick="deleteProduceListing('${p.id}')">${escapeHtml(t("deleteProduce"))}</button>
                 </div>
             `;
             container.appendChild(card);
         });
     } catch (err) {
         console.error("Error loading my produce:", err);
+        container.textContent = t("myProduceLoadFailed");
     }
 }
 

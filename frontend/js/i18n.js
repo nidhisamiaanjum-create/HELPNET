@@ -287,6 +287,11 @@ const TEXT = {
         editProduce: "পণ্য সম্পাদনা করুন",
         deleteProduce: "মুছে ফেলুন",
         viewDetails: "বিস্তারিত দেখুন",
+        farmerLabel: "কৃষক",
+        localFarmer: "স্থানীয় কৃষক",
+        viewDetailsContact: "বিস্তারিত ও যোগাযোগ",
+        marketLoadFailed: "পণ্যের তালিকা লোড করা যায়নি। আবার চেষ্টা করুন।",
+        myProduceLoadFailed: "আপনার পণ্যের তালিকা লোড করা যায়নি। আবার চেষ্টা করুন।",
 
 
 
@@ -795,6 +800,11 @@ const TEXT = {
         editProduce: "Edit Produce",
         deleteProduce: "Delete Produce",
         viewDetails: "View Details",
+        farmerLabel: "Farmer",
+        localFarmer: "Local farmer",
+        viewDetailsContact: "View details and contact",
+        marketLoadFailed: "Could not load produce listings. Please try again.",
+        myProduceLoadFailed: "Could not load your produce listings. Please try again.",
 
 
 
