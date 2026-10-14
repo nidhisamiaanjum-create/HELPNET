@@ -33,6 +33,54 @@ class FarmerMarketTests(APITestCase):
             role="Farmer",
             location="Bogura",
         )
+        
+    def test_farmer_cannot_create_produce_with_negative_price(self):
+        self.client.force_authenticate(user=self.farmer)
+
+        url = reverse("farmer-produce-list-create")
+
+        payload = {
+            "produce_name": "Fresh Tomatoes",
+            "category": "Vegetables",
+            "price": "-100.00",
+            "unit": "kg",
+            "quantity": "200 kg",
+            "location": "Savar, Dhaka",
+            "description": "Fresh tomato harvest.",
+            "availability": "Available",
+        }
+
+        response = self.client.post(url, payload)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )
+        self.assertIn("price", response.data)
+
+    def test_consumer_cannot_create_produce(self):
+        self.client.force_authenticate(user=self.consumer)
+
+        url = reverse("farmer-produce-list-create")
+
+        payload = {
+            "produce_name": "Fresh Tomatoes",
+            "category": "Vegetables",
+            "price": "45.00",
+            "unit": "kg",
+            "quantity": "200 kg",
+            "location": "Mirpur, Dhaka",
+            "description": "Fresh tomato harvest.",
+            "availability": "Available",
+        }
+
+        response = self.client.post(url, payload)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
 
     def test_farmer_can_create_produce(self):
         self.client.force_authenticate(user=self.farmer)
