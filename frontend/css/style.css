@@ -2915,3 +2915,62 @@ box-shadow:
     margin: 0 auto;
     text-align: center;
 }
+/* Neumorphism workshop details card */
+#opportunityDetail {
+    background: #e0e5ec;
+    padding: 30px;
+    margin: 25px 0;
+    border-radius: 20px;
+
+    box-shadow:
+        8px 8px 16px #bec3c9,
+        -8px -8px 16px #ffffff;
+
+    color: #333;
+    line-height: 1.7;
+}
+
+/* Workshop title */
+#opportunityDetail h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: #263447;
+}
+
+/* Workshop information */
+#opportunityDetail p {
+    margin: 12px 0;
+    padding: 12px 15px;
+    border-radius: 12px;
+    background: #e0e5ec;
+
+    box-shadow:
+        inset 3px 3px 6px #c5cad1,
+        inset -3px -3px 6px #ffffff;
+}
+
+/* Message thread button */
+#opportunityDetail .message-thread-btn {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    background: #159a9c;
+    color: #ffffff;
+    text-decoration: none;
+    box-shadow: 5px 5px 10px #bec3c9,
+        -5px -5px 10px #ffffff;
+    transition: 0.25s ease;
+}
+
+#opportunityDetail .message-thread-btn:hover {
+    box-shadow:
+        inset 4px 4px 8px #bec3c9,
+        inset -4px -4px 8px #ffffff;
+}
+
+/* Signup button */
+#opportunityDetail .btn {
+    margin-top: 15px;
+}

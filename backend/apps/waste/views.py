@@ -243,56 +243,45 @@ class CollectorProfileView(APIView):
         )
 
 
+
 class WasteCollectorRatingListCreateView(
     generics.ListCreateAPIView
 ):
-    serializer_class = (
-        WasteCollectorRatingSerializer
-    )
-
-    permission_classes = [
-        permissions.IsAuthenticated
-    ]
+    serializer_class = WasteCollectorRatingSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        collector_id = self.kwargs[
-            "collector_id"
-        ]
-
+        collector_id = self.kwargs["collector_id"]
         return WasteCollectorRating.objects.filter(
             collector_id=collector_id
         )
 
-    def perform_create(self, serializer):
-        collector_id = self.kwargs[
-            "collector_id"
-        ]
+    def get_collector(self):
+        collector_id = self.kwargs["collector_id"]
 
         try:
-            collector = (
-                WasteCollector.objects.get(
-                    id=collector_id
-                )
-            )
-
+            return WasteCollector.objects.get(id=collector_id)
         except WasteCollector.DoesNotExist:
             raise serializers.ValidationError(
                 "Waste collector not found."
             )
 
-        already_rated = (
-            WasteCollectorRating.objects.filter(
+    def perform_create(self, serializer):
+        collector = self.get_collector()
+
+        # Update the existing review if this user has already rated.
+        rating_obj, created = (
+            WasteCollectorRating.objects.update_or_create(
                 collector=collector,
                 user=self.request.user,
-            ).exists()
-        )
-
-        if already_rated:
-            raise serializers.ValidationError(
-                "You have already rated this collector."
+                defaults={
+                    "rating": serializer.validated_data["rating"],
+                    "review": serializer.validated_data.get(
+                        "review", ""
+                    ),
+                },
             )
-
-        serializer.save(
-            collector=collector,
-            user=self.request.user,
         )
+
+        # Expose the saved object to the response serializer.
+        serializer.instance = rating_obj
