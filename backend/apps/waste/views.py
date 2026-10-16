@@ -91,9 +91,16 @@ class WastePickupRequestDetailView(
         permissions.IsAuthenticated
     ]
 
-    queryset = WastePickupRequest.objects.all()
-
     lookup_field = "id"
+
+    def get_queryset(self):
+        queryset = WastePickupRequest.objects.select_related(
+            "requester", "collector"
+        )
+        user = self.request.user
+        if user.role == "Citizen" and not (user.is_staff or user.is_superuser):
+            return queryset.filter(requester=user)
+        return queryset
 
     def update(
         self,
@@ -126,6 +133,20 @@ class WastePickupRequestDetailView(
             *args,
             **kwargs
         )
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.requester_id != request.user.pk and not (
+            request.user.is_staff or request.user.is_superuser
+        ):
+            return Response(
+                {
+                    "success": False,
+                    "message": "Only the requester or an administrator can delete this request.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().destroy(request, *args, **kwargs)
 
 
 class WasteCollectorListCreateView(
@@ -178,13 +199,35 @@ class CollectorProfileView(APIView):
             )
 
         except WasteCollector.DoesNotExist:
-            return Response(
-                {
-                    "success": False,
-                    "message": "Collector not found.",
+            # Volunteer suggestions use User UUIDs, while shared collector
+            # records use WasteCollector UUIDs. Support both existing IDs on
+            # the collector details page without exposing private contact data.
+            try:
+                volunteer = User.objects.get(
+                    user_id=collector_id,
+                    role=User.Role.VOLUNTEER,
+                )
+            except (User.DoesNotExist, ValueError):
+                return Response(
+                    {"success": False, "message": "Collector not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            from apps.ratings.models import Rating
+
+            ratings = Rating.objects.filter(rated_user=volunteer)
+            return Response({
+                "success": True,
+                "profile_type": "volunteer_user",
+                "data": {
+                    "user_id": str(volunteer.user_id),
+                    "full_name": volunteer.full_name,
+                    "location": volunteer.location if volunteer.is_location_visible else "",
+                    "phone_number": volunteer.phone_number if volunteer.is_phone_visible else "",
+                    "average_rating": Rating.average_for_user(volunteer) or 0,
+                    "rating_count": ratings.count(),
                 },
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            })
 
         serializer = WasteCollectorSerializer(
             collector,
@@ -194,6 +237,7 @@ class CollectorProfileView(APIView):
         return Response(
             {
                 "success": True,
+                "profile_type": "shared_collector",
                 "data": serializer.data,
             }
         )

@@ -8,15 +8,16 @@ class GoodsListingSerializer(serializers.ModelSerializer):
     seller_contact = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
+    user_has_interest = serializers.SerializerMethodField()
 
     class Meta:
         model = GoodsListing
         fields = [
             "id", "seller", "seller_name", "seller_contact", "title", "description",
             "condition", "asking_price", "location", "image", "image_url", "status",
-            "created_at", "is_owner",
+            "created_at", "is_owner", "user_has_interest",
         ]
-        read_only_fields = ["id", "seller", "seller_name", "seller_contact", "status", "created_at", "is_owner", "image_url"]
+        read_only_fields = ["id", "seller", "seller_name", "seller_contact", "status", "created_at", "is_owner", "user_has_interest", "image_url"]
 
     def get_seller_contact(self, listing):
         request = self.context.get("request")
@@ -49,6 +50,15 @@ class GoodsListingSerializer(serializers.ModelSerializer):
     def get_is_owner(self, listing):
         request = self.context.get("request")
         return bool(request and request.user.is_authenticated and request.user.pk == listing.seller_id)
+
+    def get_user_has_interest(self, listing):
+        request = self.context.get("request")
+        user = getattr(request, "user", None) if request else None
+        return bool(
+            user
+            and user.is_authenticated
+            and GoodsInterest.objects.filter(listing=listing, interested_user=user).exists()
+        )
 
     def validate_image(self, value):
         max_size = 5 * 1024 * 1024

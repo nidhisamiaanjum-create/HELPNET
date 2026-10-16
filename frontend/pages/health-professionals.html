@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 
 <head>
     <meta charset="UTF-8">
@@ -10,23 +10,39 @@
 </head>
 
 <body>
-    <header class="site-header"><a href="/dashboard/" class="logo">HELPNET</a>
-        <nav><a href="/health-questions/" class="back-link">Health questions</a><button id="langToggle" type="button"
-                class="small-btn">বাংলা</button></nav>
+    <header class="site-header"><a href="/dashboard/" class="logo" data-i18n="appName">HELPNET</a>
+        <nav><a href="/health-questions/" class="back-link" data-smart-back data-i18n="healthcommunity">Health questions</a><button id="langToggle" type="button"
+                class="small-btn" data-i18n="langButton">বাংলা</button></nav>
     </header>
     <main class="blood-page">
         <section class="blood-card">
-            <h1>Health professionals</h1>
+            <h1 data-i18n="healthprofessional">Health professionals</h1>
             <p id="healthMessage" class="form-message" aria-live="polite"></p>
-            <div id="healthProfessionals">Loading professionals…</div>
-            <p class="hint" data-i18n="healthDisclaimer">HELPNET does not endorse or recommend health professionals.
-                Contact information shown here is user-provided and is not medical advice.</p>
+            <div id="healthProfessionals" data-i18n="healthDirectoryLoading">Loading professionals…</div>
+            <p class="hint" data-i18n="healthProfessionalDisclaimer">Health professionals listed here are provided for discovery purposes only. HELPNET does not endorse any professional or provide medical diagnosis.</p>
+        </section>
+
+        <section class="blood-card" id="healthProfessionalApplication" hidden>
+            <h2 data-i18n="healthApplyTitle">Apply to be listed as a health professional</h2>
+            <p class="hint" data-i18n="healthApplyInfo">Submit your professional credential for admin review. Approval is manual and does not mean HELPNET endorses or independently verifies credentials.</p>
+            <p id="healthApplicationStatus" class="form-message" aria-live="polite"></p>
+            <form id="healthApplicationForm" enctype="multipart/form-data">
+                <div class="field"><label for="healthProfessionalName" data-i18n="healthProfessionalName">Name</label><input id="healthProfessionalName" maxlength="150" required></div>
+                <div class="field"><label for="healthProfession" data-i18n="healthProfession">Profession</label><input id="healthProfession" maxlength="100" required></div>
+                <div class="field"><label for="healthSpecialization" data-i18n="healthSpecialization">Specialization (optional)</label><input id="healthSpecialization" maxlength="150"></div>
+                <div class="field"><label for="healthLocation" data-i18n="healthLocation">Location (optional)</label><input id="healthLocation" maxlength="255"></div>
+                <div class="field"><label for="healthContact" data-i18n="healthContact">Public contact (phone or email)</label><input id="healthContact" maxlength="255" required></div>
+                <div class="field"><label for="healthCredentialType" data-i18n="healthCredentialType">Credential type</label><input id="healthCredentialType" maxlength="100" required></div>
+                <div class="field"><label for="healthCredentialNumber" data-i18n="healthCredentialNumber">Registration or credential number</label><input id="healthCredentialNumber" maxlength="100" required></div>
+                <div class="field"><label for="healthCredentialDocument" data-i18n="healthCredentialDocument">Supporting credential document (PDF, JPG, PNG; max 5 MB)</label><input id="healthCredentialDocument" type="file" accept="application/pdf,image/jpeg,image/png" required></div>
+                <button type="submit" class="btn" id="submitHealthApplication" data-i18n="healthSubmitApplication">Submit for admin review</button>
+            </form>
         </section>
     </main>
     <script src="{% static 'js/api.js' %}"></script>
     <script src="{% static 'js/auth.js' %}"></script>
     <script src="{% static 'js/i18n.js' %}"></script>
     <script src="{% static 'js/health.js' %}"></script>
-</body>
+<script src="{% static 'js/navigation.js' %}"></script></body>
 
 </html>

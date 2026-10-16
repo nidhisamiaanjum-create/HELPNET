@@ -21,7 +21,9 @@
     <a href="/admin-dashboard/" class="logo">
         হেল্পনেট
     </a>
-
+    <a href="/admin-dashboard/" class="back-link" data-smart-back>
+            ← <span data-i18n="adminDashboard">Admin Dashboard</span>
+        </a>
     <div class="header-actions">
         <button type="button" id="logoutButton" class="lang-toggle" data-i18n="logout">
             লগআউট
@@ -40,6 +42,11 @@
     </section>
 
     <section class="card">
+        <h2 data-i18n="healthAdminApplications">Health professional applications</h2>
+        <div id="healthProfessionalApplications" class="admin-list" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
 
         <h2 data-i18n="pendingRequests">Pending Requests</h2>
 
@@ -51,17 +58,13 @@
 
     </section>
 
-    <p class="back-row">
-        <a href="/admin-dashboard/" class="back-link">
-            ← <span data-i18n="adminDashboard">Admin Dashboard</span>
-        </a>
-    </p>
-
 </main>
 
 <script src="{% static 'js/api.js' %}"></script>
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/admin-verification.js' %}"></script>
 
-<script src="{% static 'js/i18n.js' %}"></script></body>
+<script src="{% static 'js/i18n.js' %}"></script>
+<script src="{% static 'js/health-verification-admin.js' %}"></script>
+<script src="{% static 'js/navigation.js' %}"></script></body>
 </html>

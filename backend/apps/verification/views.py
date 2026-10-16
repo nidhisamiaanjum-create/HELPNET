@@ -1,3 +1,6 @@
+import mimetypes
+
+from django.http import FileResponse
 from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -171,11 +174,12 @@ class AdminVerificationListView(APIView):
                     "phone_number": verification_request.user.phone_number,
                     "document_type": verification_request.document_type,
                     "document_url": (
-                        request.build_absolute_uri(
-                            verification_request.document.url
-                        )
-                        if verification_request.document
-                        else None
+                        f"/api/verification/admin/{verification_request.id}/document/"
+                        if verification_request.document else None
+                    ),
+                    "document_name": (
+                        verification_request.document.name.rsplit("/", 1)[-1]
+                        if verification_request.document else None
                     ),
                     "submitted_at": verification_request.submitted_at,
                     "status": verification_request.status,
@@ -189,6 +193,24 @@ class AdminVerificationListView(APIView):
                 "message": "Pending verification requests retrieved successfully.",
             },
             status=status.HTTP_200_OK,
+        )
+
+
+class AdminVerificationDocumentView(APIView):
+    permission_classes = [IsAdminUserRole]
+
+    def get(self, request, verification_id):
+        verification_request = get_object_or_404(
+            VerificationRequest,
+            pk=verification_id,
+            document__gt="",
+        )
+        content_type = mimetypes.guess_type(verification_request.document.name)[0] or "application/octet-stream"
+        return FileResponse(
+            verification_request.document.open("rb"),
+            as_attachment=True,
+            filename=verification_request.document.name.rsplit("/", 1)[-1],
+            content_type=content_type,
         )
 
 class AdminVerificationActionView(APIView):

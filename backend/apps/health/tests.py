@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
@@ -91,16 +94,134 @@ class HealthCommunityApiTests(APITestCase):
 
         directory = self.client.get(reverse("health-professionals"))
         self.assertEqual(directory.status_code, 200)
-        self.assertFalse(directory.data["data"][0]["is_verified"])
+        self.assertEqual(directory.data["data"], [])
 
         administrator = self.make_user("005", role="Admin")
         self.client.force_authenticate(administrator)
         verified = self.client.patch(path, {"verification_status": "verified"}, format="json")
-        self.assertEqual(verified.status_code, 200)
-        self.assertTrue(verified.data["data"]["is_verified"])
+        self.assertEqual(verified.status_code, 400)
+        professional.refresh_from_db()
+        self.assertEqual(professional.verification_status, "pending")
+
+    @staticmethod
+    def credential_file(content=b"%PDF-1.7\ncredential"):
+        return SimpleUploadedFile("credential.pdf", content, content_type="application/pdf")
+
+    def submit_professional_application(self, user, name="Dr Example", content=b"%PDF-1.7\ncredential"):
+        self.client.force_authenticate(user)
+        return self.client.post(reverse("health-professional-application"), {
+            "name": name,
+            "profession": "Physician",
+            "specialization": "Community health",
+            "location": "Dhaka",
+            "contact": "+8801712345678",
+            "credential_type": "Professional registration",
+            "credential_number": "REG-12345",
+            "credential_document": self.credential_file(content),
+        }, format="multipart")
+
+    def test_citizen_application_and_approved_only_directory(self):
+        applicant = self.make_user("007")
+        self.client.force_authenticate(applicant)
+        invalid = self.client.post(reverse("health-professional-application"), {
+            "name": "Dr Example", "profession": "Physician", "contact": "doctor@example.org",
+            "credential_type": "Registration", "credential_number": "REG-1",
+            "credential_document": self.credential_file(b"not a pdf"),
+        }, format="multipart")
+        self.assertEqual(invalid.status_code, 400)
+        self.assertFalse(HealthProfessional.objects.filter(user=applicant).exists())
+
+        submitted = self.submit_professional_application(applicant)
+        self.assertEqual(submitted.status_code, 201, submitted.data)
+        application = HealthProfessional.objects.get(user=applicant)
+        self.addCleanup(application.credential_document.delete, save=False)
+        self.assertEqual(submitted.data["data"]["status"], "pending")
+        self.assertEqual(self.client.get(reverse("health-professionals")).data["data"], [])
+        self.assertEqual(self.client.get(reverse("health-professional-application")).data["data"]["status"], "pending")
+        self.assertEqual(self.submit_professional_application(applicant).status_code, 400)
+
+        admin = self.make_user("008", role="Admin")
+        self.client.force_authenticate(admin)
+        approved = self.client.patch(reverse("health-professional-verification", args=[application.pk]), {"action": "approve"}, format="json")
+        self.assertEqual(approved.status_code, 200, approved.data)
+        directory = self.client.get(reverse("health-professionals"))
+        self.assertEqual(len(directory.data["data"]), 1)
+        self.assertTrue(directory.data["data"][0]["is_verified"])
+        self.assertEqual(directory.data["data"][0]["contact"], "+8801712345678")
+
+    def test_health_credential_review_and_document_are_admin_only(self):
+        applicant = self.make_user("009")
+        self.assertEqual(self.submit_professional_application(applicant).status_code, 201)
+        application = HealthProfessional.objects.get(user=applicant)
+        self.addCleanup(application.credential_document.delete, save=False)
+        document_url = reverse("health-professional-credential-document", args=[application.pk])
+        pending_url = reverse("health-professional-pending-applications")
+        review_url = reverse("health-professional-verification", args=[application.pk])
+
+        self.client.force_authenticate(applicant)
+        self.assertEqual(self.client.get(pending_url).status_code, 403)
+        self.assertEqual(self.client.get(document_url).status_code, 403)
+        self.assertEqual(self.client.patch(review_url, {"action": "approve"}, format="json").status_code, 403)
+
+        admin = self.make_user("010", role="Admin")
+        self.client.force_authenticate(admin)
+        pending = self.client.get(pending_url)
+        self.assertEqual(pending.status_code, 200)
+        self.assertEqual(pending.data["data"][0]["credential_number"], "REG-12345")
+        self.assertEqual(pending.data["data"][0]["document_url"], document_url)
+        document = self.client.get(document_url)
+        self.assertEqual(document.status_code, 200)
+        self.assertEqual(b"".join(document.streaming_content), b"%PDF-1.7\ncredential")
+
+        self.assertEqual(self.client.patch(review_url, {"action": "reject"}, format="json").status_code, 400)
+        rejected = self.client.patch(review_url, {"action": "reject", "reason": "Credential could not be confirmed."}, format="json")
+        self.assertEqual(rejected.status_code, 200)
+        self.client.force_authenticate(applicant)
+        own_status = self.client.get(reverse("health-professional-application"))
+        self.assertEqual(own_status.data["data"]["status"], "rejected")
+        self.assertIn("could not be confirmed", own_status.data["data"]["rejection_reason"])
+
+    def test_non_citizen_cannot_submit_or_read_an_application(self):
+        volunteer = self.make_user("012", role="Volunteer")
+        self.client.force_authenticate(volunteer)
+        self.assertEqual(self.client.get(reverse("health-professional-application")).status_code, 403)
+        response = self.client.post(reverse("health-professional-application"), {
+            "name": "Volunteer applicant",
+            "profession": "Physician",
+            "contact": "doctor@example.org",
+            "credential_type": "Registration",
+            "credential_number": "REG-999",
+            "credential_document": self.credential_file(),
+        }, format="multipart")
+        self.assertEqual(response.status_code, 403)
+
+    def test_professional_page_has_bilingual_labels_and_exact_disclaimer(self):
+        self.client.force_authenticate(self.make_user("011"))
+        response = self.client.get("/health-professionals/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<html lang="bn">', html=False)
+        self.assertContains(response, "Health professionals listed here are provided for discovery purposes only. HELPNET does not endorse any professional or provide medical diagnosis.")
+        source = Path(__file__).resolve().parents[3] / "frontend" / "js" / "i18n.js"
+        translations = source.read_text(encoding="utf-8")
+        keys = (
+            "healthProfessionalDisclaimer", "healthApplyTitle", "healthApplyInfo",
+            "healthProfessionalName", "healthProfession", "healthSpecialization",
+            "healthLocation", "healthContact", "healthCredentialType",
+            "healthCredentialNumber", "healthCredentialDocument", "healthSubmitApplication",
+            "healthStatusNotSubmitted", "healthStatusPending", "healthStatusApproved",
+            "healthStatusRejected", "healthDirectoryLoading", "healthDirectoryEmpty",
+            "healthDirectoryProfession", "healthDirectorySpecialization", "healthDirectoryLocation",
+            "healthDirectoryContact", "healthVerifiedBadge", "healthOpenContact",
+            "healthAdminApplications", "healthAdminEmpty", "healthCredentialNumberLabel",
+            "healthViewCredential", "healthApprove", "healthReject", "healthConfirmReject",
+            "healthRejectReason", "healthApplicationReviewed", "healthDocumentFailed",
+        )
+        for key in keys:
+            self.assertEqual(translations.count(f"{key}:"), 2, key)
 
     def test_health_pages_show_non_endorsement_disclaimer(self):
         for url in ("/health-professionals/", "/health-questions/", "/create-health-question/", "/health-question-details/"):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
-            self.assertContains(response, 'data-i18n="healthDisclaimer"')
+            expected_key = "healthProfessionalDisclaimer" if url == "/health-professionals/" else "healthDisclaimer"
+            self.assertContains(response, f'data-i18n="{expected_key}"')

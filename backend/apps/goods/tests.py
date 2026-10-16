@@ -130,6 +130,7 @@ class GoodsExchangeTests(TestCase):
     def test_interest_reveals_contact_details_only_after_interest_is_confirmed(self):
         self.api.force_authenticate(self.other)
         detail_before = self.api.get(f"/api/goods/listings/{self.listing.pk}/")
+        self.assertFalse(detail_before.data["data"]["user_has_interest"])
         self.assertNotIn("phone_number", detail_before.data["data"]["seller_contact"])
         self.assertNotIn("email", detail_before.data["data"]["seller_contact"])
 
@@ -137,6 +138,7 @@ class GoodsExchangeTests(TestCase):
         self.assertEqual(interest.status_code, 201)
 
         detail_after = self.api.get(f"/api/goods/listings/{self.listing.pk}/")
+        self.assertTrue(detail_after.data["data"]["user_has_interest"])
         self.assertEqual(detail_after.data["data"]["seller_contact"]["phone_number"], self.owner.phone_number)
         self.assertEqual(detail_after.data["data"]["seller_contact"]["email"], self.owner.email)
 

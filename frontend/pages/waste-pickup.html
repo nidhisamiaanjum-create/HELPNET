@@ -25,7 +25,7 @@
             href="/dashboard/"
             class="back-link"
             data-i18n="backToDashboard"
-        >
+         data-smart-back>
             ← Back to dashboard
         </a>
 
@@ -104,7 +104,7 @@
         style="
             display: grid;
             grid-template-columns:
-                repeat(auto-fit, minmax(320px, 1fr));
+                repeat(auto-fit, minmax(min(100%, 280px), 1fr));
             gap: 20px;
         "
     >
@@ -745,5 +745,5 @@
 <script src="{% static 'js/auth.js' %}"></script>
 <script src="{% static 'js/waste.js' %}"></script>
 
-</body>
+<script src="{% static 'js/navigation.js' %}"></script></body>
 </html>

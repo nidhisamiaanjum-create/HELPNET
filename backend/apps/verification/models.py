@@ -3,6 +3,8 @@ import uuid
 from django.conf import settings
 from django.db import models
 
+from .storage import VerificationPrivateStorage
+
 
 
 class VerificationRequest(models.Model):
@@ -25,7 +27,10 @@ class VerificationRequest(models.Model):
         related_name="verification_requests",
     )
     document_type = models.CharField(max_length=30, choices=DocumentType.choices)
-    document = models.FileField(upload_to="verification_documents/")
+    document = models.FileField(
+        storage=VerificationPrivateStorage(),
+        upload_to="verification_documents/",
+    )
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     rejection_reason = models.TextField(blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
