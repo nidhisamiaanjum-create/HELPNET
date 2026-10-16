@@ -15,7 +15,7 @@
     </a>
 
     <div class="header-actions">
-        <a href="/waste-pickup/" class="back-link">← Back to Waste Pickup</a>
+        <a href="/waste-pickup/" class="back-link" data-smart-back>← Back to Waste Pickup</a>
         <button type="button" id="langToggle" class="lang-toggle">English</button>
         <button type="button" id="logoutButton" class="lang-toggle" data-i18n="logout">Logout</button>
     </div>
@@ -150,6 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     initStarPicker();
+    window.collectorProfileType = "shared_collector";
     loadCollectorData(collectorId);
     setupRatingForm(collectorId);
     setupReportForm(collectorId);
@@ -193,7 +194,13 @@ async function loadCollectorData(collectorId) {
         );
 
         if (colRes && colRes.data) {
+            window.collectorProfileType = colRes.profile_type || "shared_collector";
             const collector = colRes.data;
+
+            if (window.collectorProfileType === "shared_collector") {
+                const reportCard = document.getElementById("reportForm")?.closest(".card");
+                if (reportCard) reportCard.hidden = true;
+            }
 
             document.getElementById("collectorName").textContent =
                 collector.full_name || collector.name || "Collector";
@@ -235,15 +242,25 @@ async function loadCollectorData(collectorId) {
 
     // Load ratings for this collector
     try {
+        const userProfile = window.collectorProfileType === "volunteer_user";
         const res = await apiRequest(
-            `/api/waste/collectors/${collectorId}/ratings/`,
+            userProfile ? `/api/ratings/users/${collectorId}/` : `/api/waste/collectors/${collectorId}/ratings/`,
             "GET"
         );
 
         if (res) {
-            const ratings = Array.isArray(res)
+            let ratings = Array.isArray(res)
                 ? res
                 : (Array.isArray(res.data) ? res.data : (res.results || []));
+
+            if (userProfile) {
+                ratings = ratings.map(item => ({
+                    ...item,
+                    user: item.rater,
+                    user_name: item.rater_name,
+                    review: item.comment,
+                }));
+            }
 
             renderReviews(ratings);
 
@@ -374,12 +391,11 @@ function setupRatingForm(collectorId) {
 
         try {
             await apiRequest(
-                `/api/waste/collectors/${collectorId}/ratings/`,
+                window.collectorProfileType === "volunteer_user" ? "/api/ratings/" : `/api/waste/collectors/${collectorId}/ratings/`,
                 "POST",
-                {
-                    rating: score,
-                    review: comment,
-                }
+                window.collectorProfileType === "volunteer_user"
+                    ? { rated_user: collectorId, rating: score, comment }
+                    : { rating: score, review: comment }
             );
             ratingSubmitted = true;
 
@@ -455,5 +471,5 @@ function escapeHtml(text) {
 }
 </script>
 
-</body>
+<script src="{% static 'js/navigation.js' %}"></script></body>
 </html>

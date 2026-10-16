@@ -15,7 +15,7 @@
     </header>
     <main class="certificate-print-main">
         <div class="print-toolbar">
-            <a class="back-link" href="/volunteer-certificate/" data-i18n="certificatesNav">Certificates</a>
+            <a class="back-link" href="/volunteer-certificate/" data-i18n="certificatesNav" data-smart-back>Certificates</a>
             <button type="button" id="printCertificate" class="btn" data-i18n="printCertificate">Print certificate</button>
         </div>
         <p id="certificatePrintMessage" class="form-message" aria-live="polite"></p>
@@ -36,5 +36,5 @@
     <script src="{% static 'js/auth.js' %}"></script>
     <script src="{% static 'js/i18n.js' %}"></script>
     <script src="{% static 'js/volunteer-certificate-print.js' %}"></script>
-</body>
+<script src="{% static 'js/navigation.js' %}"></script></body>
 </html>

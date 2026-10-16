@@ -9,4 +9,5 @@ cloudinary>=1.44,<2
 reportlab>=4,<5
 pytest>=8,<9
 pytest-django>=4.11,<5
+selenium>=4.25,<5
 gunicorn>=23,<24

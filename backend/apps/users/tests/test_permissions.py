@@ -3,6 +3,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
+from django.core import mail
+from django.test import override_settings
 
 
 User = get_user_model()
@@ -151,6 +153,23 @@ class AuthPermissionTests(APITestCase):
         self.assertEqual(
             response.status_code,
             status.HTTP_200_OK,
+        )
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+        FRONTEND_BASE_URL="https://helpnet.example",
+    )
+    def test_password_reset_link_uses_configured_frontend_url(self):
+        response = self.client.post(
+            "/api/auth/password-reset/",
+            {"email": self.user.email},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(
+            "https://helpnet.example/reset-password/?uid=",
+            mail.outbox[0].body,
         )
 
     def test_password_reset_confirm_is_public(self):

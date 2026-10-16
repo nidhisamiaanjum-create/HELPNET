@@ -443,6 +443,91 @@ async function loadAvailableCollectors(area) {
 
 </div>
             `;
+            if (!collector.id) {
+                card.querySelector(".btn-rate")?.remove();
+            } else {
+                const actions = card.querySelector(".collector-actions");
+                const reviewsButton = document.createElement("button");
+                reviewsButton.type = "button";
+                reviewsButton.className = "btn-sm btn-view-reviews";
+                reviewsButton.setAttribute("aria-expanded", "false");
+                setWasteReviewButtonLabel(reviewsButton, "wasteViewReviews", "View reviews");
+                actions.appendChild(reviewsButton);
+
+                const reviewsPanel = document.createElement("div");
+                reviewsPanel.className = "collector-reviews";
+                reviewsPanel.hidden = true;
+                reviewsPanel.setAttribute("aria-live", "polite");
+                card.appendChild(reviewsPanel);
+
+                reviewsButton.addEventListener("click", async function () {
+                    if (!reviewsPanel.hidden && reviewsPanel.dataset.loaded === "true") {
+                        reviewsPanel.hidden = true;
+                        reviewsButton.setAttribute("aria-expanded", "false");
+                        setWasteReviewButtonLabel(reviewsButton, "wasteViewReviews", "View reviews");
+                        return;
+                    }
+                    if (reviewsPanel.dataset.loading === "true") return;
+
+                    reviewsPanel.hidden = false;
+                    reviewsButton.setAttribute("aria-expanded", "true");
+                    if (reviewsPanel.dataset.loaded === "true") {
+                        setWasteReviewButtonLabel(reviewsButton, "wasteHideReviews", "Hide reviews");
+                        return;
+                    }
+
+                    reviewsPanel.dataset.loading = "true";
+                    reviewsButton.disabled = true;
+                    setWasteReviewButtonLabel(reviewsButton, "wasteLoadingReviews", "Loading reviews…");
+                    reviewsPanel.textContent = reviewsButton.textContent;
+                    try {
+                        const response = await apiRequest(
+                            `/api/waste/collectors/${encodeURIComponent(collector.id)}/ratings/`,
+                            "GET"
+                        );
+                        const reviews = Array.isArray(response)
+                            ? response
+                            : (Array.isArray(response.results) ? response.results
+                                : (Array.isArray(response.data) ? response.data : []));
+                        reviewsPanel.replaceChildren();
+                        if (!reviews.length) {
+                            reviewsPanel.textContent = typeof t === "function"
+                                ? t("wasteNoReviews") : "No reviews yet.";
+                        } else {
+                            reviews.forEach(review => {
+                                const item = document.createElement("article");
+                                item.className = "collector-review";
+                                const heading = document.createElement("div");
+                                heading.className = "collector-review-heading";
+                                const reviewer = document.createElement("strong");
+                                reviewer.textContent = review.user_name || "Community member";
+                                const score = document.createElement("span");
+                                score.textContent = `★ ${Number(review.rating) || 0}/5`;
+                                heading.append(reviewer, score);
+                                const comment = document.createElement("p");
+                                comment.textContent = review.review || "No comment provided.";
+                                item.append(heading, comment);
+                                if (review.created_at) {
+                                    const date = document.createElement("small");
+                                    date.textContent = new Date(review.created_at).toLocaleDateString();
+                                    item.appendChild(date);
+                                }
+                                reviewsPanel.appendChild(item);
+                            });
+                        }
+                        reviewsPanel.dataset.loaded = "true";
+                        setWasteReviewButtonLabel(reviewsButton, "wasteHideReviews", "Hide reviews");
+                    } catch (error) {
+                        reviewsPanel.textContent = error.message || (typeof t === "function"
+                            ? t("wasteReviewsFailed") : "Could not load reviews.");
+                        setWasteReviewButtonLabel(reviewsButton, "wasteRetryReviews", "Retry reviews");
+                    } finally {
+                        delete reviewsPanel.dataset.loading;
+                        reviewsButton.disabled = false;
+                    }
+                });
+            }
+
             const rateButton =
                 card.querySelector(
                     ".btn-rate"
@@ -790,6 +875,18 @@ function escapeHtml(text) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+
+function setWasteReviewButtonLabel(button, key, fallback) {
+    button.dataset.translationKey = key;
+    button.textContent = typeof t === "function" ? t(key) : fallback;
+}
+
+document.addEventListener("helpnet:languagechange", function () {
+    document.querySelectorAll(".btn-view-reviews[data-translation-key]").forEach(button => {
+        const key = button.dataset.translationKey;
+        button.textContent = typeof t === "function" ? t(key) : button.textContent;
+    });
+});
 
 // ============================================================
 // Waste Collector Rating Modal

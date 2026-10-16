@@ -12,7 +12,7 @@
 <body>
     <header class="site-header">
         <a href="/dashboard/" class="logo" data-i18n="appName">HELPNET</a>
-        <a href="/profile/" class="back-link" data-i18n="backToProfile">Back to profile</a>
+        <a href="/profile/" class="back-link" data-i18n="backToDashboard" data-smart-back>Back to Dashboard</a>
         <button type="button" id="langToggle" class="lang-toggle" data-i18n="langButton">English</button>
     </header>
 
@@ -148,6 +148,6 @@
     <script src="{% static 'js/districts.js' %}"></script>
     <script src="{% static 'js/i18n.js' %}"></script>
     <script src="{% static 'js/blood.js' %}"></script>
-</body>
+<script src="{% static 'js/navigation.js' %}"></script></body>
 
 </html>

@@ -1,3 +1,5 @@
+import re
+
 from django.db.models import Avg
 from rest_framework import serializers
 
@@ -60,3 +62,38 @@ class HealthProfessionalSerializer(serializers.ModelSerializer):
             return 0
         from apps.ratings.models import Rating
         return Rating.objects.filter(rated_user_id=obj.user_id).count()
+
+
+class HealthProfessionalApplicationSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=150)
+    profession = serializers.CharField(max_length=100)
+    specialization = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    location = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    contact = serializers.CharField(max_length=255)
+    credential_type = serializers.CharField(max_length=100)
+    credential_number = serializers.CharField(max_length=100)
+    credential_document = serializers.FileField(allow_empty_file=False)
+
+    def validate_contact(self, value):
+        value = value.strip()
+        is_email = re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", value)
+        digits = re.sub(r"\D", "", value)
+        is_phone = bool(re.fullmatch(r"[+()\d.\s-]+", value) and 7 <= len(digits) <= 15)
+        if not is_email and not is_phone:
+            raise serializers.ValidationError("Enter a valid phone number or email address for direct contact.")
+        return value
+
+    def validate_credential_document(self, document):
+        if document.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError("Credential documents must be 5 MB or smaller.")
+
+        prefix = document.read(8)
+        document.seek(0)
+        valid = (
+            (document.content_type == "application/pdf" and prefix.startswith(b"%PDF-"))
+            or (document.content_type == "image/jpeg" and prefix.startswith(b"\xff\xd8\xff"))
+            or (document.content_type == "image/png" and prefix.startswith(b"\x89PNG\r\n\x1a\n"))
+        )
+        if not valid:
+            raise serializers.ValidationError("Upload a valid PDF, JPG, or PNG credential document.")
+        return document

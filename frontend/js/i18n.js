@@ -132,7 +132,7 @@ const TEXT = {
         location: "এলাকা",
 
 
-        verification: "যাচাই অবস্থা",
+        verification: "যাচাই ",
 
 
         notVerified: "যাচাই করা হয়নি",
@@ -184,10 +184,10 @@ const TEXT = {
 
         /* Verification + admin */
         actionNeeded: "ব্যবস্থা প্রয়োজন",
-        verifyNidTitle: "ট্রাস্ট ব্যাজ পেতে আপনার NID যাচাই করুন",
+        verifyNidTitle: "ট্রাস্ট ব্যাজ পেতে আপনার NID অথবা পাসপোর্ট অথবা জন্ম নিবন্ধন যাচাই করুন",
         verifyNidHint:
             "যাচাইকৃত সদস্যরা দ্রুত উত্তর পান এবং অন্যকে রেট দিতে পারেন।",
-        verifyNow: "এখনই যাচাই করুন",
+        verifyNow: "যাচাইয়ের জন্য অনুরোধ",
         adminTools: "প্রশাসক সরঞ্জাম",
         reviewQueue: "পর্যালোচনা সারি",
         actionLog: "কার্যক্রম লগ",
@@ -199,12 +199,13 @@ const TEXT = {
 
 
                 /* NID verification page */
-        nidTitle: "NID যাচাই",
+        nidTitle: "যাচাই",
         nidSubtitle: "আপনার পরিচয় যাচাই করলে কমিউনিটিতে আস্থা বাড়ে।",
         documentType: "নথির ধরন",
         docNid: "জাতীয় পরিচয়পত্র (NID)",
         docPassport: "পাসপোর্ট",
         docBirth: "জন্ম নিবন্ধন",
+        docbmdc:"বিএমডিসি সনদ",
         uploadLabel: "নথি আপলোড করুন",
         uploadHint: "JPG, PNG অথবা PDF গ্রহণযোগ্য। সর্বোচ্চ ফাইল সাইজ 5 MB।",
         submitForReview: "যাচাইয়ের জন্য পাঠান",
@@ -221,8 +222,13 @@ const TEXT = {
         errUploadFailed: "আপলোড ব্যর্থ হয়েছে। আবার চেষ্টা করুন।",
         submitting: "পাঠানো হচ্ছে…",
 
-
-
+        /*health*/
+        healthcommunityquestions:"স্বাস্থ্য বিষয়ক সম্প্রদায়ের প্রশ্নাবলি",
+        healthcommunity:"স্বাস্থ্য বিষয়ক প্রশ্ন",
+        // Bangla translations
+        createQuestion: "প্রশ্ন তৈরি করুন",
+        Professionals:"স্বাস্থ্য-পেশাজীবী",
+        healthprofessional:"চিকিৎসক বা স্বাস্থ্য-পেশাজীবী",
 
         /* Services */
         modBlood: "রক্তদান",
@@ -247,6 +253,12 @@ const TEXT = {
         availableCollectors: "কাছাকাছি বর্জ্য সংগ্রাহক",
         noRequestsYet: "এখনো কোনো বর্জ্য সংগ্রহের অনুরোধ নেই।",
         noCollectorsFound: "এই এলাকায় কোনো সংগ্রাহক পাওয়া যায়নি।",
+        wasteViewReviews: "রিভিউ দেখুন",
+        wasteHideReviews: "রিভিউ লুকান",
+        wasteLoadingReviews: "রিভিউ লোড হচ্ছে…",
+        wasteNoReviews: "এখনো কোনো রিভিউ নেই।",
+        wasteReviewsFailed: "রিভিউ লোড করা যায়নি।",
+        wasteRetryReviews: "আবার চেষ্টা করুন",
         statusRequested: "অনুরোধকৃত",
         statusContacted: "যোগাযোগ হয়েছে",
         statusCompleted: "সম্পন্ন",
@@ -472,6 +484,7 @@ const TEXT = {
         statusRemoved: "সরানো হয়েছে",
         updateStatus: "অবস্থা হালনাগাদ করুন",
         expressInterest: "আগ্রহ জানান",
+        interestSent: "আগ্রহ জানানো হয়েছে",
         reportListing: "তালিকাটি রিপোর্ট করুন",
         reason: "কারণ",
         detailsOptional: "বিবরণ (ঐচ্ছিক)",
@@ -514,15 +527,43 @@ const TEXT = {
         requestedBy: "অনুরোধকারী",
         yourDonorProfile: "এটি আপনার রক্তদাতার প্রোফাইল।",
         rateDonor: "রক্তদাতাকে রেটিং দিন",
-        ratingsCount: "{count}টি রেটিং"
+        ratingsCount: "{count}টি রেটিং",
+        openQuestion: "প্রশ্ন খুলুন",
+        healthProfessionalDisclaimer: "এখানে তালিকাভুক্ত স্বাস্থ্য-পেশাজীবীরা কেবল পরিচিতির উদ্দেশ্যে দেখানো হয়েছে। HELPNET কোনো পেশাজীবীকে অনুমোদন করে না বা চিকিৎসা-নির্ণয় দেয় না.",
+        healthApplyTitle: "স্বাস্থ্য-পেশাজীবী হিসেবে তালিকাভুক্তির আবেদন",
+        healthApplyInfo: "প্রশাসকের পর্যালোচনার জন্য আপনার পেশাগত সনদ জমা দিন। অনুমোদন ম্যানুয়ালি দেওয়া হয়; এটি HELPNET-এর সমর্থন বা স্বতন্ত্র সনদ যাচাই বোঝায় না।",
+        healthProfessionalName: "নাম",
+        healthProfession: "পেশা",
+        healthSpecialization: "বিশেষায়ন (ঐচ্ছিক)",
+        healthLocation: "অবস্থান (ঐচ্ছিক)",
+        healthContact: "সর্বজনীন যোগাযোগ (ফোন বা ইমেইল)",
+        healthCredentialType: "সনদের ধরন",
+        healthCredentialNumber: "নিবন্ধন বা সনদ নম্বর",
+        healthCredentialDocument: "সহায়ক সনদপত্র (PDF, JPG, PNG; সর্বোচ্চ ৫ MB)",
+        healthSubmitApplication: "প্রশাসকের পর্যালোচনার জন্য জমা দিন",
+        healthStatusNotSubmitted: "কোনো আবেদন জমা হয়নি।",
+        healthStatusPending: "আবেদন অপেক্ষমাণ।",
+        healthStatusApproved: "আবেদন অনুমোদিত। আপনার তথ্য যাচাইকৃত ডিরেক্টরিতে দেখানো হবে।",
+        healthStatusRejected: "আবেদন প্রত্যাখ্যাত হয়েছে। কারণ:",
+        healthDirectoryLoading: "স্বাস্থ্য-পেশাজীবীদের তালিকা লোড হচ্ছে…",
+        healthDirectoryEmpty: "এখনও কোনো অনুমোদিত স্বাস্থ্য-পেশাজীবী তালিকাভুক্ত নেই।",
+        healthDirectoryProfession: "পেশা",
+        healthDirectorySpecialization: "বিশেষায়ন",
+        healthDirectoryLocation: "অবস্থান",
+        healthDirectoryContact: "সরাসরি যোগাযোগ",
+        healthVerifiedBadge: "প্রশাসক-অনুমোদিত",
+        healthOpenContact: "যোগাযোগ করুন",
+        healthAdminApplications: "স্বাস্থ্য-পেশাজীবীর আবেদন",
+        healthAdminEmpty: "পর্যালোচনার জন্য কোনো স্বাস্থ্য-পেশাজীবীর আবেদন নেই।",
+        healthCredentialNumberLabel: "সনদ নম্বর",
+        healthViewCredential: "সনদ দেখুন",
+        healthApprove: "অনুমোদন করুন",
+        healthReject: "প্রত্যাখ্যান করুন",
+        healthConfirmReject: "প্রত্যাখ্যান নিশ্চিত করুন",
+        healthRejectReason: "প্রত্যাখ্যানের কারণ লিখুন",
+        healthApplicationReviewed: "আবেদন পর্যালোচনা সম্পন্ন হয়েছে।",
+        healthDocumentFailed: "সনদপত্র ডাউনলোড করা যায়নি।"
     },
-
-
-
-
-    /* =========================
-       ENGLISH
-       ========================= */
     en: {
 
 
@@ -692,12 +733,13 @@ const TEXT = {
 
 
           /* NID verification page */
-          nidTitle: "NID verification",
-        nidSubtitle: "Verifying your identity builds trust in the community.",
+          nidTitle: "Verification",
+        nidSubtitle: "Veriefying your identity builds trust in the community.",
         documentType: "Document type",
         docNid: "National ID (NID)",
         docPassport: "Passport",
         docBirth: "Birth certificate",
+        docbmdc:"BMDC certificate",
         uploadLabel: "Upload document",
         uploadHint: "JPG, PNG or PDF accepted. Max file size 5 MB.",
         submitForReview: "Submit for verification",
@@ -706,8 +748,8 @@ const TEXT = {
         statusPending: "Pending",
         statusApproved: "Verified",
         statusRejected: "Rejected",
-        backToProfile: "← Back to profile",
-        backToDashboard: "← Back to dashboard",
+        backToProfile: "← Back to Profile",
+        backToDashboard: "← Back to Dashboard",
         errNoFile: "Please choose a file.",
         errFileType: "Only JPG, PNG or PDF are accepted.",
         errFileSize: "File is larger than 5 MB.",
@@ -723,10 +765,10 @@ const TEXT = {
 
         /* Verification + admin */
         actionNeeded: "Action needed",
-        verifyNidTitle: "Verify your NID to earn a trust badge",
+        verifyNidTitle: "Verify your NID or Passport or Birth cirtificate to earn a trust badge",
         verifyNidHint:
             "Verified members get more replies and can rate others.",
-        verifyNow: "Verify now",
+        verifyNow: "Request for Verification",
         adminTools: "Admin tools",
         reviewQueue: "Review queue",
         actionLog: "Action log",
@@ -736,6 +778,47 @@ const TEXT = {
         timeHoursAgo: "{n} h ago",
         timeDaysAgo: "{n} d ago",
 
+        /*health*/
+        healthcommunityquestions:"Health community questions",
+        healthcommunity:"Health Questions",
+        healthProfessionalDisclaimer: "Health professionals listed here are provided for discovery purposes only. HELPNET does not endorse any professional or provide medical diagnosis.",
+        healthApplyTitle: "Apply to be listed as a health professional",
+        healthApplyInfo: "Submit your professional credential for admin review. Approval is manual and does not mean HELPNET endorses or independently verifies credentials.",
+        healthProfessionalName: "Name",
+        healthProfession: "Profession",
+        healthSpecialization: "Specialization (optional)",
+        healthLocation: "Location (optional)",
+        healthContact: "Public contact (phone or email)",
+        healthCredentialType: "Credential type",
+        healthCredentialNumber: "Registration or credential number",
+        healthCredentialDocument: "Supporting credential document (PDF, JPG, PNG; max 5 MB)",
+        healthSubmitApplication: "Submit for admin review",
+        healthStatusNotSubmitted: "No application has been submitted.",
+        healthStatusPending: "Your application is pending review.",
+        healthStatusApproved: "Your application is approved. Your profile is listed in the verified directory.",
+        healthStatusRejected: "Your application was rejected. Reason:",
+        healthDirectoryLoading: "Loading health professionals…",
+        healthDirectoryEmpty: "No approved health professionals are listed yet.",
+        healthDirectoryProfession: "Profession",
+        healthDirectorySpecialization: "Specialization",
+        healthDirectoryLocation: "Location",
+        healthDirectoryContact: "Contact directly",
+        healthVerifiedBadge: "Admin approved",
+        healthOpenContact: "Contact",
+        healthAdminApplications: "Health professional applications",
+        healthAdminEmpty: "No health professional applications are waiting for review.",
+        healthCredentialNumberLabel: "Credential number",
+        healthViewCredential: "View credential",
+        healthApprove: "Approve",
+        healthReject: "Reject",
+        healthConfirmReject: "Confirm rejection",
+        healthRejectReason: "Enter a reason for rejection",
+        healthApplicationReviewed: "Application review completed.",
+        healthDocumentFailed: "Could not download the credential document.",
+        // English translations
+        createQuestion: "Create a question",
+        Professionals:"Professionals",
+        healthprofessional:"Health Professionals",
 
         /* Services */
         modBlood: "Blood Donation",
@@ -760,6 +843,12 @@ const TEXT = {
         availableCollectors: "Available Waste Collectors",
         noRequestsYet: "No waste pickup requests found.",
         noCollectorsFound: "No collectors found for this area.",
+        wasteViewReviews: "View reviews",
+        wasteHideReviews: "Hide reviews",
+        wasteLoadingReviews: "Loading reviews…",
+        wasteNoReviews: "No reviews yet.",
+        wasteReviewsFailed: "Could not load reviews.",
+        wasteRetryReviews: "Retry reviews",
         statusRequested: "Requested",
         statusContacted: "Contacted",
         statusCompleted: "Completed",
@@ -985,6 +1074,7 @@ const TEXT = {
         statusRemoved: "Removed",
         updateStatus: "Update status",
         expressInterest: "Express interest",
+        interestSent: "Interest sent",
         reportListing: "Report this listing",
         reason: "Reason",
         detailsOptional: "Details (optional)",
@@ -1026,7 +1116,8 @@ const TEXT = {
         requestedBy: "Requested by",
         yourDonorProfile: "This is your donor profile.",
         rateDonor: "Rate donor",
-        ratingsCount: "{count} ratings"
+        ratingsCount: "{count} ratings",
+        openQuestion: "Open question"
     }
 };
 

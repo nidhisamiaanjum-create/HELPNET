@@ -25,6 +25,11 @@ urlpatterns = [
         name="admin-verification-list",
     ),
     path(
+        "admin/<uuid:verification_id>/document/",
+        views.AdminVerificationDocumentView.as_view(),
+        name="admin-verification-document",
+    ),
+    path(
     "admin/<uuid:verification_id>/action/",
     views.AdminVerificationActionView.as_view(),
     name="admin-verification-action",

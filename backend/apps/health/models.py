@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from .storage import HealthCredentialStorage
+
 
 class HealthQuestion(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="health_questions")
@@ -41,6 +43,23 @@ class HealthProfessional(models.Model):
     specialization = models.CharField(max_length=150, blank=True)
     location = models.CharField(max_length=255, blank=True)
     contact = models.CharField(max_length=255, blank=True)
+    credential_type = models.CharField(max_length=100, blank=True)
+    credential_number = models.CharField(max_length=100, blank=True)
+    credential_document = models.FileField(
+        storage=HealthCredentialStorage(),
+        upload_to="health_credentials/%Y/%m/",
+        blank=True,
+        null=True,
+    )
+    rejection_reason = models.TextField(blank=True)
+    reviewed_at = models.DateTimeField(blank=True, null=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="health_professional_reviews",
+    )
     verification_status = models.CharField(max_length=12, choices=VerificationStatus.choices, default=VerificationStatus.PENDING)
 
     class Meta:

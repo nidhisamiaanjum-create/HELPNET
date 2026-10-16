@@ -67,11 +67,14 @@ async function loadGoodsList() {
                 image.style.maxWidth = "100%";
                 image.style.maxHeight = "280px";
                 card.appendChild(image);
+                card.appendChild(document.createElement("br"));
+                card.appendChild(document.createElement("br"));
             }
             const details = document.createElement("a");
             details.className = "small-btn";
             details.href = `/goods-details/?listing_id=${encodeURIComponent(listing.id)}`;
-            details.textContent = "Details";
+            details.textContent =
+                typeof t === "function" ? t("details") : "Details";
             card.appendChild(details);
             target.appendChild(card);
         });
@@ -157,6 +160,13 @@ async function loadGoodsDetails() {
         ownerControls.hidden = !listing.is_owner;
         document.getElementById("goodsStatus").value = listing.status;
         document.getElementById("goodsInterestControls").hidden = listing.is_owner || listing.status !== "Available";
+        const interestButton = document.getElementById("goodsInterestButton");
+        if (interestButton) {
+            interestButton.disabled = Boolean(listing.user_has_interest);
+            interestButton.textContent = listing.user_has_interest
+                ? (typeof t === "function" ? t("interestSent") : "Interest sent")
+                : (typeof t === "function" ? t("expressInterest") : "Express Interest");
+        }
         document.getElementById("goodsReportForm").dataset.listingId = listing.id;
         document.getElementById("goodsReportForm").hidden = listing.is_owner;
     } catch (error) {
@@ -167,17 +177,20 @@ async function loadGoodsDetails() {
 async function expressGoodsInterest() {
     const listingId = goodsListingId();
     if (!listingId) return goodsShowMessage("goodsMessage", "This listing link is missing its ID.", "error");
+    const button = document.getElementById("goodsInterestButton");
+    if (button) button.disabled = true;
     try {
         const response = await goodsRequest(`/api/goods/listings/${encodeURIComponent(listingId)}/interest/`, "POST", {});
         goodsShowMessage("goodsMessage", response.message || "Interest sent.", "success");
         const button = document.getElementById("goodsInterestButton");
         if (button) {
             button.disabled = true;
-            button.textContent = "Interest sent";
+            button.textContent = typeof t === "function" ? t("interestSent") : "Interest sent";
         }
         await loadGoodsDetails();
     } catch (error) {
         goodsShowMessage("goodsMessage", error.message, "error");
+        if (button) button.disabled = false;
     }
 }
 

@@ -100,6 +100,40 @@ class WastePickupTests(APITestCase):
         req.refresh_from_db()
         self.assertEqual(req.status, "Contacted")
 
+    def test_citizen_cannot_read_or_delete_another_users_pickup_request(self):
+        another_citizen = User.objects.create_user(
+            phone_number="01710009999",
+            email="another-waste-citizen@example.com",
+            full_name="Another Citizen",
+            password="password123",
+            role="Citizen",
+        )
+        request = WastePickupRequest.objects.create(
+            requester=another_citizen,
+            waste_type="Organic",
+            area="Dhanmondi",
+            location="Private address",
+        )
+        self.client.force_authenticate(user=self.citizen)
+        detail_url = reverse("waste-request-detail", kwargs={"id": request.id})
+
+        self.assertEqual(self.client.get(detail_url).status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(self.client.delete(detail_url).status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(WastePickupRequest.objects.filter(pk=request.pk).exists())
+
+    def test_requester_can_delete_own_pickup_request(self):
+        request = WastePickupRequest.objects.create(
+            requester=self.citizen,
+            waste_type="Organic",
+            area="Dhanmondi",
+            location="Own address",
+        )
+        self.client.force_authenticate(user=self.citizen)
+        detail_url = reverse("waste-request-detail", kwargs={"id": request.id})
+
+        self.assertEqual(self.client.delete(detail_url).status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(WastePickupRequest.objects.filter(pk=request.pk).exists())
+
     def test_area_matching_collectors(self):
         self.client.force_authenticate(user=self.citizen)
         url = reverse("waste-available-collectors") + "?area=Dhanmondi"
@@ -171,6 +205,35 @@ class WastePickupTests(APITestCase):
         result = next(item for item in requests_response.data if item["id"] == str(pickup.id))
         self.assertEqual(result["collector_details"]["id"], str(collector.id))
         self.assertEqual(result["collector_details"]["phone"], collector.phone)
+
+    def test_volunteer_collector_profile_uses_user_id_and_respects_privacy(self):
+        self.client.force_authenticate(user=self.citizen)
+        url = reverse(
+            "waste-collector-profile",
+            kwargs={"collector_id": self.volunteer.user_id},
+        )
+
+        private_response = self.client.get(url)
+        self.assertEqual(private_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(private_response.data["profile_type"], "volunteer_user")
+        self.assertEqual(private_response.data["data"]["full_name"], self.volunteer.full_name)
+        self.assertEqual(private_response.data["data"]["phone_number"], "")
+        self.assertEqual(private_response.data["data"]["location"], "")
+
+        self.volunteer.is_phone_visible = True
+        self.volunteer.is_location_visible = True
+        self.volunteer.save(update_fields=["is_phone_visible", "is_location_visible"])
+        visible_response = self.client.get(url)
+        self.assertEqual(visible_response.data["data"]["phone_number"], self.volunteer.phone_number)
+        self.assertEqual(visible_response.data["data"]["location"], self.volunteer.location)
+
+    def test_collector_profile_does_not_expose_non_volunteer_users(self):
+        self.client.force_authenticate(user=self.citizen)
+        url = reverse(
+            "waste-collector-profile",
+            kwargs={"collector_id": self.other_user.user_id},
+        )
+        self.assertEqual(self.client.get(url).status_code, status.HTTP_404_NOT_FOUND)
 
 
 class EndToEndStoryTests(APITestCase):

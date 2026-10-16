@@ -1,8 +1,92 @@
 some pages don't have back button
 some ui need fixing(css not working)
-2nd-hand good interest option not working
+2nd-hand good interest option not working — fixed: interest persists in the
+detail response and the UI retains the confirmed state after reload.
 waste collector review not showing
 old bug of normal user or voluteer added as waste collector didn't fix
 T-12 sprint5 error
 request for verification in nid-verification.html
 
+
+Verified triage and fixes (2026-10-16)
+======================================
+
+Fixed in this pass
+------------------
+- Waste pickup showed a Rate button for volunteer suggestions that have no
+  WasteCollector record ID. Removed that non-working action for suggestions;
+  saved WasteCollector records retain the working rating action.
+- Existing collector reviews could be retrieved from the ratings endpoint but
+  were not visible from the collector list. Added an expandable View reviews
+  control for saved collectors, with loading, empty, retry, and error states.
+  Review text is rendered as text content. Added responsive review-card styles
+  and Bangla/English button labels.
+- Added a Selenium check covering saved collector reviews, the absence of the
+  volunteer Rate button, and mobile-width horizontal overflow.
+
+Previously reported items checked
+---------------------------------
+- Second-hand goods interest: the detail-page button calls the existing
+  interest endpoint, and the endpoint prevents duplicate/self interest. The
+  backend test and existing browser interest/contact test passed. No further
+  fix was needed.
+- NID verification submission: the form calls the existing submit/status APIs.
+  The existing ST 12 browser scenario passed (missing-file validation and
+  pending status). No further fix was needed.
+- Volunteer duplicate signup (S4-T12): the backend rejects duplicate signups
+  with HTTP 400, covered by the Django volunteer test. The old Selenium case
+  opens `/volunteer.html`; the current app route is `/volunteer-opportunities/`
+  and its signup actions are rendered from the API. Treat the old browser case
+  as a stale route assumption, not evidence to change the working signup API.
+- Waste collector source: `/api/waste/collectors/available/` intentionally
+  lists Volunteer-role users. `/api/waste/collectors/` lists community-shared
+  collector records; the UI identifies their submitter as "Shared by". No evidence
+  supports changing those role rules; this remains a product-rule question.
+
+Remaining test discrepancy
+--------------------------
+- The live-server `test_collector_rating_and_report` exposed a real mismatch:
+  it opens `/collector-details/?id=...` with a Volunteer User UUID, while the
+  details page only used the WasteCollector-specific profile and rating APIs.
+  The page now supports Volunteer profiles through the existing general user
+  rating and report APIs. Phone and location are returned only when the
+  volunteer enabled visibility. Saved WasteCollector records continue using
+  the separate waste-rating API; their report form is hidden because that
+  endpoint has no defined reported-user mapping. Django API regression tests
+  cover volunteer profile access, privacy, and rejecting non-volunteer UUIDs.
+- The targeted Selenium rerun could not start Chrome in this environment
+  (`DevToolsActivePort file doesn't exist`; Selenium Manager cache access was
+  denied), so browser confirmation of the repaired rating/report flow remains
+  unverified here. The prior failure was a real app contract issue; this rerun
+  failure is an environment issue.
+- The full pytest run completed with 86 passed and one unrelated failure:
+  goods listing image persistence raised `PermissionError` creating its
+  temporary `goods_images` directory under the Windows temp root. The focused
+  waste suite passed (12 tests), so this failure did not involve this change.
+
+UI and goods interest fixes
+---------------------------
+- Verification approve/reject controls used the global full-width `.btn`
+  rule inside a side-by-side action row, making labels overlap or buttons
+  overflow. Scoped flex sizing, wrapping, and spacing now keep them usable.
+- Admin volunteer filters now use a responsive grid. Volunteer opportunity,
+  health question, and goods-list cards use wrapping action links and safe
+  text wrapping at narrow widths.
+- Goods detail now receives the authenticated user's existing interest state.
+  After interest is recorded the action stays disabled and shows a translated
+  “Interest sent” label after reload, while seller contact remains available
+  through the existing privacy-gated detail response.
+- Verification with Selenium is blocked in this Windows environment because
+  Chrome crashes during startup (`DevToolsActivePort file doesn't exist`) and
+  Selenium Manager cannot write its cache. Node.js is also unavailable, so
+  JavaScript syntax checks could not be run here.
+- The previous full Selenium run had 59 passed and 19 failed. Most failures
+  came from `test_annotoma.py` and `test_mokarram.py`, which hard-code
+  `127.0.0.1:8000`, depend on pre-seeded accounts/session state, or navigate
+  legacy page URLs/selectors. These tests do not start the current Django live
+  server. Do not treat their failures as confirmed current-app defects until
+  run against the intended seeded server or migrated to live-server fixtures.
+- Current stylesheet references inspected in frontend pages use the shared
+  Django static `css/style.css` path. The existing farmer responsive browser
+  case passed. A full visual review of every page at mobile and desktop sizes
+  is still outstanding.

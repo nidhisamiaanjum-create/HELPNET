@@ -56,7 +56,7 @@
 <section class="card">
 
     <h1 data-i18n="nidTitle">
-        NID যাচাই
+        NID যাচাই অবস্থা 
     </h1>
 
     <p class="subtitle" data-i18n="nidSubtitle">
@@ -93,6 +93,11 @@
                     value="birth_certificate"
                     data-i18n="docBirth">
                     জন্ম নিবন্ধন
+                </option>
+                <option
+                    value="birth_certificate"
+                    data-i18n="docbmdc">
+                    বিএমডিসি সনদ
                 </option>
 
             </select>
@@ -174,7 +179,7 @@
     <a
         href="/profile/"
         class="back-link"
-        data-i18n="backToProfile">
+        data-i18n="backToProfile" data-smart-back>
         ← প্রোফাইলে ফিরে যান
     </a>
 </p>
@@ -182,7 +187,7 @@
     <a
         href="/dashboard/"
         class="back-link"
-        data-i18n="backToDashboard">
+        data-i18n="backToDashboard" data-smart-back>
         ← Dashboard ফিরে যান
     </a>
 
@@ -199,5 +204,5 @@
 <script src="{% static 'js/auth.js' %}"></script>
 
 <script src="{% static 'js/nid-verification.js' %}"></script>
-
-</body> </html>
+<script src="/js/health-verification-admin.js"></script>
+<script src="{% static 'js/navigation.js' %}"></script></body> </html>

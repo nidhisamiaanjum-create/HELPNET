@@ -19,3 +19,5 @@ class HealthProfessionalAdmin(admin.ModelAdmin):
     list_display = ("name", "profession", "specialization", "verification_status")
     list_filter = ("verification_status",)
     search_fields = ("name", "profession", "specialization")
+    exclude = ("credential_document",)
+    readonly_fields = ("verification_status", "credential_type", "credential_number", "reviewed_at", "reviewed_by")
