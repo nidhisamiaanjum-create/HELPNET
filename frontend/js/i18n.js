@@ -205,7 +205,6 @@ const TEXT = {
         docNid: "জাতীয় পরিচয়পত্র (NID)",
         docPassport: "পাসপোর্ট",
         docBirth: "জন্ম নিবন্ধন",
-        docbmdc:"বিএমডিসি সনদ",
         uploadLabel: "নথি আপলোড করুন",
         uploadHint: "JPG, PNG অথবা PDF গ্রহণযোগ্য। সর্বোচ্চ ফাইল সাইজ 5 MB।",
         submitForReview: "যাচাইয়ের জন্য পাঠান",
@@ -529,6 +528,7 @@ const TEXT = {
         rateDonor: "রক্তদাতাকে রেটিং দিন",
         ratingsCount: "{count}টি রেটিং",
         openQuestion: "প্রশ্ন খুলুন",
+        opportunities:"সুযোগসমূহ",
         healthProfessionalDisclaimer: "এখানে তালিকাভুক্ত স্বাস্থ্য-পেশাজীবীরা কেবল পরিচিতির উদ্দেশ্যে দেখানো হয়েছে। HELPNET কোনো পেশাজীবীকে অনুমোদন করে না বা চিকিৎসা-নির্ণয় দেয় না.",
         healthApplyTitle: "স্বাস্থ্য-পেশাজীবী হিসেবে তালিকাভুক্তির আবেদন",
         healthApplyInfo: "প্রশাসকের পর্যালোচনার জন্য আপনার পেশাগত সনদ জমা দিন। অনুমোদন ম্যানুয়ালি দেওয়া হয়; এটি HELPNET-এর সমর্থন বা স্বতন্ত্র সনদ যাচাই বোঝায় না।",
@@ -739,7 +739,6 @@ const TEXT = {
         docNid: "National ID (NID)",
         docPassport: "Passport",
         docBirth: "Birth certificate",
-        docbmdc:"BMDC certificate",
         uploadLabel: "Upload document",
         uploadHint: "JPG, PNG or PDF accepted. Max file size 5 MB.",
         submitForReview: "Submit for verification",
@@ -1117,7 +1116,8 @@ const TEXT = {
         yourDonorProfile: "This is your donor profile.",
         rateDonor: "Rate donor",
         ratingsCount: "{count} ratings",
-        openQuestion: "Open question"
+        openQuestion: "Open question",
+        opportunities:"Opportunities"
     }
 };
 

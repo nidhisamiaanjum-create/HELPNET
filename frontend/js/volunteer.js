@@ -23,7 +23,8 @@ async function loadOpportunities() {
             const card = document.createElement("article"); card.className = "admin-item";
             volunteerText(card, "h3", event.title); volunteerText(card, "p", `${event.date} · ${event.location} · ${event.signup_count}/${event.required_volunteers} volunteers`);
             volunteerText(card, "p", event.description); volunteerText(card, "p", `Coordinator: ${event.coordinator_name} · ${event.status}`);
-            const detailsLink = document.createElement("a"); detailsLink.className = "small-btn"; detailsLink.href = `/volunteer-opportunity-details/?event_id=${encodeURIComponent(event.id)}`; detailsLink.textContent = "View details";
+            const detailsLink = document.createElement("a"); detailsLink.className = "small-btn"; detailsLink.style.marginRight = "10px";
+            detailsLink.href = `/volunteer-opportunity-details/?event_id=${encodeURIComponent(event.id)}`; detailsLink.textContent = "View details";
             card.appendChild(detailsLink);
             const isParticipant = Boolean(event.is_signed_up || (isVolunteerCoordinator() && String(event.coordinator) === String(currentUserId)));
             if (isParticipant) {
@@ -31,12 +32,13 @@ async function loadOpportunities() {
                 messageBtn.className = "small-btn message-thread-btn";
                 messageBtn.href = `/volunteer-message/?event_id=${encodeURIComponent(event.id)}`;
                 messageBtn.textContent = "Message thread";
+
                 card.appendChild(messageBtn);
             }
             if (isVolunteerCoordinator()) {
                 const actions = document.createElement("div"); actions.className = "admin-actions";
                 const statusButton = document.createElement("button"); statusButton.type = "button"; statusButton.className = "small-btn"; statusButton.textContent = event.status === "Open" ? "Close opportunity" : "Reopen opportunity";
-                statusButton.addEventListener("click", async () => { try { await apiRequest(`/api/volunteer/opportunities/${event.id}/`, "PATCH", {status: event.status === "Open" ? "Closed" : "Open"}); volunteerNotice("Opportunity status updated.", "success"); await loadOpportunities(); } catch (e) { volunteerNotice(e.message, "error"); } });
+                statusButton.addEventListener("click", async () => { try { await apiRequest(`/api/volunteer/opportunities/${event.id}/`, "PATCH", { status: event.status === "Open" ? "Closed" : "Open" }); volunteerNotice("Opportunity status updated.", "success"); await loadOpportunities(); } catch (e) { volunteerNotice(e.message, "error"); } });
                 const attendanceLink = document.createElement("a"); attendanceLink.className = "small-btn"; attendanceLink.href = `/volunteer-attendance/?event_id=${encodeURIComponent(event.id)}`; attendanceLink.textContent = "Manage attendance";
                 actions.append(statusButton, attendanceLink); card.appendChild(actions);
             } else if (volunteerRole() === "volunteer" && event.status === "Open" && !event.is_signed_up && event.signup_count < event.required_volunteers) {
@@ -62,7 +64,7 @@ async function loadOpportunityDetails() {
         return;
     }
     try {
-        const {data: event} = await apiRequest(`/api/volunteer/opportunities/${eventId}/`);
+        const { data: event } = await apiRequest(`/api/volunteer/opportunities/${eventId}/`);
         target.replaceChildren();
         volunteerText(target, "h1", event.title);
         volunteerText(target, "p", `${event.date} · ${event.location}`);
@@ -75,9 +77,15 @@ async function loadOpportunityDetails() {
         if (isParticipant) {
             const threadBtn = document.createElement("a");
             threadBtn.id = "messageThreadBtn";
-            threadBtn.className = "btn message-thread-btn";
+            threadBtn.className = "small-btn message-thread-btn";
             threadBtn.href = `/volunteer-message/?event_id=${encodeURIComponent(event.id)}`;
             threadBtn.textContent = "Message thread";
+            threadBtn.style.textDecoration = "none";
+            threadBtn.style.display = "inline-block";
+            threadBtn.style.marginTop = "12px";
+            threadBtn.style.marginBottom = "12px";
+            threadBtn.style.position = "relative";
+
             target.appendChild(threadBtn);
         }
         if (volunteerRole() === "volunteer" && event.is_signed_up) {
@@ -114,8 +122,10 @@ async function loadAttendance() {
     try {
         const response = await apiRequest(`/api/volunteer/opportunities/${eventId}/attendance/`); target.replaceChildren();
         if (!response.data.length) { volunteerText(target, "p", "No volunteer signups yet."); return; }
-        response.data.forEach(item => { const row = document.createElement("article"); row.className = "admin-item"; volunteerText(row, "h3", item.volunteer_name); volunteerText(row, "p", `Check in: ${item.check_in_time || "Not checked in"} · Check out: ${item.check_out_time || "Not checked out"}`);
-            [["Check in", "check_in"], ["Check out", "check_out"]].forEach(([label, action]) => { const button = document.createElement("button"); button.type = "button"; button.className = "small-btn"; button.textContent = label; button.addEventListener("click", async () => { try { await apiRequest(`/api/volunteer/opportunities/${eventId}/attendance/`, "POST", {volunteer_id: item.volunteer, action}); await loadAttendance(); } catch (e) { volunteerNotice(e.message, "error"); } }); row.appendChild(button); }); target.appendChild(row); });
+        response.data.forEach(item => {
+            const row = document.createElement("article"); row.className = "admin-item"; volunteerText(row, "h3", item.volunteer_name); volunteerText(row, "p", `Check in: ${item.check_in_time || "Not checked in"} · Check out: ${item.check_out_time || "Not checked out"}`);
+            [["Check in", "check_in"], ["Check out", "check_out"]].forEach(([label, action]) => { const button = document.createElement("button"); button.type = "button"; button.className = "small-btn"; button.textContent = label; button.addEventListener("click", async () => { try { await apiRequest(`/api/volunteer/opportunities/${eventId}/attendance/`, "POST", { volunteer_id: item.volunteer, action }); await loadAttendance(); } catch (e) { volunteerNotice(e.message, "error"); } }); row.appendChild(button); }); target.appendChild(row);
+        });
     } catch (e) { volunteerNotice(e.message, "error"); }
 }
 
@@ -231,21 +241,44 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!requireLogin()) return;
     if (document.getElementById("opportunityDetail")) loadOpportunityDetails();
     if (document.getElementById("opportunityList")) {
+        const opportunityList = document.getElementById("opportunityList");
+
+        // Create a separate navigation container.
+        const navContainer = document.createElement("div");
+        navContainer.className = "volunteer-navigation";
+        navContainer.style.display = "flex";
+        navContainer.style.flexWrap = "wrap";
+        navContainer.style.alignItems = "center";
+        navContainer.style.gap = "12px";
+        navContainer.style.marginBottom = "20px";
+
+        // Event Messages button.
         const messageNavBtn = document.createElement("a");
         messageNavBtn.href = "/volunteer-message/";
-        messageNavBtn.className = "btn";
+        messageNavBtn.className = "small-btn";
+        messageNavBtn.style.textDecoration = "none";
         messageNavBtn.id = "eventMessagesLink";
-        messageNavBtn.textContent = "Event messages";
-        messageNavBtn.style.marginRight = "10px";
-        document.getElementById("opportunityList").before(messageNavBtn);
+        messageNavBtn.textContent = "Event Messages";
+
+        navContainer.appendChild(messageNavBtn);
+
+        // Create Opportunity button for coordinators.
         if (isVolunteerCoordinator()) {
-            const createLink = document.createElement("a"); createLink.href = "/create-opportunity/"; createLink.className = "btn"; createLink.textContent = "Create opportunity";
-            document.getElementById("opportunityList").before(createLink);
+            const createLink = document.createElement("a");
+            createLink.href = "/create-opportunity/";
+            createLink.className = "btn";
+            createLink.textContent = "Create opportunity";
+
+            navContainer.appendChild(createLink);
         }
+
+        // Insert navigation above the opportunity list.
+        opportunityList.before(navContainer);
+
         loadOpportunities();
     }
     const createForm = document.getElementById("opportunityForm");
-    createForm?.addEventListener("submit", async e => { e.preventDefault(); try { await apiRequest("/api/volunteer/opportunities/", "POST", {title: document.getElementById("eventTitle").value.trim(), description: document.getElementById("eventDescription").value.trim(), date: document.getElementById("eventDate").value, location: document.getElementById("eventLocation").value.trim(), required_volunteers: Number(document.getElementById("eventRequired").value)}); createForm.reset(); volunteerNotice("Opportunity created.", "success"); } catch (error) { volunteerNotice(error.message, "error"); } });
+    createForm?.addEventListener("submit", async e => { e.preventDefault(); try { await apiRequest("/api/volunteer/opportunities/", "POST", { title: document.getElementById("eventTitle").value.trim(), description: document.getElementById("eventDescription").value.trim(), date: document.getElementById("eventDate").value, location: document.getElementById("eventLocation").value.trim(), required_volunteers: Number(document.getElementById("eventRequired").value) }); createForm.reset(); volunteerNotice("Opportunity created.", "success"); } catch (error) { volunteerNotice(error.message, "error"); } });
     if (document.getElementById("attendanceList")) {
         document.getElementById("attendanceEvent")?.addEventListener("change", loadAttendance);
         loadAttendanceEvents();
@@ -254,9 +287,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("messageEventId")?.addEventListener("change", loadMessages);
         loadMessageEvents();
     }
-    document.getElementById("eventMessageForm")?.addEventListener("submit", async e => { e.preventDefault(); const id = volunteerEventId(); if (!id) return volunteerNotice("Enter an event ID and load its messages first.", "error"); try { await apiRequest(`/api/volunteer/opportunities/${id}/messages/`, "POST", {message: document.getElementById("eventMessage").value.trim()}); e.target.reset(); await loadMessages(); volunteerNotice("Message sent.", "success"); } catch (error) { volunteerNotice(error.message, "error"); } });
+    document.getElementById("eventMessageForm")?.addEventListener("submit", async e => { e.preventDefault(); const id = volunteerEventId(); if (!id) return volunteerNotice("Enter an event ID and load its messages first.", "error"); try { await apiRequest(`/api/volunteer/opportunities/${id}/messages/`, "POST", { message: document.getElementById("eventMessage").value.trim() }); e.target.reset(); await loadMessages(); volunteerNotice("Message sent.", "success"); } catch (error) { volunteerNotice(error.message, "error"); } });
     document.getElementById("certificateEvent")?.addEventListener("change", loadCertificateVolunteers);
-    document.getElementById("issueCertificateForm")?.addEventListener("submit", async e => { e.preventDefault(); const id = document.getElementById("certificateEvent").value; const volunteerId = document.getElementById("certificateVolunteer").value; if (!id || !volunteerId) return volunteerNotice("Load an event's signed-up volunteers and select one.", "error"); try { await apiRequest(`/api/volunteer/opportunities/${id}/certificates/`, "POST", {volunteer_id: volunteerId}); volunteerNotice("Certificate issued.", "success"); await loadCertificates(); } catch (error) { volunteerNotice(error.message, "error"); } });
+    document.getElementById("issueCertificateForm")?.addEventListener("submit", async e => { e.preventDefault(); const id = document.getElementById("certificateEvent").value; const volunteerId = document.getElementById("certificateVolunteer").value; if (!id || !volunteerId) return volunteerNotice("Load an event's signed-up volunteers and select one.", "error"); try { await apiRequest(`/api/volunteer/opportunities/${id}/certificates/`, "POST", { volunteer_id: volunteerId }); volunteerNotice("Certificate issued.", "success"); await loadCertificates(); } catch (error) { volunteerNotice(error.message, "error"); } });
     if (document.getElementById("certificateList")) { loadCertificates(); loadCoordinatedEvents(); }
 });
 
@@ -272,7 +305,7 @@ async function loadCertificates() {
             const button = document.createElement("button"); button.className = "small-btn"; button.type = "button"; button.textContent = "Download PDF";
             button.addEventListener("click", async () => {
                 try {
-                    const pdfResponse = await fetch(`${API_BASE}/api/volunteer/certificates/${cert.id}/pdf/`, {headers: {Authorization: `Bearer ${getToken()}`}});
+                    const pdfResponse = await fetch(`${API_BASE}/api/volunteer/certificates/${cert.id}/pdf/`, { headers: { Authorization: `Bearer ${getToken()}` } });
                     if (!pdfResponse.ok) throw new Error("Could not download certificate.");
                     const url = URL.createObjectURL(await pdfResponse.blob()); const link = document.createElement("a");
                     link.href = url; link.download = `volunteer-certificate-${cert.id}.pdf`; document.body.appendChild(link); link.click(); link.remove();
