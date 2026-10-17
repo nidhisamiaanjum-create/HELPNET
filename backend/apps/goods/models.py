@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import F, Q
 
 
 class GoodsListing(models.Model):
@@ -42,6 +43,31 @@ class GoodsInterest(models.Model):
     class Meta:
         constraints = [models.UniqueConstraint(fields=["listing", "interested_user"], name="unique_goods_interest_per_user_listing")]
         ordering = ["-created_at"]
+
+
+class GoodsConversation(models.Model):
+    listing = models.ForeignKey(GoodsListing, on_delete=models.CASCADE, related_name="conversations")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="goods_conversations_as_owner")
+    interested_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="goods_conversations_as_interested")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["listing", "owner", "interested_user"], name="unique_goods_conversation_pair"),
+            models.CheckConstraint(condition=~Q(owner=F("interested_user")), name="goods_conversation_distinct_participants"),
+        ]
+        ordering = ["-updated_at"]
+
+
+class GoodsMessage(models.Model):
+    conversation = models.ForeignKey(GoodsConversation, on_delete=models.CASCADE, related_name="messages")
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="goods_messages")
+    message = models.CharField(max_length=2000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "pk"]
 
 
 class GoodsReport(models.Model):

@@ -26,6 +26,20 @@ function renderNotifications(notifications) {
         date.dateTime = notification.created_at;
         date.textContent = new Date(notification.created_at).toLocaleString();
         content.append(message, date);
+        if (notification.action_url) {
+            const action = document.createElement("a");
+            action.className = "small-btn";
+            action.href = notification.action_url;
+            action.textContent = "Open related conversation";
+            action.addEventListener("click", async (event) => {
+                event.preventDefault();
+                try {
+                    if (!notification.is_read) await apiRequest(`/api/notifications/${notification.id}/read/`, "POST");
+                    window.location.href = notification.action_url;
+                } catch (error) { showNotificationMessage(error.message, "error"); }
+            });
+            content.appendChild(action);
+        }
         item.appendChild(content);
 
         if (!notification.is_read) {
@@ -49,6 +63,7 @@ async function loadNotifications() {
     try {
         const response = await apiRequest("/api/notifications/");
         renderNotifications(response.data || []);
+        window.dispatchEvent(new Event("helpnet:notifications-updated"));
         showNotificationMessage("");
     } catch (error) {
         showNotificationMessage(error.message, "error");
@@ -58,6 +73,7 @@ async function loadNotifications() {
 async function markNotificationRead(notificationId) {
     try {
         await apiRequest(`/api/notifications/${notificationId}/read/`, "POST");
+        window.dispatchEvent(new Event("helpnet:notifications-updated"));
         showNotificationMessage("Notification marked as read.", "success");
         await loadNotifications();
     } catch (error) {

@@ -8,7 +8,8 @@ from django.test import Client, TestCase, override_settings
 from rest_framework.test import APIClient
 
 from apps.reports.models import Report
-from .models import GoodsInterest, GoodsListing, GoodsReport
+from apps.notifications.models import Notification
+from .models import GoodsConversation, GoodsInterest, GoodsListing, GoodsMessage, GoodsReport
 
 
 User = get_user_model()
@@ -124,8 +125,49 @@ class GoodsExchangeTests(TestCase):
         first = self.api.post(url, {}, format="json")
         duplicate = self.api.post(url, {}, format="json")
         self.assertEqual(first.status_code, 201)
-        self.assertEqual(duplicate.status_code, 400)
+        self.assertEqual(duplicate.status_code, 200)
         self.assertEqual(GoodsInterest.objects.filter(listing=self.listing, interested_user=self.other).count(), 1)
+        self.assertEqual(GoodsConversation.objects.filter(listing=self.listing).count(), 1)
+        self.assertEqual(Notification.objects.filter(user=self.owner, notification_type="goods_interest").count(), 1)
+        self.assertEqual(first.data["data"]["conversation_id"], duplicate.data["data"]["conversation_id"])
+
+    def test_goods_chat_is_private_and_supports_messages(self):
+        self.api.force_authenticate(self.other)
+        interest = self.api.post(f"/api/goods/listings/{self.listing.pk}/interest/", {}, format="json")
+        conversation_id = interest.data["data"]["conversation_id"]
+        conversation_url = f"/api/goods/conversations/{conversation_id}/"
+        sent = self.api.post(conversation_url, {"message": "Is it available?"}, format="json")
+        self.assertEqual(sent.status_code, 201)
+        self.assertEqual(sent.data["data"]["message"], "Is it available?")
+
+        self.api.force_authenticate(self.owner)
+        history = self.api.get(conversation_url)
+        self.assertEqual(history.status_code, 200)
+        self.assertEqual(history.data["data"]["messages"][0]["sender_id"], self.other.pk)
+        reply = self.api.post(conversation_url, {"message": "Yes, it is."}, format="json")
+        self.assertEqual(reply.status_code, 201)
+
+        third = User.objects.create_user(phone_number="01000000014", email="third@example.test", full_name="Third", password="pw")
+        self.api.force_authenticate(third)
+        self.assertEqual(self.api.get(conversation_url).status_code, 403)
+        self.assertEqual(self.api.post(conversation_url, {"message": "intrude"}, format="json").status_code, 403)
+        self.assertEqual(self.api.get("/api/goods/conversations/").data["data"], [])
+
+    def test_goods_chat_rejects_empty_or_oversized_messages(self):
+        self.api.force_authenticate(self.other)
+        result = self.api.post(f"/api/goods/listings/{self.listing.pk}/interest/", {}, format="json")
+        url = f"/api/goods/conversations/{result.data['data']['conversation_id']}/"
+        self.assertEqual(self.api.post(url, {"message": "  "}, format="json").status_code, 400)
+        self.assertEqual(self.api.post(url, {"message": "x" * 2001}, format="json").status_code, 400)
+
+    def test_interested_users_are_visible_only_to_listing_owner(self):
+        self.api.force_authenticate(self.other)
+        self.api.post(f"/api/goods/listings/{self.listing.pk}/interest/", {}, format="json")
+        self.assertEqual(self.api.get(f"/api/goods/listings/{self.listing.pk}/interested-users/").status_code, 403)
+        self.api.force_authenticate(self.owner)
+        response = self.api.get(f"/api/goods/listings/{self.listing.pk}/interested-users/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["data"][0]["user_id"], self.other.pk)
 
     def test_interest_reveals_contact_details_only_after_interest_is_confirmed(self):
         self.api.force_authenticate(self.other)

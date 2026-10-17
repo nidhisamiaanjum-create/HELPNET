@@ -21,3 +21,54 @@ document.addEventListener("click", event => {
         window.history.back();
     }
 });
+
+function updateNotificationBadge(unreadCount) {
+    const badge = document.querySelector(".notification-unread-badge");
+    if (badge) {
+        badge.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
+        badge.hidden = unreadCount === 0;
+    }
+    const dashboardCount = document.getElementById("notificationCount");
+    if (dashboardCount) dashboardCount.textContent = String(unreadCount);
+}
+
+async function refreshNotificationBadge() {
+    if (typeof getToken !== "function" || !getToken() || typeof apiRequest !== "function") return;
+    try {
+        const response = await apiRequest("/api/notifications/");
+        const unreadCount = (response.data || []).filter(item => !item.is_read).length;
+        updateNotificationBadge(unreadCount);
+    } catch (error) {
+        // Keep navigation usable when the notification service is temporarily unavailable.
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    if (typeof getToken !== "function" || !getToken()) return;
+    const header = document.querySelector(".site-header");
+    if (!header) return;
+    let link = header.querySelector(".notification-nav-link");
+    if (!link) {
+        link = document.createElement("a");
+        link.href = "/notifications/";
+        link.className = "notification-nav-link";
+        link.setAttribute("aria-label", "Notifications");
+        link.title = "Notifications";
+        link.textContent = "\u{1F514}";
+        const actions = header.querySelector(".header-actions, nav");
+        (actions || header).appendChild(link);
+    }
+    let badge = link.querySelector(".notification-unread-badge");
+    if (!badge) {
+        badge = document.createElement("span");
+        badge.className = "notification-unread-badge";
+        badge.setAttribute("aria-live", "polite");
+        badge.setAttribute("aria-label", "Unread notifications");
+        badge.hidden = true;
+        link.appendChild(badge);
+    }
+    refreshNotificationBadge();
+    window.setInterval(refreshNotificationBadge, 30000);
+    window.addEventListener("focus", refreshNotificationBadge);
+    window.addEventListener("helpnet:notifications-updated", refreshNotificationBadge);
+});

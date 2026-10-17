@@ -29,7 +29,8 @@
                     data-i18n="updateStatus">Update status</button>
             </div>
             <div id="goodsInterestControls" hidden><button id="goodsInterestButton" class="btn" type="button"
-                    data-i18n="expressInterest">Express Interest</button></div>
+                    data-i18n="expressInterest">Express Interest</button><a id="goodsOpenChat" class="small-btn" hidden>Open Chat</a></div>
+            <div id="goodsInterestedUsersSection" hidden><h2>Interested Users</h2><div id="goodsInterestedUsers"></div></div>
         </section>
         <section class="blood-card">
             <h2 data-i18n="reportListing">Report this listing</h2>
@@ -44,11 +45,7 @@
         </section>
         <section class="blood-card">
             <h2 data-i18n="goodsDisclaimerTitle">Disclaimer</h2>
-            <p data-i18n="goodsDisclaimer">HELPNET does not handle payments and does not guarantee item condition.
-                Exchanges are arranged directly between users. HELPNET does not process or guarantee payments. HELPNET
-                does not guarantee item condition, authenticity, ownership, or quality. Buyers and sellers arrange
-                exchanges directly between themselves, and users should inspect items carefully before agreeing to any
-                exchange.</p>
+            <p data-i18n="goodsDisclaimer">HELPNET does not handle payments and does not guarantee item condition. Exchanges are arranged directly between users. HELPNET does not process or guarantee payments. HELPNET does not guarantee item condition, authenticity, ownership, or quality. Buyers and sellers arrange exchanges directly between themselves, and users should inspect items carefully before agreeing to any exchange.</p>
         </section>
     </main>
     <script src="{% static 'js/api.js' %}"></script>

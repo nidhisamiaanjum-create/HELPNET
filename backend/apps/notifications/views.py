@@ -11,6 +11,7 @@ def notification_data(notification):
 	return {
 		"id": str(notification.id),
 		"message": notification.message,
+		"action_url": notification.action_url,
 		"notification_type": notification.notification_type,
 		"is_read": notification.is_read,
 		"created_at": notification.created_at,

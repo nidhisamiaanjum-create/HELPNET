@@ -1,4 +1,5 @@
 from django.db import IntegrityError, transaction
+from django.db.models import OuterRef, Q, Subquery
 from django.shortcuts import get_object_or_404
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
@@ -7,7 +8,8 @@ from rest_framework.views import APIView
 
 from apps.reports.models import Report
 from apps.reports.serializers import ReportSerializer
-from .models import GoodsInterest, GoodsListing, GoodsReport
+from apps.notifications.models import Notification
+from .models import GoodsConversation, GoodsInterest, GoodsListing, GoodsMessage, GoodsReport
 from .serializers import GoodsInterestSerializer, GoodsListingSerializer, GoodsReportSerializer
 
 
@@ -78,13 +80,100 @@ class GoodsInterestCreateView(APIView):
             return Response({"success": False, "data": None, "message": "You cannot express interest in your own listing."}, status=400)
         if listing.status != GoodsListing.Status.AVAILABLE:
             return Response({"success": False, "data": None, "message": "This listing is not available for interest."}, status=400)
+        created = False
         try:
             with transaction.atomic():
-                interest = GoodsInterest.objects.create(listing=listing, interested_user=request.user)
+                interest, created = GoodsInterest.objects.get_or_create(listing=listing, interested_user=request.user)
+                conversation, _ = GoodsConversation.objects.get_or_create(
+                    listing=listing, owner=listing.seller, interested_user=request.user
+                )
+                if created:
+                    Notification.objects.create(
+                        user=listing.seller,
+                        message=f"{request.user.full_name} is interested in your listing '{listing.title}'.",
+                        notification_type="goods_interest",
+                        action_url=f"/goods-chat/?conversation_id={conversation.pk}",
+                    )
         except IntegrityError:
-            return Response({"success": False, "data": None, "message": "You have already expressed interest in this listing."}, status=400)
+            interest = GoodsInterest.objects.get(listing=listing, interested_user=request.user)
+            conversation = GoodsConversation.objects.get(listing=listing, owner=listing.seller, interested_user=request.user)
         serializer = GoodsInterestSerializer(interest)
-        return Response({"success": True, "data": serializer.data, "message": "Interest sent to the listing owner."}, status=201)
+        return Response({"success": True, "data": {**serializer.data, "conversation_id": conversation.pk, "conversation_url": f"/goods-chat/?conversation_id={conversation.pk}"}, "message": "Interest sent to the listing owner." if created else "You have already expressed interest. Open your existing conversation."}, status=201 if created else 200)
+
+
+def conversation_or_404(conversation_id):
+    return get_object_or_404(
+        GoodsConversation.objects.select_related("listing", "owner", "interested_user"),
+        pk=conversation_id,
+    )
+
+
+class GoodsConversationListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        latest_messages = GoodsMessage.objects.filter(conversation_id=OuterRef("pk")).order_by("-created_at", "-pk")
+        items = GoodsConversation.objects.filter(
+            Q(owner=request.user) | Q(interested_user=request.user)
+        ).select_related("listing", "owner", "interested_user").annotate(
+            latest_message_text=Subquery(latest_messages.values("message")[:1]),
+            latest_message_at=Subquery(latest_messages.values("created_at")[:1]),
+        )
+        data = []
+        for item in items:
+            other = item.interested_user if item.owner_id == request.user.pk else item.owner
+            data.append({"id": item.pk, "listing_id": item.listing_id, "listing_title": item.listing.title,
+                         "other_user_name": other.full_name, "latest_message": item.latest_message_text or "",
+                         "latest_message_at": item.latest_message_at or item.created_at,
+                         "url": f"/goods-chat/?conversation_id={item.pk}"})
+        return Response({"success": True, "data": data, "message": "Conversations loaded."})
+
+
+class GoodsConversationDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, conversation_id):
+        conversation = conversation_or_404(conversation_id)
+        if request.user.pk not in (conversation.owner_id, conversation.interested_user_id):
+            return Response({"success": False, "data": None, "message": "You cannot access this conversation."}, status=403)
+        messages = conversation.messages.select_related("sender").all()
+        data = [{"id": m.pk, "sender_id": m.sender_id, "sender_name": m.sender.full_name,
+                 "message": m.message, "created_at": m.created_at} for m in messages]
+        return Response({"success": True, "data": {"id": conversation.pk, "listing_id": conversation.listing_id,
+            "listing_title": conversation.listing.title, "owner_id": conversation.owner_id,
+            "other_user_name": conversation.interested_user.full_name if request.user.pk == conversation.owner_id else conversation.owner.full_name,
+            "messages": data}, "message": "Conversation loaded."})
+
+    def post(self, request, conversation_id):
+        conversation = conversation_or_404(conversation_id)
+        if request.user.pk not in (conversation.owner_id, conversation.interested_user_id):
+            return Response({"success": False, "data": None, "message": "You cannot access this conversation."}, status=403)
+        message = request.data.get("message")
+        if not isinstance(message, str) or not message.strip():
+            return Response({"success": False, "data": None, "message": "Message cannot be empty."}, status=400)
+        if len(message.strip()) > 2000:
+            return Response({"success": False, "data": None, "message": "Message must be 2000 characters or fewer."}, status=400)
+        item = GoodsMessage.objects.create(conversation=conversation, sender=request.user, message=message.strip())
+        conversation.save(update_fields=["updated_at"])
+        return Response({"success": True, "data": {"id": item.pk, "sender_id": item.sender_id, "sender_name": item.sender.full_name,
+            "message": item.message, "created_at": item.created_at}, "message": "Message sent."}, status=201)
+
+
+class GoodsInterestedUsersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, listing_id):
+        listing = get_object_or_404(GoodsListing, pk=listing_id)
+        if listing.seller_id != request.user.pk:
+            return Response({"success": False, "data": None, "message": "Only the listing owner can view interested users."}, status=403)
+        interests = listing.interests.select_related("interested_user").all()
+        data = []
+        for interest in interests:
+            conversation, _ = GoodsConversation.objects.get_or_create(listing=listing, owner=listing.seller, interested_user=interest.interested_user)
+            data.append({"user_id": interest.interested_user_id, "user_name": interest.interested_user.full_name,
+                         "created_at": interest.created_at, "conversation_id": conversation.pk,
+                         "conversation_url": f"/goods-chat/?conversation_id={conversation.pk}"})
+        return Response({"success": True, "data": data, "message": "Interested users loaded."})
 
 
 class GoodsReportCreateView(APIView):

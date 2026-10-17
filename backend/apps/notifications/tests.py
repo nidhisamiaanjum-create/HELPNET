@@ -66,6 +66,19 @@ class NotificationApiTests(APITestCase):
 		self.assertEqual(Notification.objects.filter(user=self.unavailable_donor).count(), 0)
 		self.assertEqual(Notification.objects.filter(user=self.requester).count(), 0)
 
+	def test_goods_interest_notification_has_private_chat_action(self):
+		from apps.goods.models import GoodsListing
+		listing = GoodsListing.objects.create(seller=self.matching_donor, title="Used Bicycle", description="Bike", condition="Good", asking_price="10.00", location="Dhaka")
+		self.authenticate(self.wrong_group)
+		response = self.client.post(f"/api/goods/listings/{listing.pk}/interest/", {}, format="json")
+		self.assertEqual(response.status_code, 201)
+		alert = Notification.objects.get(user=self.matching_donor, notification_type="goods_interest")
+		self.assertIn("Wrong Group", alert.message)
+		self.assertIn("Used Bicycle", alert.message)
+		self.assertIn(str(response.data["data"]["conversation_id"]), alert.action_url)
+		self.authenticate(self.wrong_area)
+		self.assertEqual(self.client.get("/api/notifications/").data["data"], [])
+
 	def test_user_sees_only_own_notifications(self):
 		own = Notification.objects.create(
 			user=self.matching_donor,

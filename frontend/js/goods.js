@@ -167,6 +167,18 @@ async function loadGoodsDetails() {
                 ? (typeof t === "function" ? t("interestSent") : "Interest sent")
                 : (typeof t === "function" ? t("expressInterest") : "Express Interest");
         }
+        const openChat = document.getElementById("goodsOpenChat");
+        if (openChat) openChat.hidden = !listing.user_has_interest;
+        if (listing.user_has_interest && openChat && !openChat.href) {
+            const conversations = await goodsRequest("/api/goods/conversations/");
+            const conversation = conversations.data.find(item => Number(item.listing_id) === Number(listing.id));
+            if (conversation) openChat.href = conversation.url;
+        }
+        const ownerSection = document.getElementById("goodsInterestedUsersSection");
+        if (ownerSection) {
+            ownerSection.hidden = !listing.is_owner;
+            if (listing.is_owner) await loadInterestedUsers(listing.id);
+        }
         document.getElementById("goodsReportForm").dataset.listingId = listing.id;
         document.getElementById("goodsReportForm").hidden = listing.is_owner;
     } catch (error) {
@@ -182,6 +194,11 @@ async function expressGoodsInterest() {
     try {
         const response = await goodsRequest(`/api/goods/listings/${encodeURIComponent(listingId)}/interest/`, "POST", {});
         goodsShowMessage("goodsMessage", response.message || "Interest sent.", "success");
+        const openChat = document.getElementById("goodsOpenChat");
+        if (openChat && response.data?.conversation_url) {
+            openChat.href = response.data.conversation_url;
+            openChat.hidden = false;
+        }
         const button = document.getElementById("goodsInterestButton");
         if (button) {
             button.disabled = true;
@@ -192,6 +209,22 @@ async function expressGoodsInterest() {
         goodsShowMessage("goodsMessage", error.message, "error");
         if (button) button.disabled = false;
     }
+}
+
+async function loadInterestedUsers(listingId) {
+    const target = document.getElementById("goodsInterestedUsers");
+    if (!target) return;
+    try {
+        const response = await goodsRequest(`/api/goods/listings/${encodeURIComponent(listingId)}/interested-users/`);
+        target.replaceChildren();
+        if (!response.data.length) return goodsAddText(target, "p", "No one has expressed interest yet.", "hint");
+        response.data.forEach(person => {
+            const row = document.createElement("article");
+            goodsAddText(row, "p", `${person.user_name} · ${new Date(person.created_at).toLocaleString()}`);
+            const chat = document.createElement("a"); chat.className = "small-btn"; chat.href = person.conversation_url; chat.textContent = "Message";
+            row.appendChild(chat); target.appendChild(row);
+        });
+    } catch (error) { goodsShowMessage("goodsMessage", error.message, "error"); }
 }
 
 async function updateGoodsStatus() {

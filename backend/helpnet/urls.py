@@ -63,6 +63,8 @@ path(
     path('goods-list/', TemplateView.as_view(template_name='pages/goods-list.html'), name='goods-list-page'),
     path('create-goods/', TemplateView.as_view(template_name='pages/create-goods.html'), name='create-goods-page'),
     path('goods-details/', TemplateView.as_view(template_name='pages/goods-details.html'), name='goods-details-page'),
+    path('goods-chat/', TemplateView.as_view(template_name='pages/goods-chat.html'), name='goods-chat-page'),
+    path('goods-conversations/', TemplateView.as_view(template_name='pages/goods-conversations.html'), name='goods-conversations-page'),
     path('health-questions/', TemplateView.as_view(template_name='pages/health-questions.html'), name='health-questions-page'),
     path('create-health-question/', TemplateView.as_view(template_name='pages/create-health-question.html'), name='create-health-question-page'),
     path('health-question-details/', TemplateView.as_view(template_name='pages/health-question-details.html'), name='health-question-details-page'),
