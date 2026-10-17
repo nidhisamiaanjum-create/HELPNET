@@ -272,6 +272,16 @@ const TEXT = {
         wasteHazardous: "বিপজ্জনক / মেডিকেল বর্জ্য",
         wasteBulk: "ভারী / নির্মাণ বর্জ্য",
         wasteGeneral: "সাধারণ বর্জ্য",
+        wastecollectorinfo:"বর্জ্য সংগ্রাহকের তথ্য শেয়ার করুন",
+        wastecollectorsubtitle:"আপনার এলাকার কোনো বর্জ্য সংগ্রাহকের নাম ও ফোন নম্বর জানলে অন্য ব্যবহারকারীদের জন্য তথ্যটি শেয়ার করুন।",
+        collectorname:"সংগ্রাহকের নাম",
+        collectorphone:"ফোন নম্বর",
+        collectorloc:"এলাকা",
+        collectwastetype:"কোন ধরনের বর্জ্য সংগ্রহ করেন?",
+        extrainfo:"অতিরিক্ত তথ্য (ঐচ্ছিক)",
+        areamatch:" এলাকাভিত্তিক মিল",
+        areamatchsubtitle:"নির্বাচিত এলাকায় HELPNET ব্যবহারকারীদের শেয়ার করা বর্জ্য সংগ্রহকারীদের দেখানো হচ্ছে।",
+
 
         /* Farmer Marketplace */
         farmerMarketTitle: "কৃষক বাজার",
@@ -303,6 +313,8 @@ const TEXT = {
         viewDetailsContact: "বিস্তারিত ও যোগাযোগ",
         marketLoadFailed: "পণ্যের তালিকা লোড করা যায়নি। আবার চেষ্টা করুন।",
         myProduceLoadFailed: "আপনার পণ্যের তালিকা লোড করা যায়নি। আবার চেষ্টা করুন।",
+        marketdisclaimer:"বিপণি ডিস্কেইমার ",
+        disclaimermsg:"HELPNET পেমেন্ট বা ডেলিভারির বিষয়টি পরিচালনা করে না। সমস্ত আয়োজন সরাসরি কৃষক এবং ক্রেতার মধ্যে সম্পন্ন হয়।",
 
 
 
@@ -529,6 +541,7 @@ const TEXT = {
         ratingsCount: "{count}টি রেটিং",
         openQuestion: "প্রশ্ন খুলুন",
         opportunities:"সুযোগসমূহ",
+        sharewasteinfo:"তথ্য শেয়ার করুন",
         healthProfessionalDisclaimer: "এখানে তালিকাভুক্ত স্বাস্থ্য-পেশাজীবীরা কেবল পরিচিতির উদ্দেশ্যে দেখানো হয়েছে। HELPNET কোনো পেশাজীবীকে অনুমোদন করে না বা চিকিৎসা-নির্ণয় দেয় না.",
         healthApplyTitle: "স্বাস্থ্য-পেশাজীবী হিসেবে তালিকাভুক্তির আবেদন",
         healthApplyInfo: "প্রশাসকের পর্যালোচনার জন্য আপনার পেশাগত সনদ জমা দিন। অনুমোদন ম্যানুয়ালি দেওয়া হয়; এটি HELPNET-এর সমর্থন বা স্বতন্ত্র সনদ যাচাই বোঝায় না।",
@@ -862,6 +875,15 @@ const TEXT = {
         wasteHazardous: "Hazardous / Medical Waste",
         wasteBulk: "Bulk / Construction Waste",
         wasteGeneral: "General / Other Waste",
+        wastecollectorinfo:"Share waste collector information",
+        wastecollectorsubtitle:"If you know the name and phone number of any waste collector in your area, please share that information for the benefit of other users.",
+        collectorname:"Collector Name",
+        collectorphone:"Phone Number",
+        collectorloc:"Area",
+        collectwastetype:"What kind of waste do you collect?",
+        extrainfo:"Additional information (optional)",
+        areamatch:"Match Area",
+        areamatchsubtitle:"Showing waste collectors shared by HELPNET users in the selected area.",
 
         /* Farmer Marketplace */
         farmerMarketTitle: "Farmer Marketplace",
@@ -893,6 +915,8 @@ const TEXT = {
         viewDetailsContact: "View details and contact",
         marketLoadFailed: "Could not load produce listings. Please try again.",
         myProduceLoadFailed: "Could not load your produce listings. Please try again.",
+        marketdisclaimer:"Market Disclaimer",
+        disclaimermsg:"HELPNET does not handle payment or delivery. All arrangements are made directly between the farmer and consumer.",
 
 
 
@@ -1117,7 +1141,8 @@ const TEXT = {
         rateDonor: "Rate donor",
         ratingsCount: "{count} ratings",
         openQuestion: "Open question",
-        opportunities:"Opportunities"
+        opportunities:"Opportunities",
+        sharewasteinfo:"Share information"
     }
 };
 
