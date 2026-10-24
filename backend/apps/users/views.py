@@ -18,7 +18,12 @@ from .serializers import (
     PasswordResetConfirmSerializer,
     UserProfileSerializer,
     PublicUserProfileSerializer,
+    RoleProfileSerializer,
 )
+from .models import UserProfile
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 
 
 User = get_user_model()
@@ -41,7 +46,7 @@ class RegisterView(APIView):
                         "full_name": user.full_name,
                         "email": user.email,
                         "phone_number": user.phone_number,
-                        "role": user.role,
+                        "profiles": [],
                     },
                     "message": "Registration successful."
                 },
@@ -450,3 +455,88 @@ class UserSearchView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class UserProfilesView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RoleProfileSerializer
+
+    def get_queryset(self):
+        return UserProfile.objects.filter(user=self.request.user).order_by("created_at")
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        profile_type = serializer.validated_data["profile_type"]
+        extra = request.data.get("details") or {}
+        if not isinstance(extra, dict):
+            raise ValidationError({"details": "Expected an object."})
+        try:
+            with transaction.atomic():
+                profile = serializer.save(user=request.user)
+                if profile_type == UserProfile.Type.VOLUNTEER:
+                    from apps.volunteer.models import VolunteerProfile
+                    VolunteerProfile.objects.create(user=request.user, **{
+                        key: extra[key] for key in ("skills", "availability", "location", "blood_group", "supporting_certificates") if key in extra
+                    })
+                elif profile_type == UserProfile.Type.BLOOD_DONOR:
+                    from apps.blood.models import DonorProfile
+                    if not extra.get("blood_group") or not extra.get("area"):
+                        raise ValidationError({"details": "blood_group and area are required for a Blood Donor profile."})
+                    valid_groups = [choice[0] for choice in DonorProfile._meta.get_field("blood_group").choices]
+                    if extra["blood_group"] not in valid_groups:
+                        raise ValidationError({"details": {"blood_group": "Choose a valid blood group."}})
+                    DonorProfile.objects.create(user=request.user, blood_group=extra["blood_group"], area=extra["area"])
+                elif profile_type == UserProfile.Type.FARMER and extra:
+                    raise ValidationError({"details": "Farmer profile details are managed through the farmer marketplace."})
+        except IntegrityError:
+            raise ValidationError({"profile_type": "You already have this profile type."})
+        data = self.get_serializer(profile).data
+        return Response({"success": True, "data": data, "message": "Profile created."}, status=status.HTTP_201_CREATED)
+
+
+class UserProfileDetailView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RoleProfileSerializer
+    lookup_field = "id"
+
+    def get_queryset(self):
+        return UserProfile.objects.filter(user=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        if "profile_type" in request.data:
+            raise ValidationError({"profile_type": "Profile type cannot be changed."})
+        return super().update(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_destroy(self, instance):
+        # Deactivate to preserve role-specific records and activity history.
+        if self.request.user.active_profile_id == instance.id:
+            self.request.user.active_profile = None
+            self.request.user.save(update_fields=["active_profile"])
+        instance.status = UserProfile.Status.INACTIVE
+        instance.save(update_fields=["status", "updated_at"])
+
+
+class ActiveProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        profile = request.user.active_profile
+        if profile and profile.user_id == request.user.user_id and profile.status == UserProfile.Status.ACTIVE:
+            data = RoleProfileSerializer(profile).data
+        else:
+            data = None
+        return Response({"success": True, "data": data, "message": "Active profile loaded."})
+
+    def put(self, request):
+        profile = get_object_or_404(UserProfile, id=request.data.get("profile_id"), user=request.user, status=UserProfile.Status.ACTIVE)
+        request.user.active_profile = profile
+        role_map = {"citizen": "Citizen", "volunteer": "Volunteer", "farmer": "Farmer", "ngo": "NGO", "blood_donor": "Blood Donor"}
+        # Keep legacy modules working by reflecting the server-selected profile.
+        # Staff/superuser authority remains independent of this business role.
+        request.user.role = role_map[profile.profile_type]
+        request.user.save(update_fields=["active_profile", "role"])
+        return Response({"success": True, "data": RoleProfileSerializer(profile).data, "message": "Active profile updated."})

@@ -61,6 +61,22 @@
 
 <main class="dashboard-page">
 
+<section class="dashboard-section" id="profilesSection">
+    <div class="section-heading"><h2>My Profiles</h2><button class="btn" type="button" id="createProfileButton">Create New Profile</button></div>
+    <div id="myProfilesList" aria-live="polite"></div>
+    <form id="newProfileForm" hidden class="card">
+        <label for="newProfileType">Profile type</label>
+        <select id="newProfileType" required>
+            <option value="">Choose a profile</option>
+            <option value="citizen">Citizen</option><option value="volunteer">Volunteer</option>
+            <option value="farmer">Farmer</option><option value="ngo">NGO</option><option value="blood_donor">Blood Donor</option>
+        </select>
+        <div id="donorFields" hidden><label for="donorGroup">Blood group</label><input id="donorGroup" maxlength="3"><label for="donorArea">Area</label><input id="donorArea"></div>
+        <p id="profileFormError" class="field-error" aria-live="polite"></p>
+        <button class="btn" type="submit">Create profile</button>
+    </form>
+</section>
+
 
 <!-- =====================================================
      WELCOME
@@ -647,7 +663,7 @@
 
 <script src="{% static 'js/auth.js' %}"></script>
 
-<script src="{% static 'js/dashboard.js' %}"></script>
+<script src="{% static 'js/dashboard.js' %}?v=multi-profile-1"></script>
 <script src="{% static 'js/navigation.js' %}"></script>
 
 </body>

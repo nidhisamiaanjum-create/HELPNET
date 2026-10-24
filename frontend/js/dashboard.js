@@ -1,5 +1,65 @@
 document.addEventListener("DOMContentLoaded", function () {
 
+    const profileTypes = {citizen:"Citizen", volunteer:"Volunteer", farmer:"Farmer", ngo:"NGO", blood_donor:"Blood Donor"};
+    const profileList = document.getElementById("myProfilesList");
+    const profileForm = document.getElementById("newProfileForm");
+    const typeSelect = document.getElementById("newProfileType");
+    const donorFields = document.getElementById("donorFields");
+    const createProfileButton = document.getElementById("createProfileButton");
+    if (createProfileButton && profileForm) {
+        createProfileButton.setAttribute("aria-expanded", "false");
+        createProfileButton.addEventListener("click", event => {
+            event.preventDefault();
+            const opening = profileForm.hasAttribute("hidden");
+            if (opening) profileForm.removeAttribute("hidden");
+            else profileForm.setAttribute("hidden", "");
+            createProfileButton.setAttribute("aria-expanded", String(opening));
+            if (opening) {
+                profileForm.scrollIntoView({behavior: "smooth", block: "center"});
+                typeSelect?.focus();
+            }
+        });
+    }
+    typeSelect?.addEventListener("change", () => { donorFields.hidden = typeSelect.value !== "blood_donor"; });
+    async function loadProfiles() {
+        if (!profileList || typeof apiRequest !== "function" || !getToken()) return;
+        try {
+            const [result, activeResult] = await Promise.all([apiRequest("/api/auth/profiles/"), apiRequest("/api/auth/active-profile/")]);
+            const profiles = result.data || [];
+            const active = activeResult.data;
+            profileList.replaceChildren();
+            profiles.forEach(profile => {
+                const card = document.createElement("div"); card.className = "card";
+                const title = document.createElement("strong"); title.textContent = profile.display_name || profileTypes[profile.profile_type] || profile.profile_type;
+                const status = document.createElement("span"); status.textContent = profile.id === active?.id ? " · Current profile" : ` · ${profile.status}`;
+                card.append(title, status);
+                const edit = document.createElement("button"); edit.type = "button"; edit.className = "btn"; edit.textContent = "Edit profile";
+                edit.addEventListener("click", async () => { try {
+                    await apiRequest("/api/auth/active-profile/", "PUT", {profile_id: profile.id}); const owner = getStoredUser() || {}; owner.role = profileTypes[profile.profile_type]; localStorage.setItem("helpnet_user", JSON.stringify(owner));
+                    const name = prompt("Profile display name", profile.display_name || ""); if (name === null) return;
+                    await apiRequest(`/api/auth/profiles/${profile.id}/`, "PATCH", {display_name: name});
+                    if (profile.profile_type === "volunteer") { const current = (await apiRequest("/api/volunteer/profile/")).data || {}; const skills = prompt("Volunteer skills", current.skills || ""); if (skills !== null) await apiRequest("/api/volunteer/profile/", "PUT", {skills, availability: current.availability || "", location: current.location || ""}); }
+                    if (profile.profile_type === "blood_donor") { const current = (await apiRequest("/api/blood/donor-profile/")).data || {}; const blood_group = prompt("Blood group", current.blood_group || ""); if (blood_group !== null) { const area = prompt("Area", current.area || ""); if (area !== null) await apiRequest("/api/blood/donor-profile/", "PUT", {blood_group, area, availability: current.availability || "available"}); } }
+                    location.reload();
+                } catch (error) { alert(error.message || "Could not update profile."); } }); card.append(edit);
+                if (profile.status === "active") { const deactivate = document.createElement("button"); deactivate.type = "button"; deactivate.className = "btn"; deactivate.textContent = "Deactivate"; deactivate.addEventListener("click", async () => { if (!confirm("Deactivate this profile? Its related records will be retained.")) return; try { await apiRequest(`/api/auth/profiles/${profile.id}/`, "DELETE"); loadProfiles(); } catch (error) { alert(error.message || "Could not deactivate profile."); } }); card.append(deactivate); }
+                if (profile.status === "active" && profile.id !== active?.id) {
+                    const button = document.createElement("button"); button.type = "button"; button.className = "btn"; button.textContent = "Switch Profile";
+                    button.addEventListener("click", async () => { await apiRequest("/api/auth/active-profile/", "PUT", {profile_id: profile.id}); const user = getStoredUser() || {}; user.role = profileTypes[profile.profile_type]; localStorage.setItem("helpnet_user", JSON.stringify(user)); location.reload(); }); card.append(button);
+                }
+                profileList.append(card);
+            });
+            if (active) { const user = getStoredUser() || {}; const role = profileTypes[active.profile_type]; if (role && user.role !== role) { user.role = role; localStorage.setItem("helpnet_user", JSON.stringify(user)); } }
+        } catch (error) { profileList.textContent = error.message || "Could not load profiles."; }
+    }
+    profileForm?.addEventListener("submit", async event => {
+        event.preventDefault(); const errorBox = document.getElementById("profileFormError"); errorBox.textContent = "";
+        const details = typeSelect.value === "blood_donor" ? {blood_group: document.getElementById("donorGroup").value.trim(), area: document.getElementById("donorArea").value.trim()} : {};
+        try { const response = await apiRequest("/api/auth/profiles/", "POST", {profile_type: typeSelect.value, details}); await apiRequest("/api/auth/active-profile/", "PUT", {profile_id: response.data.id}); const user = getStoredUser() || {}; user.role = profileTypes[response.data.profile_type]; localStorage.setItem("helpnet_user", JSON.stringify(user)); location.reload(); }
+        catch (error) { errorBox.textContent = error.message || "Could not create profile."; }
+    });
+    loadProfiles();
+
     /* =====================================================
        1. LOGIN CHECK
     ===================================================== */

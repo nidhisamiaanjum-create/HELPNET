@@ -72,9 +72,6 @@ function initRegisterPage() {
         const email =
             document.getElementById("email").value.trim();
 
-        const role =
-            document.getElementById("role").value;
-
         const district =
             document.getElementById("district").value;
 
@@ -131,16 +128,6 @@ function initRegisterPage() {
         }
 
 
-        if (!role) {
-
-            showFieldError(
-                "role",
-                t("selectRole")
-            );
-
-            valid = false;
-        }
-
 
         if (!valid) {
             return;
@@ -173,7 +160,6 @@ function initRegisterPage() {
                     phone_number: phone,
                     password: password,
                     email: email,
-                    role: role,
                     location: location
                 }
             );
@@ -398,7 +384,7 @@ function initLoginPage() {
                         user.phone_number,
 
                     role:
-                        user.role
+                        user.role || ""
                 };
 
                 console.log("LOGIN RESPONSE USER:", user);

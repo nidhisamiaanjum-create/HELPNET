@@ -86,10 +86,17 @@ class User(AbstractUser):
         unique=True
     )
 
+    # Retained for compatibility with existing integrations and data. New
+    # accounts leave this blank; permissions are based on owned profiles.
     role = models.CharField(
         max_length=20,
         choices=Role.choices,
-        default=Role.CITIZEN
+        blank=True,
+        default="",
+    )
+    active_profile = models.ForeignKey(
+        "UserProfile", null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="active_for_users",
     )
 
     location = models.CharField(
@@ -139,3 +146,29 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.full_name} ({self.phone_number})"
+
+
+class UserProfile(models.Model):
+    class Type(models.TextChoices):
+        CITIZEN = "citizen", "Citizen"
+        VOLUNTEER = "volunteer", "Volunteer"
+        FARMER = "farmer", "Farmer"
+        NGO = "ngo", "NGO"
+        BLOOD_DONOR = "blood_donor", "Blood Donor"
+
+    class Status(models.TextChoices):
+        ACTIVE = "active", "Active"
+        INACTIVE = "inactive", "Inactive"
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="profiles")
+    profile_type = models.CharField(max_length=20, choices=Type.choices)
+    display_name = models.CharField(max_length=150, blank=True)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=("user", "profile_type"), name="uniq_user_profile_type")]
+
+    def __str__(self):
+        return f"{self.get_profile_type_display()} profile for {self.user}"

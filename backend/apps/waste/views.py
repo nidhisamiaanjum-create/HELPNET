@@ -268,20 +268,6 @@ class WasteCollectorRatingListCreateView(
 
     def perform_create(self, serializer):
         collector = self.get_collector()
-
-        # Update the existing review if this user has already rated.
-        rating_obj, created = (
-            WasteCollectorRating.objects.update_or_create(
-                collector=collector,
-                user=self.request.user,
-                defaults={
-                    "rating": serializer.validated_data["rating"],
-                    "review": serializer.validated_data.get(
-                        "review", ""
-                    ),
-                },
-            )
-        )
-
-        # Expose the saved object to the response serializer.
-        serializer.instance = rating_obj
+        if WasteCollectorRating.objects.filter(collector=collector, user=self.request.user).exists():
+            raise serializers.ValidationError("You have already rated this collector.")
+        serializer.save(collector=collector, user=self.request.user)

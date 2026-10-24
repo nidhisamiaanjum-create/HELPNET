@@ -7,6 +7,7 @@ from .views import (
     MeView,
     PasswordResetRequestView,
     PasswordResetConfirmView,
+    UserProfilesView, UserProfileDetailView, ActiveProfileView,
 )
 
 
@@ -25,4 +26,7 @@ urlpatterns = [
         name="password-reset-confirm"
     ),
      path("me/", MeView.as_view(), name="me"),
+    path("profiles/", UserProfilesView.as_view(), name="profiles"),
+    path("profiles/<int:id>/", UserProfileDetailView.as_view(), name="profile-detail"),
+    path("active-profile/", ActiveProfileView.as_view(), name="active-profile"),
 ]

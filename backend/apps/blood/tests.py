@@ -56,7 +56,7 @@ class BloodApiTests(APITestCase):
 		self.assertEqual(response.status_code, 201)
 		return response
 
-	def test_user_can_register_as_a_blood_donor(self):
+	def test_registration_does_not_assign_a_blood_donor_profile(self):
 		self.client.credentials()
 		response = self.client.post(
 			"/api/auth/register/",
@@ -65,14 +65,14 @@ class BloodApiTests(APITestCase):
 				"email": "registered-donor@example.com",
 				"phone_number": "01720000006",
 				"password": "password123",
-				"role": "Blood Donor",
 				"location": "Dhaka",
 			},
 			format="json",
 		)
 
 		self.assertEqual(response.status_code, 201)
-		self.assertEqual(response.data["data"]["role"], "Blood Donor")
+		registered = User.objects.get(email="registered-donor@example.com")
+		self.assertEqual(registered.profiles.count(), 0)
 
 	def test_donor_profile_can_select_group_set_area_and_change_availability(self):
 		response = self.create_profile(self.donor, available=True)

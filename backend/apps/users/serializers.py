@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import User
+from .models import UserProfile
 from apps.ratings.models import Rating
 
 
@@ -16,9 +17,14 @@ class RegisterSerializer(serializers.ModelSerializer):
             "email",
             "phone_number",
             "password",
-            "role",
             "location",
         ]
+
+    def to_internal_value(self, data):
+        forbidden = {"role", "is_staff", "is_superuser", "is_admin"}.intersection(data)
+        if forbidden:
+            raise serializers.ValidationError({key: "This field cannot be set during registration." for key in sorted(forbidden)})
+        return super().to_internal_value(data)
 
     def validate_phone_number(self, value):
         if User.objects.filter(phone_number=value).exists():
@@ -43,6 +49,18 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
 
         return user
+
+
+class RoleProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ("id", "profile_type", "display_name", "status", "created_at", "updated_at")
+        read_only_fields = ("id", "status", "created_at", "updated_at")
+
+    def validate_profile_type(self, value):
+        if value not in UserProfile.Type.values:
+            raise serializers.ValidationError("Choose a supported profile type.")
+        return value
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
