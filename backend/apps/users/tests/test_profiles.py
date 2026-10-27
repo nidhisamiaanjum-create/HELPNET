@@ -18,14 +18,19 @@ class AccountProfilesTests(APITestCase):
     def test_registration_does_not_require_role_or_allow_privilege_assignment(self):
         response = self.client.post("/api/auth/register/", {
             "full_name": "New User", "email": "new@example.test",
-            "phone_number": "01711113333", "password": "pass-word-123",
+            "phone_number": "01711113333", "password": "pass-word-123","account_type": "citizen",
         }, format="json")
         self.assertEqual(response.status_code, 201)
         account = User.objects.get(email="new@example.test")
-        self.assertEqual(account.role, "")
+        self.assertEqual(account.role, "Citizen")
         self.assertFalse(account.is_staff)
         self.assertFalse(account.is_superuser)
-        self.assertEqual(account.profiles.count(), 0)
+        self.assertEqual(account.profiles.count(), 1)
+        self.assertEqual(
+            account.profiles.get().profile_type,
+            UserProfile.Type.CITIZEN,
+        )
+        self.assertEqual(account.active_profile.profile_type, UserProfile.Type.CITIZEN)
         forbidden = self.client.post("/api/auth/register/", {
             "full_name": "Attacker", "email": "attacker@example.test",
             "phone_number": "01711114444", "password": "pass-word-123", "role": "Admin",

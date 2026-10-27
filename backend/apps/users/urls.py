@@ -8,6 +8,7 @@ from .views import (
     PasswordResetRequestView,
     PasswordResetConfirmView,
     UserProfilesView, UserProfileDetailView, ActiveProfileView,
+    NGOApprovalView,    PendingNGOApprovalListView,
 )
 
 
@@ -29,4 +30,14 @@ urlpatterns = [
     path("profiles/", UserProfilesView.as_view(), name="profiles"),
     path("profiles/<int:id>/", UserProfileDetailView.as_view(), name="profile-detail"),
     path("active-profile/", ActiveProfileView.as_view(), name="active-profile"),
+    path(
+        "ngo-profiles/<int:profile_id>/approval/",
+        NGOApprovalView.as_view(),
+        name="ngo-profile-approval",
+    ),
+    path(
+        "ngo-profiles/pending/",
+        PendingNGOApprovalListView.as_view(),
+        name="pending-ngo-approvals",
+    ),
 ]

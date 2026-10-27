@@ -99,6 +99,13 @@ path(
     path('admin-logs/', TemplateView.as_view(template_name='pages/admin-logs.html'), name='admin-logs'),
     path('admin-dashboard/', TemplateView.as_view(template_name='pages/admin-dashboard.html'), name='admin-dashboard'),
     path('admin-moderation/', TemplateView.as_view(template_name='pages/admin-moderation.html'), name='admin-moderation'),
+    path(
+    "admin-ngo-approval/",
+    TemplateView.as_view(
+        template_name="pages/ngo-approval.html"
+    ),
+    name="admin-ngo-approval",
+),
 ]
 
 if settings.DEBUG:

@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         ? getStoredUser()
         : null;
 
-    if (!user || !user.role || user.role.toLowerCase() !== "admin") {
+    if (user.role !== "admin" && user.is_superuser !== true) {
         window.location.href = "/dashboard/";
         return;
     }

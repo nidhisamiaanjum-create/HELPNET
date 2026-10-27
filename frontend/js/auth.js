@@ -77,6 +77,8 @@ function initRegisterPage() {
 
         const upazila =
             document.getElementById("upazila").value.trim();
+        const accountType =
+            document.getElementById("accountType").value;
 
 
         /* Validation */
@@ -160,7 +162,8 @@ function initRegisterPage() {
                     phone_number: phone,
                     password: password,
                     email: email,
-                    location: location
+                    location: location,
+                    account_type: accountType
                 }
             );
 
@@ -169,28 +172,27 @@ function initRegisterPage() {
 
 
             /* Success */
-
-            showAlert(
-                "formAlert",
-                data.message || "Registration successful!",
-                "success"
-            );
-
+            if (accountType === "ngo") {
+                showAlert(
+                    "formAlert",
+                    "NGO registration submitted successfully. Your account is pending administrator approval. You can log in, but NGO services will remain restricted until approval.",
+                    "success"
+                );
+            } else {
+                showAlert(
+                    "formAlert",
+                    data.message || "Registration successful!",
+                    "success"
+                );
+            }
 
             form.reset();
 
-
-            /*
-               Go to login page after registration.
-            */
-
-            setTimeout(function () {
-
-                window.location.href = "/login/";
-
-            }, 1200);
-
-
+            if (accountType === "citizen") {
+                setTimeout(function () {
+                    window.location.href = "/login/";
+                }, 1200);
+            }
         } catch (error) {
 
             console.error(
@@ -265,8 +267,8 @@ function initLoginPage() {
                 document
                     .getElementById("password")
                     .value;
-		    console.log("LOGIN IDENTIFIER:", identifier);
-		    console.log("LOGIN PASSWORD LENGTH:", password.length);
+            console.log("LOGIN IDENTIFIER:", identifier);
+            console.log("LOGIN PASSWORD LENGTH:", password.length);
 
             /* Validation */
 
@@ -344,11 +346,26 @@ function initLoginPage() {
                     response
                 );
 
+                console.log("LOGIN RESPONSE DATA:", response.data);
 
+                console.log("LOGIN ADMIN FIELDS:", {
+                    role: response.data?.role,
+                    is_staff: response.data?.is_staff,
+                    is_superuser: response.data?.is_superuser,
+                    access: !!response.data?.access,
+                    refresh: !!response.data?.refresh
+                });
                 /* Get user data */
 
                 const user =
                     response.data;
+                console.log("FULL LOGIN API RESPONSE:", response);
+                console.log("LOGIN USER DATA:", user);
+                console.log("ADMIN FLAGS:", {
+                    is_staff: user?.is_staff,
+                    is_superuser: user?.is_superuser,
+                    role: user?.role
+                });
 
 
                 const accessToken =
@@ -370,51 +387,43 @@ function initLoginPage() {
                 /* User information */
 
                 const userInfo = {
-
-                    user_id:
-                        user.user_id,
-
-                    full_name:
-                        user.full_name,
-
-                    email:
-                        user.email,
-
-                    phone_number:
-                        user.phone_number,
-
-                    role:
-                        user.role || ""
+                    user_id: user.user_id,
+                    full_name: user.full_name,
+                    email: user.email,
+                    phone_number: user.phone_number,
+                    role: user.role || "",
+                    is_staff: user.is_staff === true,
+                    is_superuser: user.is_superuser === true
                 };
 
                 console.log("LOGIN RESPONSE USER:", user);
                 console.log("LOGIN RESPONSE ROLE:", user.role);
 
-               /* =====================================================
-   SAVE NEW LOGIN SESSION
-===================================================== */
+                /* =====================================================
+    SAVE NEW LOGIN SESSION
+ ===================================================== */
 
-localStorage.setItem(
-    "helpnet_token",
-    accessToken
-);
+                localStorage.setItem(
+                    "helpnet_token",
+                    accessToken
+                );
 
-localStorage.setItem(
-    "helpnet_user",
-    JSON.stringify(userInfo)
-);
+                localStorage.setItem(
+                    "helpnet_user",
+                    JSON.stringify(userInfo)
+                );
 
-if (refreshToken) {
-    localStorage.setItem(
-        "refreshToken",
-        refreshToken
-    );
-}
+                if (refreshToken) {
+                    localStorage.setItem(
+                        "refreshToken",
+                        refreshToken
+                    );
+                }
 
-console.log(
-    "SESSION SAVED:",
-    JSON.parse(localStorage.getItem("helpnet_user"))
-);
+                console.log(
+                    "SESSION SAVED:",
+                    JSON.parse(localStorage.getItem("helpnet_user"))
+                );
 
                 /* Success */
 
@@ -428,7 +437,12 @@ console.log(
 
                 /* Go to dashboard */
 
-                window.location.href = user.role && user.role.toLowerCase() === "admin"
+                const isAdmin =
+                    user.is_superuser === true ||
+                    user.is_staff === true ||
+                    String(user.role || "").toLowerCase() === "admin";
+
+                window.location.href = isAdmin
                     ? "/admin-dashboard/"
                     : "/dashboard/";
 

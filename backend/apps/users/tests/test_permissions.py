@@ -32,6 +32,7 @@ class AuthPermissionTests(APITestCase):
                 "email": "newpermission@example.com",
                 "phone_number": "01710000002",
                 "password": "TestPassword123",
+                "account_type": "citizen",
             },
             format="json",
         )

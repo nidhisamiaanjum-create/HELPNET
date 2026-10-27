@@ -1,0 +1,127 @@
+
+{% load static %}
+<!doctype html>
+<html lang="bn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NGO Approval | HELPNET</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        .ngo-approval-page {
+            width: min(100% - 32px, 1000px);
+            margin: 32px auto;
+        }
+        #refreshNGOs {
+    background: #e8f1f2;
+    color: #117f81;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 18px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 5px 5px 10px #c8d5d6,
+                -5px -5px 10px #ffffff;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+}
+
+#refreshNGOs:hover {
+    box-shadow: inset 3px 3px 6px #c8d5d6,
+                inset -3px -3px 6px #ffffff;
+}
+
+#refreshNGOs:focus-visible {
+    outline: 2px solid #159a9c;
+    outline-offset: 3px;
+}
+        .ngo-application {
+            padding: 20px;
+            margin: 16px 0;
+            border-radius: 16px;
+            background: var(--card-bg, #e8f1f2);
+            box-shadow: 5px 5px 12px rgba(0, 0, 0, .08),
+                        -5px -5px 12px rgba(255, 255, 255, .7);
+        }
+
+        .ngo-application h3 {
+            margin-top: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .ngo-details {
+            line-height: 1.9;
+            overflow-wrap: anywhere;
+        }
+
+        .ngo-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .ngo-actions button {
+            padding: 10px 18px;
+            border: 0;
+            border-radius: 10px;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .approve-button {
+            background: #159a9c;
+            color: white;
+        }
+
+        .reject-button {
+            background: #a83232;
+            color: white;
+        }
+
+        .ngo-actions button:disabled {
+            opacity: .6;
+            cursor: wait;
+        }
+
+        #ngoMessage {
+            margin: 16px 0;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+
+<body>
+<header class="site-header">
+    <a href="/admin-dashboard/" class="logo">HELPNET</a>
+    <div class="header-actions">
+        <a href="/admin-dashboard/" class="back-link">← Admin Dashboard</a>
+    </div>
+</header>
+
+<main class="ngo-approval-page">
+    <section class="dashboard-welcome">
+        <p class="welcome-small">Admin Panel</p>
+        <h1>NGO Approval / এনজিও অনুমোদন</h1>
+        <p>Review NGO registrations and approve or reject applications.</p>
+    </section>
+
+    <section class="card">
+        <h2>Pending NGO Applications</h2>
+        <p id="ngoMessage" role="status" aria-live="polite">
+            Loading NGO applications...
+        </p>
+        <div id="ngoApplicationList" aria-live="polite"></div>
+        <button type="button" id="refreshNGOs">Refresh List</button>
+    </section>
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/ngo-approval.js' %}"></script>
+</body>
+</html>

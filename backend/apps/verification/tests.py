@@ -17,6 +17,8 @@ class PrivateVerificationDocumentTests(APITestCase):
         self.admin = User.objects.create_user(
             phone_number="01710001002", email="nid-admin@example.test",
             full_name="NID Admin", password="test-password-123", role="Admin",
+            is_staff=True,
+            is_superuser=True,
         )
 
     def test_nid_documents_are_private_and_admin_download_is_authorized(self):

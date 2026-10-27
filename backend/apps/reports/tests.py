@@ -34,6 +34,8 @@ class ReportTests(APITestCase):
             full_name="HELPNET Admin",
             password="password123",
             role="Admin",
+            is_staff=True,
+            is_superuser=True,
         )
 
     def test_submit_report(self):

@@ -220,6 +220,8 @@ class GoodsExchangeTests(TestCase):
             full_name="Goods Admin",
             password="test-password-123",
             role="Admin",
+            is_staff=True,
+            is_superuser=True,
         )
         self.api.force_authenticate(admin)
         queue = self.api.get("/api/reports/")

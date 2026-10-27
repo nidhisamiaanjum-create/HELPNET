@@ -1,52 +1,3 @@
-
-async function downloadAdminDocument(url, filename) {
-    const token = typeof getToken === "function"
-        ? getToken()
-        : localStorage.getItem("helpnet_token");
-
-    if (!token) {
-        throw new Error("Please log in again.");
-    }
-
-    // Open a blank tab immediately to avoid popup blocking.
-    const previewTab = window.open("about:blank", "_blank");
-
-    if (!previewTab) {
-        throw new Error("Please allow pop-ups for this site.");
-    }
-
-    previewTab.document.title = "Loading credential...";
-
-    try {
-        const response = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(
-                "Could not open the verification document."
-            );
-        }
-
-        const blob = await response.blob();
-        const objectUrl = URL.createObjectURL(blob);
-
-        previewTab.location.href = objectUrl;
-
-        // Revoke the URL after the preview tab has had time to load.
-        window.setTimeout(() => {
-            URL.revokeObjectURL(objectUrl);
-        }, 60000);
-
-    } catch (error) {
-        previewTab.close();
-        throw error;
-    }
-}
-
-
 document.addEventListener("DOMContentLoaded", async function () {
     if (typeof requireLogin === "function" && !requireLogin()) {
         return;
@@ -56,11 +7,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         ? getStoredUser()
         : null;
 
-    if (
-        !user ||
-        !user.role ||
-        user.role.toLowerCase() !== "admin"
-    ) {
+    if (user.role !== "admin" && user.is_superuser !== true) {
         window.location.href = "/dashboard/";
         return;
     }
@@ -150,29 +97,12 @@ document.addEventListener("DOMContentLoaded", async function () {
                         ? `
                                 <p>
                                     <a
-                                        href="#"
-                                        class="view-verification-document"
-                                        data-document-url="${item.document_url}"
-                                        data-document-name="${item.document_type}-verification-document"
-                                        data-i18n="healthViewCredential"
+                                        href="${item.document_url}"
+                                        target="_blank"
+                                        rel="noopener"
                                     >
-                                        View credential
+                                        View Document
                                     </a>
-                                </p>
-                            `
-                        : ""
-                    }
-                    ${item.nid_document_url
-                        ? `
-                                <p>
-                                    <a
-                                        href="#"
-                                        class="view-verification-document"
-                                        data-document-url="${item.nid_document_url}"
-                                        data-document-name="NID-document"
-                                    >
-                                    View NID
-                                </a>
                                 </p>
                             `
                         : ""
@@ -221,7 +151,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
 
             attachActionHandlers();
-            if (typeof applyLanguage === "function") applyLanguage();
 
         } catch (error) {
             console.error(error);
@@ -235,17 +164,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     function attachActionHandlers() {
-        document.querySelectorAll(".view-verification-document").forEach(function (link) {
-            link.addEventListener("click", async function (event) {
-                event.preventDefault();
-                try {
-                    await downloadAdminDocument(link.dataset.documentUrl, link.dataset.documentName);
-                } catch (error) {
-                    alert(error.message);
-                }
-            });
-        });
-
         document.querySelectorAll(".approve-btn").forEach(function (button) {
             button.addEventListener("click", async function () {
                 const verificationId = button.dataset.id;

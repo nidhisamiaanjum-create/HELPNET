@@ -8,7 +8,7 @@ import csv
 import io
 import tempfile
 from pathlib import Path
-
+from apps.users.models import UserProfile
 from .models import VolunteerAttendance, VolunteerOpportunity, VolunteerProfile, VolunteerProfileDocument, VolunteerSignup
 
 
@@ -23,6 +23,12 @@ class VolunteerMessageAndCertificateTests(TestCase):
             full_name="Event Coordinator",
             password="test-password-123",
             role="NGO",
+        )
+        UserProfile.objects.create(
+            user=self.coordinator,
+            profile_type=UserProfile.Type.NGO,
+            status=UserProfile.Status.ACTIVE,
+            ngo_approval_status=UserProfile.NGOApprovalStatus.APPROVED,
         )
         self.volunteer = User.objects.create_user(
             phone_number="01000000002",
@@ -187,6 +193,12 @@ class VolunteerMessageAndCertificateTests(TestCase):
 class SprintFourCompletionTests(TestCase):
     def setUp(self):
         self.ngo = User.objects.create_user(phone_number="01000000101", email="ngo2@example.test", full_name="NGO Two", password="test-password-123", role="NGO")
+        UserProfile.objects.create(
+            user=self.ngo,
+            profile_type=UserProfile.Type.NGO,
+            status=UserProfile.Status.ACTIVE,
+            ngo_approval_status=UserProfile.NGOApprovalStatus.APPROVED,
+        )
         self.citizen = User.objects.create_user(phone_number="01000000102", email="citizen2@example.test", full_name="Citizen Two", password="test-password-123", role="Citizen")
         self.volunteer = User.objects.create_user(phone_number="01000000103", email="private-volunteer@example.test", full_name="Volunteer One", password="test-password-123", role="Volunteer")
         self.other_volunteer = User.objects.create_user(phone_number="01000000104", email="private-other@example.test", full_name="Volunteer Two", password="test-password-123", role="Volunteer")
@@ -247,7 +259,17 @@ class SprintFourCompletionTests(TestCase):
         none = self.client.get("/api/volunteer/search/?participation_history=no")
         self.assertEqual([row["full_name"] for row in none.data["data"]], ["Volunteer Two"])
 
-        admin = User.objects.create_user(phone_number="01000000105", email="admin2@example.test", full_name="Admin Two", password="test-password-123", role="Admin")
+        admin = User.objects.create_user(
+        phone_number="01000000105",
+        email="admin2@example.test",
+        full_name="Admin Two",
+        password="test-password-123",
+        role="Admin",
+        is_staff=True,
+        is_superuser=True,
+        )
+
+
         self.client.force_authenticate(admin)
         response = self.client.get("/api/admin/volunteers/export/")
         self.assertEqual(response.status_code, 200)
@@ -277,3 +299,36 @@ class SprintFourCompletionTests(TestCase):
         original_check_out = check_out.data["data"]["check_out_time"]
         self.assertEqual(self.client.post(url, {**payload, "action": "check_out"}, format="json").status_code, 400)
         self.assertEqual(VolunteerAttendance.objects.get(event=self.event, volunteer=self.volunteer).check_out_time.isoformat().replace("+00:00", "Z"), original_check_out)
+
+    
+    def test_pending_ngo_cannot_create_opportunities(self):
+        from apps.users.models import UserProfile
+
+        pending_user = User.objects.create_user(
+            phone_number="01000000991",
+            email="pending-ngo@example.test",
+            full_name="Pending NGO",
+            password="test-password-123",
+            role="NGO",
+        )
+        UserProfile.objects.create(
+            user=pending_user,
+            profile_type=UserProfile.Type.NGO,
+            status=UserProfile.Status.ACTIVE,
+            ngo_approval_status=UserProfile.NGOApprovalStatus.PENDING,
+        )
+
+        self.client.force_authenticate(pending_user)
+        response = self.client.post(
+            "/api/volunteer/opportunities/",
+            {
+                "title": "Pending NGO Event",
+                "description": "This should not be published.",
+                "date": "2026-11-10",
+                "location": "Dhaka",
+                "required_volunteers": 2,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 403)
