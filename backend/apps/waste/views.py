@@ -50,9 +50,7 @@ class WastePickupRequestListCreateView(
 
         queryset = WastePickupRequest.objects.all()
 
-        if user.role == "Citizen" and not (
-            user.is_staff or user.is_superuser
-        ):
+        if user.role == "Citizen" and not user.is_superuser:
             return queryset.filter(
                 requester=user
             )
@@ -98,7 +96,7 @@ class WastePickupRequestDetailView(
             "requester", "collector"
         )
         user = self.request.user
-        if user.role == "Citizen" and not (user.is_staff or user.is_superuser):
+        if user.role == "Citizen" and not user.is_superuser:
             return queryset.filter(requester=user)
         return queryset
 
@@ -113,9 +111,8 @@ class WastePickupRequestDetailView(
 
         if (
             instance.requester != user
-            and user.role
-            not in ["Volunteer", "NGO", "Admin"]
-            and not user.is_staff
+            and user.role not in ["Volunteer", "NGO"]
+            and not user.is_superuser
         ):
             return Response(
                 {
@@ -136,8 +133,9 @@ class WastePickupRequestDetailView(
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.requester_id != request.user.pk and not (
-            request.user.is_staff or request.user.is_superuser
+        if (
+            instance.requester_id != request.user.pk
+            and not request.user.is_superuser
         ):
             return Response(
                 {

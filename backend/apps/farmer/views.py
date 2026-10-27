@@ -12,7 +12,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return obj.farmer == request.user or request.user.is_staff
+        return obj.farmer == request.user or request.user.is_superuser
 
 
 class ProduceListingListCreateView(generics.ListCreateAPIView):
@@ -72,7 +72,7 @@ class ProduceListingDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.farmer != request.user and not request.user.is_staff:
+        if instance.farmer != request.user and not not request.user.is_superuser:
             return Response(
                 {"success": False, "message": "You can only edit your own produce listings."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -81,7 +81,7 @@ class ProduceListingDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.farmer != request.user and not request.user.is_staff:
+        if instance.farmer != request.user and not not request.user.is_superuser:
             return Response(
                 {"success": False, "message": "You can only delete your own produce listings."},
                 status=status.HTTP_403_FORBIDDEN,

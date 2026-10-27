@@ -18,7 +18,7 @@ class ReportListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
 
-        if user.is_staff or user.is_superuser or user.role == "Admin":
+        if user.is_superuser:
             return Report.objects.select_related(
                 "reporter",
                 "reported_user",
@@ -44,11 +44,7 @@ class ReportModerationView(APIView):
     }
 
     def is_admin(self, user):
-        return (
-            user.role == "Admin"
-            or user.is_staff
-            or user.is_superuser
-        )
+        return user.is_authenticated and user.is_superuser
 
     def get(self, request):
         if not self.is_admin(request.user):

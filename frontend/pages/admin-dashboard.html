@@ -180,7 +180,10 @@
 
             </a>
 
-
+            <a href="/admin-ngo-approval/" class="service-card">
+    <div class="service-icon">🏢</div>
+    <span>NGO Approval</span>
+</a>
             <!-- REPORTS -->
 
             <a
@@ -336,17 +339,15 @@ document.addEventListener("DOMContentLoaded", async function () {
      */
 
     if (
-        role !== "admin" &&
-        user.is_staff !== true &&
-        user.is_superuser !== true
-    ) {
-
-        alert("Admin access required.");
-
-        window.location.href = "/dashboard/";
-
-        return;
-    }
+    !user ||
+    (
+        user.is_superuser !== true &&
+        String(user.role || "").toLowerCase() !== "admin"
+    )
+) {
+    window.location.href = "/dashboard/";
+    return;
+}
 
 
     /* =====================================================

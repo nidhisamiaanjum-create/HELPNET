@@ -159,11 +159,21 @@ class UserProfile(models.Model):
     class Status(models.TextChoices):
         ACTIVE = "active", "Active"
         INACTIVE = "inactive", "Inactive"
+    class NGOApprovalStatus(models.TextChoices):
+        NOT_REQUIRED = "not_required", "Not Required"
+        PENDING = "pending", "Pending Approval"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="profiles")
     profile_type = models.CharField(max_length=20, choices=Type.choices)
     display_name = models.CharField(max_length=150, blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
+    ngo_approval_status = models.CharField(
+        max_length=20,
+        choices=NGOApprovalStatus.choices,
+        default=NGOApprovalStatus.NOT_REQUIRED,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

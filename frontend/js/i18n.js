@@ -38,6 +38,9 @@ const TEXT = {
 
         /* Register */
         registerTitle: "নতুন অ্যাকাউন্ট খুলুন",
+        AccountType:"অ্যাকাউন্টের ধরন",
+        Citizen:"নাগরিক",
+        NGO:"এনজিও",
 
 
         registerSubtitle:
@@ -606,6 +609,9 @@ const TEXT = {
 
         /* Register */
         registerTitle: "Create an account",
+        AccountType:"Account Type",
+        Citizen:"Citizen",
+        NGO:"NGO",
 
 
         registerSubtitle:

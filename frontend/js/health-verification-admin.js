@@ -113,7 +113,7 @@ async function loadHealthProfessionalApplications() {
 
 async function reviewHealthApplication(id, action, reason) {
     try {
-        await apiRequest(`/api/health/professionals/${encodeURIComponent(id)}/verification/`, "PATCH", {action, reason});
+        await apiRequest(`/api/health/professionals/${encodeURIComponent(id)}/verification/`, "PATCH", { action, reason });
         await loadHealthProfessionalApplications();
     } catch (error) {
         alert(error.message || healthAdminLabel("healthApplicationReviewed", "Could not review this application."));
@@ -125,6 +125,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!target) return;
     if (typeof requireLogin === "function" && !requireLogin()) return;
     const user = typeof getStoredUser === "function" ? getStoredUser() : null;
-    if (String(user?.role || "").toLowerCase() !== "admin") return;
+    if (
+        user?.is_superuser !== true &&
+        user?.is_staff !== true &&
+        String(user?.role || "").trim().toLowerCase() !== "admin"
+    ) {
+        return;
+    }
     loadHealthProfessionalApplications();
 });

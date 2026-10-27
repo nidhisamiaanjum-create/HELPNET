@@ -24,7 +24,7 @@ from .models import UserProfile
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-
+from .permissions import IsAdminUserRole
 
 User = get_user_model()
 
@@ -37,21 +37,41 @@ class RegisterView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
+            profile = user.active_profile
 
             return Response(
                 {
-                    "success": True,
-                    "data": {
-                        "user_id": str(user.user_id),
-                        "full_name": user.full_name,
-                        "email": user.email,
-                        "phone_number": user.phone_number,
-                        "profiles": [],
+                "success": True,
+                "data": {
+                    "user_id": str(user.user_id),
+                    "full_name": user.full_name,
+                    "email": user.email,
+                    "phone_number": user.phone_number,
+                    "role": user.role,
+                    "active_profile": {
+                        "id": profile.id,
+                        "profile_type": profile.profile_type,
+                        "status": profile.status,
+                        "ngo_approval_status": profile.ngo_approval_status,
                     },
-                    "message": "Registration successful."
+                    "profiles": [
+                        {
+                            "id": item.id,
+                            "profile_type": item.profile_type,
+                            "status": item.status,
+                            "ngo_approval_status": item.ngo_approval_status,
+                        }
+                        for item in user.profiles.all()
+                    ],
                 },
-                status=status.HTTP_201_CREATED
-            )
+                "message": (
+                    "Registration successful. NGO account is pending approval."
+                    if profile.profile_type == UserProfile.Type.NGO
+                    else "Registration successful."
+                ),
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
         return Response(
             {
@@ -168,6 +188,8 @@ class LoginView(APIView):
                     "email": user.email,
                     "phone_number": user.phone_number,
                     "role": user.role,
+                    "is_staff": user.is_staff,
+                    "is_superuser": user.is_superuser,
                     "access": str(refresh.access_token),
                     "refresh": str(refresh),
                 },
@@ -361,37 +383,41 @@ class PasswordResetConfirmView(APIView):
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get_user_data(self, user):
+        data = dict(UserProfileSerializer(user).data)
+        data["is_staff"] = user.is_staff
+        data["is_superuser"] = user.is_superuser
+        data["role"] = user.role or ""
+        return data
+
     def get(self, request):
-        """Return the currently logged-in user's profile."""
-        serializer = UserProfileSerializer(request.user)
-        return Response(
-            {
-                "success": True,
-                "data": serializer.data,
-                "message": "Profile loaded.",
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response({
+            "success": True,
+            "data": self.get_user_data(request.user),
+            "message": "Profile loaded.",
+        }, status=status.HTTP_200_OK)
 
     def patch(self, request):
-        """Update editable fields of the profile."""
         serializer = UserProfileSerializer(
-            request.user, data=request.data, partial=True
+            request.user,
+            data=request.data,
+            partial=True,
         )
+
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {
-                    "success": True,
-                    "data": serializer.data,
-                    "message": "Profile updated.",
-                },
-                status=status.HTTP_200_OK,
-            )
-        return Response(
-            {"success": False, "data": None, "message": serializer.errors},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+
+            return Response({
+                "success": True,
+                "data": self.get_user_data(request.user),
+                "message": "Profile updated.",
+            }, status=status.HTTP_200_OK)
+
+        return Response({
+            "success": False,
+            "data": None,
+            "message": serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PublicUserProfileView(APIView):
@@ -468,6 +494,13 @@ class UserProfilesView(ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         profile_type = serializer.validated_data["profile_type"]
+        if profile_type == UserProfile.Type.NGO:
+            raise ValidationError({
+                "profile_type": (
+                    "NGO profiles can only be created during registration. "
+                    "Please register an NGO account."
+                )
+            })
         extra = request.data.get("details") or {}
         if not isinstance(extra, dict):
             raise ValidationError({"details": "Expected an object."})
@@ -493,6 +526,86 @@ class UserProfilesView(ListCreateAPIView):
             raise ValidationError({"profile_type": "You already have this profile type."})
         data = self.get_serializer(profile).data
         return Response({"success": True, "data": data, "message": "Profile created."}, status=status.HTTP_201_CREATED)
+
+class PendingNGOApprovalListView(APIView):
+    permission_classes = [IsAdminUserRole]
+
+    def get(self, request):
+        profiles = (
+            UserProfile.objects
+            .filter(
+                profile_type=UserProfile.Type.NGO,
+                ngo_approval_status=UserProfile.NGOApprovalStatus.PENDING,
+            )
+            .select_related("user")
+            .order_by("created_at")
+        )
+
+        data = [
+            {
+                "profile_id": profile.id,
+                "user_id": str(profile.user_id),
+                "full_name": profile.user.full_name,
+                "email": profile.user.email,
+                "phone_number": profile.user.phone_number,
+                "location": profile.user.location or "",
+                "created_at": profile.created_at.isoformat(),
+                "ngo_approval_status": profile.ngo_approval_status,
+            }
+            for profile in profiles
+        ]
+
+        return Response({
+            "success": True,
+            "data": data,
+            "count": len(data),
+        }, status=status.HTTP_200_OK)
+
+
+class NGOApprovalView(APIView):
+    permission_classes = [IsAdminUserRole]
+
+    def patch(self, request, profile_id):
+        profile = get_object_or_404(
+            UserProfile,
+            id=profile_id,
+            profile_type=UserProfile.Type.NGO,
+        )
+
+        approval_status = request.data.get("approval_status")
+        allowed_statuses = {
+            UserProfile.NGOApprovalStatus.APPROVED,
+            UserProfile.NGOApprovalStatus.REJECTED,
+        }
+
+        if approval_status not in allowed_statuses:
+            return Response(
+                {
+                    "success": False,
+                    "message": (
+                        "approval_status must be 'approved' or 'rejected'."
+                    ),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        profile.ngo_approval_status = approval_status
+        profile.save(update_fields=["ngo_approval_status", "updated_at"])
+
+        return Response(
+            {
+                "success": True,
+                "message": f"NGO profile {approval_status}.",
+                "data": {
+                    "profile_id": profile.id,
+                    "user_id": str(profile.user_id),
+                    "profile_type": profile.profile_type,
+                    "status": profile.status,
+                    "ngo_approval_status": profile.ngo_approval_status,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class UserProfileDetailView(RetrieveUpdateDestroyAPIView):

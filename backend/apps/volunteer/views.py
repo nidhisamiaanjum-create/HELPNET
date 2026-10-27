@@ -15,10 +15,23 @@ import mimetypes
 from pathlib import Path
 from .models import VolunteerOpportunity, VolunteerProfile, VolunteerProfileDocument, VolunteerSignup, VolunteerAttendance, VolunteerMessage, VolunteerCertificate
 from .serializers import VolunteerOpportunitySerializer, VolunteerProfileSerializer, VolunteerProfileDocumentSerializer, VolunteerSignupSerializer, VolunteerAttendanceSerializer, VolunteerMessageSerializer, VolunteerCertificateSerializer
-
+from apps.users.models import UserProfile
 
 def coordinator(user):
-    return user.is_authenticated and (user.role == "NGO" or user.is_staff or user.is_superuser)
+    if not user or not user.is_authenticated:
+        return False
+
+    if user.is_superuser:
+        return True
+
+    if user.role != "NGO":
+        return False
+
+    return user.profiles.filter(
+        profile_type=UserProfile.Type.NGO,
+        ngo_approval_status=UserProfile.NGOApprovalStatus.APPROVED,
+        status=UserProfile.Status.ACTIVE,
+    ).exists()
 
 
 def event_or_404(event_id):
@@ -35,8 +48,14 @@ class OpportunityListCreateView(APIView):
         return Response({"success": True, "data": VolunteerOpportunitySerializer(events, many=True, context={"request": request}).data})
 
     def post(self, request):
-        if request.user.role != "NGO":
-            return Response({"success": False, "message": "Only NGO coordinators can create opportunities."}, status=403)
+        if not coordinator(request.user):
+            return Response(
+                {
+                    "success": False,
+                    "message": "Only approved NGO coordinators can create opportunities.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
         serializer = VolunteerOpportunitySerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             event = serializer.save(coordinator=request.user)
@@ -299,7 +318,7 @@ class VolunteerSearchView(APIView):
 class AdminVolunteersView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        if not (request.user.role == "Admin" or request.user.is_staff or request.user.is_superuser):
+        if not request.user.is_superuser:
             return Response({"success": False, "message": "Administrator access required."}, status=403)
         profiles = VolunteerProfile.objects.select_related("user").filter(user__role="Volunteer")
         for field in ("skills", "availability", "location", "blood_group"):
@@ -314,7 +333,7 @@ class VolunteerCsvExportView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if not (request.user.role == "Admin" or request.user.is_staff or request.user.is_superuser):
+        if not request.user.is_superuser:
             return Response({"success": False, "message": "Administrator access required."}, status=403)
         profiles = VolunteerProfile.objects.select_related("user").filter(user__role="Volunteer")
         for field in ("skills", "availability", "location"):

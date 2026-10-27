@@ -64,6 +64,18 @@
                 id="registerForm"
                 novalidate
             >
+            
+                <!-- Account Type -->
+                <div class="field">
+                    <label for="accountType" data-i18n="AccountType">Account Type</label>
+                    <select id="accountType" name="accountType" required>
+                        <option value="citizen" selected data-i18n="Citizen">Citizen</option>
+                        <option value="ngo" data-i18n="NGO">NGO</option>
+                    </select>
+                    <div class="hint" id="accountTypeHint">
+                        NGOs must be approved by an administrator before accessing NGO services.
+                    </div>
+                </div>
 
                 <!-- Full Name -->
                 <div class="field">

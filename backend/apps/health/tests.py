@@ -13,7 +13,15 @@ User = get_user_model()
 
 
 class HealthCommunityApiTests(APITestCase):
-    def make_user(self, suffix, role="Citizen", is_verified=False):
+    
+    def make_user(
+        self,
+        suffix,
+        role="Citizen",
+        is_verified=False,
+        is_staff=False,
+        is_superuser=False,
+    ):
         return User.objects.create_user(
             phone_number=f"01700000{suffix}",
             email=f"health{suffix}@example.com",
@@ -21,7 +29,10 @@ class HealthCommunityApiTests(APITestCase):
             password="test-password-123",
             role=role,
             is_verified=is_verified,
+            is_staff=is_staff,
+            is_superuser=is_superuser,
         )
+
 
     def test_question_list_create_detail_and_replies_include_trust_data(self):
         author = self.make_user("001")
@@ -96,7 +107,7 @@ class HealthCommunityApiTests(APITestCase):
         self.assertEqual(directory.status_code, 200)
         self.assertEqual(directory.data["data"], [])
 
-        administrator = self.make_user("005", role="Admin")
+        administrator = self.make_user("005", role="Admin",is_staff=True,is_superuser=True,)
         self.client.force_authenticate(administrator)
         verified = self.client.patch(path, {"verification_status": "verified"}, format="json")
         self.assertEqual(verified.status_code, 400)
@@ -140,7 +151,7 @@ class HealthCommunityApiTests(APITestCase):
         self.assertEqual(self.client.get(reverse("health-professional-application")).data["data"]["status"], "pending")
         self.assertEqual(self.submit_professional_application(applicant).status_code, 400)
 
-        admin = self.make_user("008", role="Admin")
+        admin = self.make_user("008", role="Admin",is_staff=True,is_superuser=True,)
         self.client.force_authenticate(admin)
         approved = self.client.patch(reverse("health-professional-verification", args=[application.pk]), {"action": "approve"}, format="json")
         self.assertEqual(approved.status_code, 200, approved.data)
@@ -163,7 +174,7 @@ class HealthCommunityApiTests(APITestCase):
         self.assertEqual(self.client.get(document_url).status_code, 403)
         self.assertEqual(self.client.patch(review_url, {"action": "approve"}, format="json").status_code, 403)
 
-        admin = self.make_user("010", role="Admin")
+        admin = self.make_user("010", role="Admin",is_staff=True,is_superuser=True,)
         self.client.force_authenticate(admin)
         pending = self.client.get(pending_url)
         self.assertEqual(pending.status_code, 200)
