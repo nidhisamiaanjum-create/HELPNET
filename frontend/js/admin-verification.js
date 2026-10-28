@@ -7,7 +7,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         ? getStoredUser()
         : null;
 
-    if (user.role !== "admin" && user.is_superuser !== true) {
+    const role = String(user?.role || "").trim().toLowerCase();
+    const isAdmin =
+        user?.is_superuser === true ||
+        user?.is_staff === true ||
+        role === "admin";
+
+    if (!isAdmin) {
         window.location.href = "/dashboard/";
         return;
     }

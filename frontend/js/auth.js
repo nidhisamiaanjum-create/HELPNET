@@ -16,6 +16,11 @@ function isValidPhone(value) {
 }
 
 
+function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value || "");
+}
+
+
 /* ============================================================
    PASSWORD VALIDATION
    ============================================================ */
@@ -548,11 +553,19 @@ function initForgotPasswordPage() {
         return;
     }
 
+    // Dedicated forgot-password.js owns this page when present.
+    if (document.getElementById("forgotPasswordMessage")) {
+        return;
+    }
+
 
     const button =
         document.getElementById(
             "forgotPasswordButton"
         );
+
+    const emailInput =
+        document.getElementById("email");
 
 
     form.addEventListener(
@@ -569,18 +582,16 @@ function initForgotPasswordPage() {
             );
 
 
-            const phone =
-                document
-                    .getElementById("phoneNumber")
-                    .value
+            const email =
+                (emailInput && emailInput.value || "")
                     .trim();
 
 
-            if (!isValidPhone(phone)) {
+            if (!email || !isValidEmail(email)) {
 
                 showFieldError(
-                    "phoneNumber",
-                    t("phoneHint")
+                    "email",
+                    t("emailHint") || "Enter a valid email address."
                 );
 
                 return;
@@ -594,10 +605,10 @@ function initForgotPasswordPage() {
 
                 const data =
                     await apiRequest(
-                        "/api/auth/forgot-password/",
+                        "/api/auth/password-reset/",
                         "POST",
                         {
-                            phone_number: phone
+                            email: email
                         }
                     );
 

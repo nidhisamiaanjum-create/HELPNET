@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const response = await fetch(
-                "http://127.0.0.1:8000/api/users/search/?q=" +
+                "/api/users/search/?q=" +
                 encodeURIComponent(query),
                 {
                     method: "GET",

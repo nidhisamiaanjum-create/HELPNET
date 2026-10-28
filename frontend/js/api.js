@@ -84,8 +84,8 @@ function isPublicAuthEndpoint(path) {
     const publicEndpoints = [
         "/api/auth/login/",
         "/api/auth/register/",
-        "/api/auth/forgot-password/",
-        "/api/auth/reset-password/"
+        "/api/auth/password-reset/",
+        "/api/auth/password-reset-confirm/"
     ];
 
     return publicEndpoints.includes(cleanPath);

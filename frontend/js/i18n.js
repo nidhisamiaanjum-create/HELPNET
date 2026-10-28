@@ -156,6 +156,7 @@ const TEXT = {
         /* Dashboard extras */
         logout: "লগআউট",
         goodMorning: "শুভ সকাল,",
+        myprofile:"♙ আমার প্রোফাইলগুলো",
         newNotifications: "নতুন বিজ্ঞপ্তি",
         myActivities: "আমার কার্যক্রম",
         helped: "সাহায্য করেছেন",
@@ -728,6 +729,7 @@ const TEXT = {
          /* Dashboard extras */
         logout: "Log out",
         goodMorning: "Good morning,",
+        myprofile:"♙ My Profiles",
         newNotifications: "new notifications",
         myActivities: "my activities",
         helped: "people helped",
