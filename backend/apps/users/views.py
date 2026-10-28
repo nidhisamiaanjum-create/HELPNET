@@ -490,6 +490,15 @@ class UserProfilesView(ListCreateAPIView):
     def get_queryset(self):
         return UserProfile.objects.filter(user=self.request.user).order_by("created_at")
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        data = self.get_serializer(queryset, many=True).data
+        return Response({
+            "success": True,
+            "data": data,
+            "message": "Profiles loaded.",
+        })
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -617,8 +626,17 @@ class UserProfileDetailView(RetrieveUpdateDestroyAPIView):
         return UserProfile.objects.filter(user=self.request.user)
 
     def update(self, request, *args, **kwargs):
+        # Profiles are permanent once created: type cannot be exchanged.
         if "profile_type" in request.data:
-            raise ValidationError({"profile_type": "Profile type cannot be changed."})
+            raise ValidationError({
+                "profile_type": (
+                    "Profile type cannot be changed after creation."
+                )
+            })
+        if "user" in request.data or "user_id" in request.data:
+            raise ValidationError({
+                "user": "Profiles cannot be moved to another account."
+            })
         return super().update(request, *args, **kwargs)
 
     def perform_update(self, serializer):
