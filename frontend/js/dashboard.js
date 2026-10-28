@@ -101,10 +101,49 @@ document.addEventListener("DOMContentLoaded", function () {
                 apiRequest("/api/auth/active-profile/")
             ]);
 
-            const profiles = result.data || [];
-            const active = activeResult.data;
+            const profiles = Array.isArray(result?.data)
+                ? result.data
+                : Array.isArray(result)
+                    ? result
+                    : [];
+            const active = activeResult?.data ?? null;
 
             profileList.replaceChildren();
+
+            if (typeSelect) {
+                const ownedTypes = new Set(
+                    profiles.map(function (profile) {
+                        return profile.profile_type;
+                    })
+                );
+
+                Array.from(typeSelect.options).forEach(function (option) {
+                    if (!option.value) {
+                        option.hidden = false;
+                        option.disabled = false;
+                        return;
+                    }
+
+                    // NGO is registration-only; each other type can be created once.
+                    const unavailable =
+                        option.value === "ngo" ||
+                        ownedTypes.has(option.value);
+
+                    option.hidden = unavailable;
+                    option.disabled = unavailable;
+                });
+
+                if (
+                    typeSelect.value &&
+                    typeSelect.options[typeSelect.selectedIndex]?.disabled
+                ) {
+                    typeSelect.value = "";
+                }
+
+                if (donorFields) {
+                    donorFields.hidden = typeSelect.value !== "blood_donor";
+                }
+            }
 
             profiles.forEach(function (profile) {
                 const card = document.createElement("div");
@@ -364,8 +403,23 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        if (!typeSelect?.value) {
+            if (errorBox) {
+                errorBox.textContent = "Choose a profile type.";
+            }
+            return;
+        }
+
+        if (typeSelect.value === "ngo") {
+            if (errorBox) {
+                errorBox.textContent =
+                    "NGO profiles can only be created during registration.";
+            }
+            return;
+        }
+
         const details =
-            typeSelect?.value === "blood_donor"
+            typeSelect.value === "blood_donor"
                 ? {
                     blood_group:
                         document.getElementById("donorGroup")?.value.trim(),
@@ -373,6 +427,17 @@ document.addEventListener("DOMContentLoaded", function () {
                         document.getElementById("donorArea")?.value.trim()
                 }
                 : {};
+
+        if (
+            typeSelect.value === "blood_donor" &&
+            (!details.blood_group || !details.area)
+        ) {
+            if (errorBox) {
+                errorBox.textContent =
+                    "Blood group and area are required for a Blood Donor profile.";
+            }
+            return;
+        }
 
         try {
             const response = await apiRequest(

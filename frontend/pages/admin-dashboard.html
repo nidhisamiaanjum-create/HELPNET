@@ -150,7 +150,7 @@
             <!-- NID VERIFICATION -->
 
             <a
-                href="{% url 'admin-verification' %}"
+                href="/admin-verification/"
                 class="service-card">
 
                 <div class="service-icon">
@@ -203,7 +203,7 @@
             <!-- AUDIT LOGS -->
 
             <a
-                href="{% url 'admin-logs' %}"
+                href="/admin-logs/"
                 class="service-card">
 
                 <div class="service-icon">
@@ -342,6 +342,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     !user ||
     (
         user.is_superuser !== true &&
+        user.is_staff !== true &&
         String(user.role || "").toLowerCase() !== "admin"
     )
 ) {

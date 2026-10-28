@@ -61,21 +61,67 @@
 
 <main class="dashboard-page">
 
+
 <section class="dashboard-section" id="profilesSection">
-    <div class="section-heading"><h2>My Profiles</h2><button class="btn" type="button" id="createProfileButton">Create New Profile</button></div>
+
+    <div class="profiles-heading">
+        <div class="profiles-heading-icon"></div>
+
+        <div>
+            <h2 data-i18n="myprofile"> My Profiles</h2>
+            <p>Manage your different profiles in one place.</p><br><br>
+        </div>
+    </div>
+
+    <!-- JavaScript dynamically loads profile cards -->
     <div id="myProfilesList" aria-live="polite"></div>
+
+    <!-- Create profile button -->
+    <button
+        type="button"
+        id="createProfileButton"
+        class="create-profile-button"
+        aria-expanded="false">
+
+        <span class="create-profile-icon">+</span>
+        <span>Create New Profile</span>
+
+    </button>
+
+    <!-- Keep the existing profile form functionality -->
     <form id="newProfileForm" hidden class="card">
+
         <label for="newProfileType">Profile type</label>
+
         <select id="newProfileType" required>
             <option value="">Choose a profile</option>
-            <option value="citizen">Citizen</option><option value="volunteer">Volunteer</option>
-            <option value="farmer">Farmer</option><option value="ngo">NGO</option><option value="blood_donor">Blood Donor</option>
+            <option value="citizen">Citizen</option>
+            <option value="volunteer">Volunteer</option>
+            <option value="farmer">Farmer</option>
+            <option value="ngo">NGO</option>
+            <option value="blood_donor">Blood Donor</option>
         </select>
-        <div id="donorFields" hidden><label for="donorGroup">Blood group</label><input id="donorGroup" maxlength="3"><label for="donorArea">Area</label><input id="donorArea"></div>
-        <p id="profileFormError" class="field-error" aria-live="polite"></p>
-        <button class="btn" type="submit">Create profile</button>
+
+        <div id="donorFields" hidden>
+            <label for="donorGroup">Blood group</label>
+            <input id="donorGroup" maxlength="3">
+
+            <label for="donorArea">Area</label>
+            <input id="donorArea">
+        </div>
+
+        <p id="profileFormError"
+           class="field-error"
+           aria-live="polite"></p>
+
+        <button class="btn" type="submit">
+            Create profile
+        </button>
+
     </form>
+
 </section>
+
 
 
 <!-- =====================================================
