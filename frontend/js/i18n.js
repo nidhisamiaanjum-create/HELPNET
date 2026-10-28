@@ -57,6 +57,8 @@ const TEXT = {
 
 
         password: "পাসওয়ার্ড",
+        showPassword: "দেখান",
+        hidePassword: "লুকান",
 
 
         passwordHint:
@@ -629,6 +631,8 @@ const TEXT = {
 
 
         password: "Password",
+        showPassword: "Show",
+        hidePassword: "Hide",
 
 
         passwordHint:

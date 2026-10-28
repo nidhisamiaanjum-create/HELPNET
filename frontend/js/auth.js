@@ -477,6 +477,19 @@ function initLoginPage() {
     );
 }
 
+window.togglePasswordVisibility = function (toggle) {
+    const input = document.getElementById(toggle.dataset.passwordToggle);
+    if (!input) return false;
+
+    const showing = input.type === "password";
+    input.type = showing ? "text" : "password";
+    toggle.setAttribute("aria-pressed", String(showing));
+    toggle.textContent = typeof t === "function"
+        ? t(showing ? "hidePassword" : "showPassword")
+        : (showing ? "Hide password" : "Show password");
+    return false;
+};
+
 
 /* ============================================================
    LOGOUT

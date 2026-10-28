@@ -119,6 +119,23 @@ input, select {
     box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
 }
 
+.password-input-wrap { position: relative; }
+.password-input-wrap input { padding-right: 82px; }
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--teal-dark);
+    font: 600 15px inherit;
+    cursor: pointer;
+}
+.password-toggle:focus-visible { outline: 2px solid var(--teal-dark); outline-offset: 2px; }
+
 input:focus, select:focus { outline: none; box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light), 0 0 0 2px rgba(21, 154, 156, .28); }
 input.invalid { box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light), 0 0 0 2px rgba(198, 40, 40, .35); }
 .hint { font-size: 15px; color: var(--text-muted); margin-top: 6px; }
