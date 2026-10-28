@@ -43,7 +43,8 @@ class AccountProfilesTests(APITestCase):
             self.assertEqual(response.status_code, 201, response.data)
         self.assertEqual(UserProfile.objects.filter(user=self.user).count(), 3)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(self.client.get("/api/auth/profiles/").data), 3)
+        listed = self.client.get("/api/auth/profiles/").data
+        self.assertEqual(len(listed["data"] if isinstance(listed, dict) else listed), 3)
         profile = UserProfile.objects.get(user=self.user, profile_type="farmer")
         response = self.client.put("/api/auth/active-profile/", {"profile_id": profile.id}, format="json")
         self.assertEqual(response.status_code, 200)
@@ -59,7 +60,7 @@ class AccountProfilesTests(APITestCase):
         foreign = UserProfile.objects.create(user=other, profile_type="farmer")
         self.assertEqual(self.client.get(f"/api/auth/profiles/{foreign.id}/").status_code, 404)
         response = self.client.patch(f"/api/auth/profiles/{profile.id}/", {"user": str(other.user_id)}, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 400)
         profile.refresh_from_db()
         self.assertEqual(profile.user_id, self.user.user_id)
         self.assertEqual(self.client.put("/api/auth/active-profile/", {"profile_id": foreign.id}, format="json").status_code, 404)

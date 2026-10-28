@@ -66,13 +66,18 @@ class BloodApiTests(APITestCase):
 				"phone_number": "01720000006",
 				"password": "password123",
 				"location": "Dhaka",
+				"account_type": "citizen",
 			},
 			format="json",
 		)
 
 		self.assertEqual(response.status_code, 201)
 		registered = User.objects.get(email="registered-donor@example.com")
-		self.assertEqual(registered.profiles.count(), 0)
+		# Registration creates a citizen/NGO account profile, not a blood donor profile.
+		self.assertFalse(DonorProfile.objects.filter(user=registered).exists())
+		self.assertFalse(
+			registered.profiles.filter(profile_type="blood_donor").exists()
+		)
 
 	def test_donor_profile_can_select_group_set_area_and_change_availability(self):
 		response = self.create_profile(self.donor, available=True)
