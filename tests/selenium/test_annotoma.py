@@ -1,1342 +1,406 @@
+import os
+from datetime import date, timedelta
+from uuid import uuid4
+
+import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
-import time
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import Select
+from rest_framework_simplejwt.tokens import RefreshToken
 
-
-BASE_URL = "http://127.0.0.1:8000"
-
-EMAIL = "volunteer@gmail.com"
-PASSWORD = "volunteer123456789"
+from apps.goods.models import GoodsInterest, GoodsListing
+from apps.health.models import HealthProfessional, HealthQuestion, HealthReply
+from apps.users.models import User, UserProfile
+from apps.volunteer.models import VolunteerOpportunity, VolunteerProfile, VolunteerSignup
 
 
 def create_driver():
     options = Options()
-    options.add_argument("--start-maximized")
-    return webdriver.Chrome(options=options)
+    options.add_argument("--headless=new")
+    options.add_argument("--window-size=1280,1000")
+    options.add_argument("--disable-dev-shm-usage")
+    options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
+
+    driver_path = os.environ.get("CHROMEDRIVER")
+    service = Service(executable_path=driver_path) if driver_path else Service()
+    return webdriver.Chrome(service=service, options=options)
 
 
-def login(driver):
-    driver.get(BASE_URL + "/login/")
+@pytest.fixture
+def browser(live_server):
+    driver = create_driver()
+    driver.implicitly_wait(2)
+    yield driver
+    driver.quit()
 
-    driver.find_element(
-        By.ID,
-        "identifier"
-    ).send_keys(EMAIL)
 
-    driver.find_element(
-        By.ID,
-        "password"
-    ).send_keys(PASSWORD)
+@pytest.fixture
+def user_factory(db):
+    def create_user(role="Citizen", **fields):
+        suffix = uuid4().hex[:8]
+        return User.objects.create_user(
+            phone_number=f"017{uuid4().int % 100_000_000:08d}",
+            email=f"selenium-{suffix}@example.test",
+            full_name=f"HELPNET Selenium {suffix}",
+            password="TestPassword123",
+            role=role,
+            **fields,
+        )
 
-    driver.find_element(
-        By.ID,
-        "loginButton"
+    return create_user
+
+
+@pytest.fixture
+def volunteer(user_factory):
+    user = user_factory(role="Volunteer")
+    VolunteerProfile.objects.create(user=user, skills="First aid")
+    return user
+
+
+@pytest.fixture
+def coordinator(user_factory):
+    user = user_factory(role="NGO")
+    UserProfile.objects.create(
+        user=user,
+        profile_type=UserProfile.Type.NGO,
+        status=UserProfile.Status.ACTIVE,
+        ngo_approval_status=UserProfile.NGOApprovalStatus.APPROVED,
+    )
+    return user
+
+
+@pytest.fixture
+def opportunity(coordinator):
+    return VolunteerOpportunity.objects.create(
+        title="Selenium Community Cleanup",
+        description="Help clean a local community space.",
+        date=date.today() + timedelta(days=7),
+        location="Dhaka",
+        required_volunteers=5,
+        coordinator=coordinator,
+    )
+
+
+def sign_in(browser, live_server, user):
+    browser.get(f"{live_server.url}/")
+    access_token = str(RefreshToken.for_user(user).access_token)
+    user_data = {
+        "user_id": str(user.user_id),
+        "full_name": user.full_name,
+        "email": user.email,
+        "phone_number": user.phone_number,
+        "role": user.role,
+        "is_staff": user.is_staff,
+        "is_superuser": user.is_superuser,
+    }
+    browser.execute_script(
+        """
+        localStorage.setItem("helpnet_token", arguments[0]);
+        localStorage.setItem("helpnet_user", JSON.stringify(arguments[1]));
+        localStorage.setItem("helpnet_lang", "en");
+        """,
+        access_token,
+        user_data,
+    )
+
+
+def wait_for(browser, selector):
+    return WebDriverWait(browser, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+    )
+
+
+def enter_date(browser, element_id, value):
+    browser.execute_script(
+        """
+        const field = document.getElementById(arguments[0]);
+        field.value = arguments[1];
+        field.dispatchEvent(new Event("input", { bubbles: true }));
+        field.dispatchEvent(new Event("change", { bubbles: true }));
+        """,
+        element_id,
+        value,
+    )
+
+
+def test_home_page_loads(browser, live_server):
+    browser.get(f"{live_server.url}/")
+
+    assert browser.title
+    assert browser.find_element(By.TAG_NAME, "body").text.strip()
+
+
+def test_volunteer_can_sign_up_for_open_opportunity(
+    browser, live_server, volunteer, opportunity
+):
+    sign_in(browser, live_server, volunteer)
+    browser.get(f"{live_server.url}/volunteer-opportunities/")
+
+    listing = wait_for(browser, "#opportunityList article")
+    assert opportunity.title in listing.text
+    listing.find_element(By.XPATH, ".//button[normalize-space()='Sign up']").click()
+
+    WebDriverWait(browser, 10).until(
+        lambda driver: "successfully" in driver.find_element(
+            By.ID, "volunteerMessage"
+        ).text.lower()
+    )
+    assert VolunteerSignup.objects.filter(
+        volunteer=volunteer, event=opportunity
+    ).exists()
+
+
+def test_volunteer_profile_can_be_saved(browser, live_server, volunteer):
+    sign_in(browser, live_server, volunteer)
+    browser.get(f"{live_server.url}/volunteer-profile/")
+
+    skills = wait_for(browser, "#skills")
+    skills.clear()
+    skills.send_keys("First aid, teaching")
+    availability = browser.find_element(By.ID, "availability")
+    availability.clear()
+    availability.send_keys("Weekends")
+    browser.find_element(By.ID, "volunteerLocation").send_keys("Dhaka")
+    browser.find_element(By.ID, "volunteerBloodGroup").send_keys("A+")
+    browser.find_element(By.ID, "certificates").send_keys("First aid course")
+    browser.find_element(
+        By.CSS_SELECTOR, "#volunteerProfileForm button"
     ).click()
 
-    time.sleep(4)
+    WebDriverWait(browser, 10).until(
+        lambda driver: "saved" in driver.find_element(
+            By.ID, "profileMessage"
+        ).text.lower()
+    )
+    volunteer_profile = VolunteerProfile.objects.get(user=volunteer)
+    assert volunteer_profile.skills == "First aid, teaching"
+    assert volunteer_profile.availability == "Weekends"
+    assert volunteer_profile.location == "Dhaka"
+    assert volunteer_profile.blood_group == "A+"
+    assert volunteer_profile.supporting_certificates == "First aid course"
 
 
-def test_website_opens():
-    driver = create_driver()
+def test_approved_ngo_coordinator_can_create_opportunity(
+    browser, live_server, coordinator
+):
+    sign_in(browser, live_server, coordinator)
+    browser.get(f"{live_server.url}/create-opportunity/")
 
-    try:
-        driver.get(BASE_URL)
+    browser.find_element(By.ID, "eventTitle").send_keys("Community Garden")
+    browser.find_element(By.ID, "eventDescription").send_keys(
+        "Prepare planting beds for the neighborhood."
+    )
+    enter_date(
+        browser,
+        "eventDate",
+        (date.today() + timedelta(days=10)).isoformat(),
+    )
+    browser.find_element(By.ID, "eventLocation").send_keys("Dhaka")
+    browser.find_element(By.ID, "eventRequired").send_keys("4")
+    browser.find_element(
+        By.CSS_SELECTOR, "#opportunityForm button[type='submit']"
+    ).click()
 
-        assert driver.current_url.startswith(BASE_URL)
-
-    finally:
-        driver.quit()
-
-
-def test_volunteer_opportunity():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\nLOGIN CHECK")
-        print("URL:", driver.current_url)
-
-        token = driver.execute_script(
-            "return localStorage.getItem('helpnet_token');"
-        )
-
-        user = driver.execute_script(
-            "return localStorage.getItem('helpnet_user');"
-        )
-
-        refresh = driver.execute_script(
-            "return localStorage.getItem('refreshToken');"
-        )
-
-        print("helpnet_token:", token)
-        print("helpnet_user:", user)
-        print("refreshToken:", refresh)
-
-        assert token is not None, (
-            "Login failed: helpnet_token was not saved."
-        )
-
-        driver.get(
-            BASE_URL + "/create-opportunity/"
-        )
-
-        time.sleep(2)
-
-        print("\nOPPORTUNITY")
-        print("URL:", driver.current_url)
-
-        assert "/login/" not in driver.current_url
-
-        assert (
-            "/create-opportunity/"
-            in driver.current_url
-        )
-
-        title = driver.find_element(
-            By.ID,
-            "eventTitle"
-        )
-
-        date = driver.find_element(
-            By.ID,
-            "eventDate"
-        )
-
-        location = driver.find_element(
-            By.ID,
-            "eventLocation"
-        )
-
-        required = driver.find_element(
-            By.ID,
-            "eventRequired"
-        )
-
-        description = driver.find_element(
-            By.ID,
-            "eventDescription"
-        )
-
-        print("\nFORM FIELDS:")
-        print("eventTitle: FOUND")
-        print("eventDate: FOUND")
-        print("eventLocation: FOUND")
-        print("eventRequired: FOUND")
-        print("eventDescription: FOUND")
-
-        title.send_keys(
-            "Selenium Test Volunteer Opportunity"
-        )
-
-        date.send_keys(
-            "10/10/2026"
-        )
-
-        location.send_keys(
-            "Dhaka"
-        )
-
-        required.send_keys(
-            "5"
-        )
-
-        description.send_keys(
-            "This is a Selenium test volunteer opportunity."
-        )
-
-        print("\nFORM FILLED SUCCESSFULLY")
-
-        submit_button = driver.find_element(
-            By.CSS_SELECTOR,
-            "button[type='submit']"
-        )
-
-        print("SUBMIT BUTTON: FOUND")
-
-        driver.execute_script(
-            "arguments[0].scrollIntoView({block: 'center'});",
-            submit_button
-        )
-
-        time.sleep(1)
-
-        driver.execute_script(
-            "arguments[0].click();",
-            submit_button
-        )
-
-        time.sleep(3)
-
-        print("\nFINAL RESULT")
-        print("FINAL URL:", driver.current_url)
-
-        print("\nFINAL PAGE:")
-
-        print(
-            driver.find_element(
-                By.TAG_NAME,
-                "body"
-            ).get_attribute("innerText")
-        )
-
-    finally:
-        driver.quit()
+    notice = WebDriverWait(browser, 10).until(
+        lambda driver: driver.find_element(By.ID, "volunteerMessage").text
+    )
+    assert "created" in notice.lower(), notice
+    event = VolunteerOpportunity.objects.get(title="Community Garden")
+    assert event.coordinator == coordinator
+    assert event.required_volunteers == 4
 
 
-def test_volunteer_signup():
-    driver = create_driver()
+def test_non_coordinator_cannot_create_opportunity(
+    browser, live_server, volunteer
+):
+    sign_in(browser, live_server, volunteer)
+    browser.get(f"{live_server.url}/create-opportunity/")
+    browser.find_element(By.ID, "eventTitle").send_keys("Not permitted")
+    browser.find_element(By.ID, "eventDescription").send_keys("Test event")
+    enter_date(
+        browser,
+        "eventDate",
+        (date.today() + timedelta(days=10)).isoformat(),
+    )
+    browser.find_element(By.ID, "eventLocation").send_keys("Dhaka")
+    browser.find_element(By.ID, "eventRequired").send_keys("2")
+    browser.find_element(
+        By.CSS_SELECTOR, "#opportunityForm button[type='submit']"
+    ).click()
+
+    WebDriverWait(browser, 10).until(
+        lambda driver: "approved ngo coordinators" in driver.find_element(
+            By.ID, "volunteerMessage"
+        ).text.lower()
+    )
+    assert not VolunteerOpportunity.objects.filter(
+        title="Not permitted"
+    ).exists()
+
+
+def test_user_can_create_goods_listing(browser, live_server, user_factory):
+    seller = user_factory()
+    sign_in(browser, live_server, seller)
+    browser.get(f"{live_server.url}/create-goods/")
+
+    browser.find_element(By.ID, "goodsTitle").send_keys("Study desk")
+    browser.find_element(By.ID, "goodsDescription").send_keys(
+        "A sturdy desk in good condition."
+    )
+    Select(browser.find_element(By.ID, "goodsCondition")).select_by_visible_text(
+        "Good"
+    )
+    browser.find_element(By.ID, "goodsPrice").send_keys("1200")
+    browser.find_element(By.ID, "goodsLocation").send_keys("Dhaka")
+    validity = browser.execute_script(
+        """
+        const form = document.querySelector("#goodsCreateForm");
+        return {
+            valid: form.checkValidity(),
+            fields: [...form.elements].map(field => ({
+                id: field.id,
+                value: field.value,
+                valid: field.checkValidity(),
+                message: field.validationMessage,
+            })),
+        };
+        """
+    )
+    assert validity["valid"], validity
+    browser.find_element(
+        By.CSS_SELECTOR, "#goodsCreateForm button[type='submit']"
+    ).click()
 
     try:
-        login(driver)
-
-        print("\nVOLUNTEER SIGNUP")
-        print(
-            "LOGIN URL:",
-            driver.current_url
-        )
-
-        driver.get(
-            BASE_URL + "/volunteer-opportunities/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "OPPORTUNITY URL:",
-            driver.current_url
-        )
-
-        assert (
-            "/volunteer-opportunities/"
-            in driver.current_url
-        )
-
-        signup_buttons = driver.find_elements(
-            By.XPATH,
-            "//button[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'sign up')]"
-        )
-
-        print(
-            "\nSIGN UP BUTTONS FOUND:",
-            len(signup_buttons)
-        )
-
-        assert len(signup_buttons) > 0, (
-            "No Sign up button found."
-        )
-
-        first_signup = signup_buttons[0]
-
-        driver.execute_script(
-            "arguments[0].scrollIntoView({block: 'center'});",
-            first_signup
-        )
-
-        time.sleep(1)
-
-        driver.execute_script(
-            "arguments[0].click();",
-            first_signup
-        )
-
-        time.sleep(3)
-
-        print("\nSIGNUP RESULT")
-
-        print(
-            "FINAL URL:",
-            driver.current_url
-        )
-
-        print("\nFINAL PAGE:")
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).get_attribute("innerText")
-
-        print(page_text)
-
-        assert (
-            "already signed up"
-            in page_text.lower()
-            or
-            "signed up"
-            in page_text.lower()
-        )
-
-    finally:
-        driver.quit()
-
-
-def test_volunteer_profile():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\nVOLUNTEER PROFILE")
-
-        print(
-            "LOGIN URL:",
-            driver.current_url
-        )
-
-        driver.get(
-            BASE_URL + "/volunteer-profile/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "PROFILE URL:",
-            driver.current_url
-        )
-
-        assert (
-            "/volunteer-profile/"
-            in driver.current_url
-        )
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).get_attribute("innerText")
-
-        print("\nPROFILE PAGE:")
-
-        print(page_text)
-
-        assert len(
-            page_text.strip()
-        ) > 0
-
-        print(
-            "\nVOLUNTEER PROFILE PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-
-def test_volunteer_attendance():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\nVOLUNTEER ATTENDANCE")
-
-        print(
-            "LOGIN URL:",
-            driver.current_url
-        )
-
-        driver.get(
-            BASE_URL + "/volunteer-attendance/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "ATTENDANCE URL:",
-            driver.current_url
-        )
-
-        assert (
-            "/volunteer-attendance/"
-            in driver.current_url
-        )
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).get_attribute("innerText")
-
-        print("\nATTENDANCE PAGE:")
-
-        print(page_text)
-
-        assert len(
-            page_text.strip()
-        ) > 0
-
-        buttons = driver.find_elements(
-            By.TAG_NAME,
-            "button"
-        )
-
-        print(
-            "\nBUTTONS FOUND:",
-            len(buttons)
-        )
-
-        for button in buttons:
-            print(
-                "BUTTON:",
-                button.text
-            )
-
-        print(
-            "\nVOLUNTEER ATTENDANCE PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-
-def test_volunteer_message():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\nVOLUNTEER MESSAGE")
-
-        print(
-            "LOGIN URL:",
-            driver.current_url
-        )
-
-        driver.get(
-            BASE_URL + "/volunteer-message/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "MESSAGE URL:",
-            driver.current_url
-        )
-
-        assert (
-            "/volunteer-message/"
-            in driver.current_url
-        )
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nMESSAGE PAGE:")
-
-        print(page_text)
-
-        assert len(
-            page_text.strip()
-        ) > 0
-
-        print(
-            "\nVOLUNTEER MESSAGE PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-
-def test_volunteer_certificate():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\nVOLUNTEER CERTIFICATE")
-
-        print(
-            "LOGIN URL:",
-            driver.current_url
-        )
-
-        driver.get(
-            BASE_URL + "/volunteer-certificate/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "CERTIFICATE URL:",
-            driver.current_url
-        )
-
-        assert (
-            "/volunteer-certificate/"
-            in driver.current_url
-        )
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nCERTIFICATE PAGE:")
-
-        print(page_text)
-
-        assert len(
-            page_text.strip()
-        ) > 0
-
-        print(
-            "\nVOLUNTEER CERTIFICATE PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-
-def test_volunteer_search():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\nVOLUNTEER SEARCH")
-
-        print(
-            "LOGIN URL:",
-            driver.current_url
-        )
-
-        driver.get(
-            BASE_URL + "/volunteer-search/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "SEARCH URL:",
-            driver.current_url
-        )
-
-        assert (
-            "/volunteer-search/"
-            in driver.current_url
-        )
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nVOLUNTEER SEARCH PAGE:")
-
-        print(page_text)
-
-        assert len(
-            page_text.strip()
-        ) > 0
-
-        buttons = driver.find_elements(
-            By.TAG_NAME,
-            "button"
-        )
-
-        inputs = driver.find_elements(
-            By.TAG_NAME,
-            "input"
-        )
-
-        print(
-            "\nINPUTS FOUND:",
-            len(inputs)
-        )
-
-        for item in inputs:
-            print(
-                "INPUT:",
-                item.get_attribute("name"),
-                "|",
-                item.get_attribute("id"),
-                "|",
-                item.get_attribute("placeholder")
-            )
-
-        print(
-            "\nBUTTONS FOUND:",
-            len(buttons)
-        )
-
-        for button in buttons:
-            print(
-                "BUTTON:",
-                button.text
-            )
-
-        print(
-            "\nVOLUNTEER SEARCH PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-
-def test_admin_volunteers():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\nADMIN VOLUNTEERS")
-
-        print(
-            "LOGIN URL:",
-            driver.current_url
-        )
-
-        driver.get(
-            BASE_URL + "/admin-volunteers/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "ADMIN VOLUNTEERS URL:",
-            driver.current_url
-        )
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nADMIN VOLUNTEERS PAGE:")
-
-        print(page_text)
-
-        assert len(
-            page_text.strip()
-        ) > 0
-
-        print(
-            "\nBUTTONS FOUND:",
-            len(
-                driver.find_elements(
-                    By.TAG_NAME,
-                    "button"
-                )
+        WebDriverWait(browser, 10).until(
+            lambda driver: "/goods-details/" in driver.current_url
+            or driver.execute_script(
+                "return document.getElementById('goodsMessage')?.textContent || ''"
             )
         )
-
-        print(
-            "\nADMIN VOLUNTEERS PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-def test_goods_list():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\nGOODS LIST")
-
-        driver.get(
-            BASE_URL + "/goods-list/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "GOODS LIST URL:",
-            driver.current_url
-        )
-
-        assert (
-            "/goods-list/"
-            in driver.current_url
-        )
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nGOODS LIST PAGE:")
-        print(page_text)
-
-        inputs = driver.find_elements(
-            By.TAG_NAME,
-            "input"
-        )
-
-        buttons = driver.find_elements(
-            By.TAG_NAME,
-            "button"
-        )
-
-        print(
-            "\nINPUTS FOUND:",
-            len(inputs)
-        )
-
-        for item in inputs:
-            print(
-                "INPUT:",
-                item.get_attribute("name"),
-                "|",
-                item.get_attribute("id"),
-                "|",
-                item.get_attribute("placeholder")
-            )
-
-        print(
-            "\nBUTTONS FOUND:",
-            len(buttons)
-        )
-
-        for button in buttons:
-            print(
-                "BUTTON:",
-                button.text
-            )
-
-        print(
-            "\nGOODS LIST PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-
-def test_create_goods():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\nCREATE GOODS")
-
-        driver.get(
-            BASE_URL + "/create-goods/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "CREATE GOODS URL:",
-            driver.current_url
-        )
-
-        assert (
-            "/create-goods/"
-            in driver.current_url
-        )
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nCREATE GOODS PAGE:")
-        print(page_text)
-
-        inputs = driver.find_elements(
-            By.TAG_NAME,
-            "input"
-        )
-
-        textareas = driver.find_elements(
-            By.TAG_NAME,
-            "textarea"
-        )
-
-        selects = driver.find_elements(
-            By.TAG_NAME,
-            "select"
-        )
-
-        buttons = driver.find_elements(
-            By.TAG_NAME,
-            "button"
-        )
-
-        print(
-            "\nINPUTS FOUND:",
-            len(inputs)
-        )
-
-        for item in inputs:
-            print(
-                "INPUT:",
-                item.get_attribute("name"),
-                "|",
-                item.get_attribute("id"),
-                "|",
-                item.get_attribute("placeholder")
-            )
-
-        print(
-            "\nTEXTAREAS FOUND:",
-            len(textareas)
-        )
-
-        for item in textareas:
-            print(
-                "TEXTAREA:",
-                item.get_attribute("name"),
-                "|",
-                item.get_attribute("id")
-            )
-
-        print(
-            "\nSELECTS FOUND:",
-            len(selects)
-        )
-
-        for item in selects:
-            print(
-                "SELECT:",
-                item.get_attribute("name"),
-                "|",
-                item.get_attribute("id")
-            )
-
-        print(
-            "\nBUTTONS FOUND:",
-            len(buttons)
-        )
-
-        for button in buttons:
-            print(
-                "BUTTON:",
-                button.text
-            )
-
-        print(
-            "\nCREATE GOODS PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-
-def test_goods_details():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\nGOODS DETAILS")
-
-        driver.get(
-            BASE_URL + "/goods-details/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "GOODS DETAILS URL:",
-            driver.current_url
-        )
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nGOODS DETAILS PAGE:")
-        print(page_text)
-
-        print(
-            "\nGOODS DETAILS PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-
-def test_goods_interest_contact():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\nGOODS INTEREST / CONTACT")
-
-        driver.get(
-            BASE_URL + "/goods-list/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "GOODS LIST URL:",
-            driver.current_url
-        )
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nGOODS PAGE:")
-        print(page_text)
-
-        buttons = driver.find_elements(
-            By.TAG_NAME,
-            "button"
-        )
-
-        print(
-            "\nBUTTONS FOUND:",
-            len(buttons)
-        )
-
-        for button in buttons:
-            print(
-                "BUTTON:",
-                button.text
-            )
-
-        print(
-            "\nGOODS INTEREST / CONTACT PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-
-def test_goods_report_and_disclaimer():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\nGOODS REPORT / DISCLAIMER")
-
-        driver.get(
-            BASE_URL + "/goods-list/"
-        )
-
-        time.sleep(2)
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nGOODS PAGE:")
-        print(page_text)
-
-        print(
-            "\nREPORT / DISCLAIMER ELEMENTS"
-        )
-
-        buttons = driver.find_elements(
-            By.TAG_NAME,
-            "button"
-        )
-
-        links = driver.find_elements(
-            By.TAG_NAME,
-            "a"
-        )
-
-        print(
-            "BUTTONS FOUND:",
-            len(buttons)
-        )
-
-        for button in buttons:
-            print(
-                "BUTTON:",
-                button.text
-            )
-
-        print(
-            "LINKS FOUND:",
-            len(links)
-        )
-
-        for link in links:
-            print(
-                "LINK:",
-                link.text,
-                "|",
-                link.get_attribute("href")
-            )
-
-        print(
-            "\nGOODS REPORT / DISCLAIMER PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-
-
-def test_health_questions():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\n================ HEALTH QUESTIONS ================")
-
-        print("LOGIN URL:", driver.current_url)
-
-        driver.get(
-            BASE_URL + "/health-questions/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "HEALTH QUESTIONS URL:",
-            driver.current_url
-        )
-
-        assert (
-            "/health-questions/"
-            in driver.current_url
-        )
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nHEALTH QUESTIONS PAGE:")
-        print(page_text)
-
-        inputs = driver.find_elements(
-            By.TAG_NAME,
-            "input"
-        )
-
-        textareas = driver.find_elements(
-            By.TAG_NAME,
-            "textarea"
-        )
-
-        buttons = driver.find_elements(
-            By.TAG_NAME,
-            "button"
-        )
-
-        print(
-            "\nINPUTS FOUND:",
-            len(inputs)
-        )
-
-        for item in inputs:
-            print(
-                "INPUT:",
-                item.get_attribute("name"),
-                "|",
-                item.get_attribute("id"),
-                "|",
-                item.get_attribute("placeholder")
-            )
-
-        print(
-            "\nTEXTAREAS FOUND:",
-            len(textareas)
-        )
-
-        for item in textareas:
-            print(
-                "TEXTAREA:",
-                item.get_attribute("name"),
-                "|",
-                item.get_attribute("id")
-            )
-
-        print(
-            "\nBUTTONS FOUND:",
-            len(buttons)
-        )
-
-        for button in buttons:
-            print(
-                "BUTTON:",
-                button.text
-            )
-
-        assert len(page_text.strip()) > 0
-
-        print(
-            "\nHEALTH QUESTIONS PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-
-
-
-def test_health_question_details():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print(
-            "\n================ HEALTH QUESTION DETAILS ================"
-        )
-
-        print(
-            "LOGIN URL:",
-            driver.current_url
-        )
-
-        driver.get(
-            BASE_URL + "/health-question-details/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "HEALTH QUESTION DETAILS URL:",
-            driver.current_url
-        )
-
-        assert (
-            "/health-question-details/"
-            in driver.current_url
-        )
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nHEALTH QUESTION DETAILS PAGE:")
-        print(page_text)
-
-        inputs = driver.find_elements(
-            By.TAG_NAME,
-            "input"
-        )
-
-        textareas = driver.find_elements(
-            By.TAG_NAME,
-            "textarea"
-        )
-
-        buttons = driver.find_elements(
-            By.TAG_NAME,
-            "button"
-        )
-
-        print(
-            "\nINPUTS FOUND:",
-            len(inputs)
-        )
-
-        for item in inputs:
-            print(
-                "INPUT:",
-                item.get_attribute("name"),
-                "|",
-                item.get_attribute("id"),
-                "|",
-                item.get_attribute("placeholder")
-            )
-
-        print(
-            "\nTEXTAREAS FOUND:",
-            len(textareas)
-        )
-
-        for item in textareas:
-            print(
-                "TEXTAREA:",
-                item.get_attribute("name"),
-                "|",
-                item.get_attribute("id")
-            )
-
-        print(
-            "\nBUTTONS FOUND:",
-            len(buttons)
-        )
-
-        for button in buttons:
-            print(
-                "BUTTON:",
-                button.text
-            )
-
-        assert len(page_text.strip()) > 0
-
-        print(
-            "\nHEALTH QUESTION DETAILS PAGE: FOUND"
-        )
-
-    finally:
-        driver.quit()
-
-def test_health_verification_reputation():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\n================ HEALTH VERIFICATION / REPUTATION ================")
-
-        print("LOGIN URL:", driver.current_url)
-
-        driver.get(
-            BASE_URL + "/health-professionals/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "HEALTH PROFESSIONALS URL:",
-            driver.current_url
-        )
-
-        assert "/health-professionals/" in driver.current_url
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nHEALTH PROFESSIONALS PAGE:")
-        print(page_text)
-
-        inputs = driver.find_elements(
-            By.TAG_NAME,
-            "input"
-        )
-
-        buttons = driver.find_elements(
-            By.TAG_NAME,
-            "button"
-        )
-
-        links = driver.find_elements(
-            By.TAG_NAME,
-            "a"
-        )
-
-        print("\nINPUTS FOUND:", len(inputs))
-
-        for item in inputs:
-            print(
-                "INPUT:",
-                item.get_attribute("name"),
-                "|",
-                item.get_attribute("id"),
-                "|",
-                item.get_attribute("placeholder")
-            )
-
-        print("\nBUTTONS FOUND:", len(buttons))
-
-        for button in buttons:
-            print(
-                "BUTTON:",
-                button.text
-            )
-
-        print("\nLINKS FOUND:", len(links))
-
-        for link in links:
-            print(
-                "LINK:",
-                link.text,
-                "|",
-                link.get_attribute("href")
-            )
-
-        assert len(page_text.strip()) > 0
-
-        print("\nHEALTH VERIFICATION / REPUTATION PAGE: FOUND")
-
-    finally:
-        driver.quit()
-
-
-def test_health_professionals_directory():
-    driver = create_driver()
-
-    try:
-        login(driver)
-
-        print("\n================ HEALTH PROFESSIONAL DIRECTORY ================")
-
-        print("LOGIN URL:", driver.current_url)
-
-        driver.get(
-            BASE_URL + "/health-professionals/"
-        )
-
-        time.sleep(2)
-
-        print(
-            "HEALTH PROFESSIONALS URL:",
-            driver.current_url
-        )
-
-        assert "/health-professionals/" in driver.current_url
-
-        page_text = driver.find_element(
-            By.TAG_NAME,
-            "body"
-        ).text
-
-        print("\nHEALTH PROFESSIONAL DIRECTORY PAGE:")
-        print(page_text)
-
-        inputs = driver.find_elements(
-            By.TAG_NAME,
-            "input"
-        )
-
-        buttons = driver.find_elements(
-            By.TAG_NAME,
-            "button"
-        )
-
-        links = driver.find_elements(
-            By.TAG_NAME,
-            "a"
-        )
-
-        print("\nINPUTS FOUND:", len(inputs))
-
-        for item in inputs:
-            print(
-                "INPUT:",
-                item.get_attribute("name"),
-                "|",
-                item.get_attribute("id"),
-                "|",
-                item.get_attribute("placeholder")
-            )
-
-        print("\nBUTTONS FOUND:", len(buttons))
-
-        for button in buttons:
-            print(
-                "BUTTON:",
-                button.text
-            )
-
-        print("\nLINKS FOUND:", len(links))
-
-        for link in links:
-            print(
-                "LINK:",
-                link.text,
-                "|",
-                link.get_attribute("href")
-            )
-
-        assert len(page_text.strip()) > 0
-
-        print(
-            "\nHEALTH PROFESSIONAL DIRECTORY: FOUND"
-        )
-
-    finally:
-        driver.quit()
+    except TimeoutException as error:
+        pytest.fail(
+            f"Goods create form did not finish: url={browser.current_url!r}, "
+            f"body={browser.find_element(By.TAG_NAME, 'body').text[:500]!r}, "
+            f"logs={browser.get_log('browser')!r}, "
+            f"cause={error}"
+        )
+    assert "/goods-details/" in browser.current_url, (
+        browser.find_element(By.ID, "goodsMessage").text,
+        browser.get_log("browser"),
+        browser.execute_script(
+            "return document.querySelector('#goodsCreateForm').checkValidity()"
+        ),
+    )
+    listing = GoodsListing.objects.get(title="Study desk")
+    assert listing.seller == seller
+    assert listing.condition == GoodsListing.Condition.GOOD
+    assert listing.location == "Dhaka"
+
+
+def test_user_can_express_interest_in_another_users_goods(
+    browser, live_server, user_factory
+):
+    seller = user_factory()
+    buyer = user_factory()
+    listing = GoodsListing.objects.create(
+        seller=seller,
+        title="Used bicycle",
+        description="Ready to ride.",
+        condition=GoodsListing.Condition.GOOD,
+        asking_price="4500.00",
+        location="Dhaka",
+    )
+    sign_in(browser, live_server, buyer)
+    browser.get(
+        f"{live_server.url}/goods-details/?listing_id={listing.pk}"
+    )
+    interest_button = wait_for(browser, "#goodsInterestButton")
+    WebDriverWait(browser, 10).until(
+        lambda driver: not interest_button.get_attribute("disabled")
+    )
+    interest_button.click()
+
+    WebDriverWait(browser, 10).until(
+        lambda driver: "interest" in driver.find_element(
+            By.ID, "goodsMessage"
+        ).text.lower()
+    )
+    assert GoodsInterest.objects.filter(
+        listing=listing, interested_user=buyer
+    ).exists()
+
+
+def test_user_can_create_and_reply_to_health_question(
+    browser, live_server, user_factory
+):
+    author = user_factory()
+    sign_in(browser, live_server, author)
+    browser.get(f"{live_server.url}/create-health-question/")
+
+    browser.find_element(By.ID, "healthTitle").send_keys(
+        "Where can I find a local clinic?"
+    )
+    browser.find_element(By.ID, "healthDescription").send_keys(
+        "Looking for a clinic in my area."
+    )
+    browser.find_element(By.ID, "healthCategory").send_keys("Local services")
+    browser.find_element(
+        By.CSS_SELECTOR, "#healthQuestionForm button[type='submit']"
+    ).click()
+
+    WebDriverWait(browser, 10).until(
+        EC.url_contains("/health-question-details/?question_id=")
+    )
+    question = HealthQuestion.objects.get(
+        title="Where can I find a local clinic?"
+    )
+    assert question.author == author
+
+    browser.find_element(By.ID, "healthReply").send_keys(
+        "Check the community health center directory."
+    )
+    browser.find_element(
+        By.CSS_SELECTOR, "#healthReplyForm button[type='submit']"
+    ).click()
+    WebDriverWait(browser, 10).until(
+        lambda driver: "community health center" in driver.find_element(
+            By.ID, "healthReplies"
+        ).text.lower()
+    )
+    assert HealthReply.objects.filter(
+        question=question,
+        author=author,
+        reply="Check the community health center directory.",
+    ).exists()
+
+
+def test_health_directory_only_shows_verified_professionals(
+    browser, live_server, user_factory
+):
+    viewer = user_factory()
+    HealthProfessional.objects.create(
+        name="Verified Doctor",
+        profession="Doctor",
+        contact="verified@example.test",
+        verification_status=HealthProfessional.VerificationStatus.VERIFIED,
+    )
+    HealthProfessional.objects.create(
+        name="Pending Applicant",
+        profession="Doctor",
+        contact="pending@example.test",
+        verification_status=HealthProfessional.VerificationStatus.PENDING,
+    )
+    sign_in(browser, live_server, viewer)
+    browser.get(f"{live_server.url}/health-professionals/")
+
+    directory = wait_for(browser, "#healthProfessionals")
+    WebDriverWait(browser, 10).until(
+        lambda driver: "Verified Doctor" in directory.text
+    )
+    assert "Pending Applicant" not in directory.text

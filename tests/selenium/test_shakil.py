@@ -1,599 +1,396 @@
-import time
+import os
+from datetime import date, timedelta
+from uuid import uuid4
+
 import pytest
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from django.contrib.auth import get_user_model
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select, WebDriverWait
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from apps.farmer.models import ProduceListing
+from apps.ratings.models import Rating
+from apps.reports.models import Report
+from apps.users.models import UserProfile
+from apps.volunteer.models import (
+    VolunteerMessage,
+    VolunteerOpportunity,
+    VolunteerProfile,
+    VolunteerSignup,
+)
 from apps.waste.models import WastePickupRequest
-from apps.volunteer.models import VolunteerOpportunity, VolunteerSignup, VolunteerMessage
+
 
 User = get_user_model()
+PASSWORD = "Selenium-test-42!"
+WAIT = 10
 
 
-@pytest.fixture(scope="function")
-def driver():
-    options = webdriver.ChromeOptions()
+def create_driver():
+    options = Options()
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1280,1000")
-    options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
-
-    driver_inst = webdriver.Chrome(options=options)
-    driver_inst.implicitly_wait(4)
-    yield driver_inst
-    driver_inst.quit()
+    driver_path = os.environ.get("CHROMEDRIVER")
+    service = Service(executable_path=driver_path) if driver_path else Service()
+    return webdriver.Chrome(service=service, options=options)
 
 
 @pytest.fixture
-def citizen_user(db):
-    user, _ = User.objects.get_or_create(
-        phone_number="01711112222",
-        defaults={
-            "email": "citizen_shakil@example.com",
-            "full_name": "Citizen Shakil",
-            "role": User.Role.CITIZEN,
-            "location": "Dhanmondi, Dhaka",
-            "is_phone_visible": True,
-        },
-    )
-    user.set_password("Password123!")
-    user.save()
-    return user
+def browser(live_server):
+    driver = create_driver()
+    driver.implicitly_wait(2)
+    yield driver
+    driver.quit()
 
 
 @pytest.fixture
-def farmer_user(db):
-    user, _ = User.objects.get_or_create(
-        phone_number="01722223333",
-        defaults={
-            "email": "farmer_shakil@example.com",
-            "full_name": "Farmer Shakil",
-            "role": User.Role.FARMER,
-            "location": "Savar, Dhaka",
-            "is_phone_visible": True,
-        },
-    )
-    user.set_password("Password123!")
-    user.save()
-    return user
+def user_factory(db):
+    def create_user(role=User.Role.CITIZEN, **fields):
+        suffix = uuid4().hex[:10]
+        return User.objects.create_user(
+            phone_number=f"017{uuid4().int % 100_000_000:08d}",
+            email=f"selenium-{suffix}@example.test",
+            full_name=f"HELPNET Selenium {suffix}",
+            password=PASSWORD,
+            role=role,
+            **fields,
+        )
+
+    return create_user
 
 
 @pytest.fixture
-def collector_user(db):
-    user, _ = User.objects.get_or_create(
-        phone_number="01733334444",
-        defaults={
-            "email": "collector_shakil@example.com",
-            "full_name": "Collector Shakil",
-            "role": User.Role.VOLUNTEER,
-            "location": "Dhanmondi, Dhaka",
-            "is_phone_visible": True,
-        },
+def approved_coordinator(user_factory):
+    user = user_factory(role=User.Role.NGO)
+    UserProfile.objects.create(
+        user=user,
+        profile_type=UserProfile.Type.NGO,
+        status=UserProfile.Status.ACTIVE,
+        ngo_approval_status=UserProfile.NGOApprovalStatus.APPROVED,
     )
-    user.set_password("Password123!")
-    user.save()
     return user
 
 
-@pytest.fixture
-def ngo_user(db):
-    user, _ = User.objects.get_or_create(
-        phone_number="01755556666",
-        defaults={
-            "email": "ngo_shakil@example.com",
-            "full_name": "NGO Shakil Coordinator",
-            "role": User.Role.NGO,
-            "location": "Dhanmondi, Dhaka",
-            "is_phone_visible": True,
-        },
+def sign_in(browser, live_server, user):
+    browser.get(f"{live_server.url}/")
+    token = str(RefreshToken.for_user(user).access_token)
+    user_data = {
+        "user_id": str(user.user_id),
+        "full_name": user.full_name,
+        "email": user.email,
+        "phone_number": user.phone_number,
+        "role": user.role,
+        "location": user.location,
+        "is_staff": user.is_staff,
+        "is_superuser": user.is_superuser,
+    }
+    browser.execute_script(
+        """
+        localStorage.setItem("helpnet_token", arguments[0]);
+        localStorage.setItem("helpnet_user", JSON.stringify(arguments[1]));
+        localStorage.setItem("helpnet_lang", "en");
+        """,
+        token,
+        user_data,
     )
-    user.set_password("Password123!")
-    user.save()
-    return user
 
 
-@pytest.fixture
-def non_signed_up_volunteer(db):
-    user, _ = User.objects.get_or_create(
-        phone_number="01766667777",
-        defaults={
-            "email": "outsider_shakil@example.com",
-            "full_name": "Outsider Volunteer Shakil",
-            "role": User.Role.VOLUNTEER,
-            "location": "Gulshan, Dhaka",
-            "is_phone_visible": True,
-        },
+def wait_for(browser, selector):
+    return WebDriverWait(browser, WAIT).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
     )
-    user.set_password("Password123!")
-    user.save()
-    return user
 
 
-@pytest.fixture
-def signed_up_volunteer(db):
-    user, _ = User.objects.get_or_create(
-        phone_number="01777778888",
-        defaults={
-            "email": "member_shakil@example.com",
-            "full_name": "Member Volunteer Shakil",
-            "role": User.Role.VOLUNTEER,
-            "location": "Mirpur, Dhaka",
-            "is_phone_visible": True,
-        },
+def click_element(browser, element):
+    browser.execute_script(
+        "arguments[0].scrollIntoView({block: 'center'});", element
     )
-    user.set_password("Password123!")
-    user.save()
-    return user
-
-
-def perform_login(driver, base_url, phone_number, password):
-    driver.get(f"{base_url}/login/")
-    wait = WebDriverWait(driver, 10)
-    
-    identifier_input = wait.until(EC.presence_of_element_located((By.ID, "identifier")))
-    password_input = wait.until(EC.presence_of_element_located((By.ID, "password")))
-    login_btn = wait.until(EC.presence_of_element_located((By.ID, "loginButton")))
-
-    identifier_input.clear()
-    identifier_input.send_keys(phone_number)
-    password_input.clear()
-    password_input.send_keys(password)
-
-    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", login_btn)
-    time.sleep(0.3)
-    driver.execute_script("arguments[0].click();", login_btn)
-
-    wait.until(lambda d: "/dashboard/" in d.current_url or "/admin-dashboard/" in d.current_url)
-
-
-def click_element(driver, element):
-    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
-    time.sleep(0.2)
     try:
         element.click()
     except Exception:
-        driver.execute_script("arguments[0].click();", element)
+        browser.execute_script("arguments[0].click();", element)
 
 
-# ==============================================================================
-# ST 41 — Waste Pickup Tests
-# ==============================================================================
+def test_citizen_can_submit_waste_pickup_request(
+    browser, live_server, user_factory
+):
+    citizen = user_factory(location="Dhanmondi, Dhaka")
+    collector = user_factory(
+        role=User.Role.VOLUNTEER, location="Dhanmondi, Dhaka"
+    )
+    sign_in(browser, live_server, citizen)
+    browser.get(f"{live_server.url}/waste-pickup/")
+    wait = WebDriverWait(browser, WAIT)
 
-@pytest.mark.django_db(transaction=True)
-def test_waste_pickup_success(driver, live_server, citizen_user, collector_user):
-    """ST 41: Login as citizen, create a waste pickup request, verify success & collector display."""
-    perform_login(driver, live_server.url, citizen_user.phone_number, "Password123!")
+    Select(wait.until(EC.presence_of_element_located((By.ID, "wasteType")))).select_by_value(
+        "Organic"
+    )
+    browser.find_element(By.ID, "pickupArea").clear()
+    browser.find_element(By.ID, "pickupArea").send_keys("Dhanmondi")
+    browser.find_element(By.ID, "pickupLocation").send_keys(
+        "Road 32, House 10"
+    )
+    browser.find_element(By.ID, "preferredTime").send_keys("10 AM")
+    browser.find_element(By.ID, "notes").send_keys("Two bags of kitchen waste.")
+    click_element(browser, browser.find_element(By.ID, "submitWasteBtn"))
 
-    driver.get(f"{live_server.url}/waste-pickup/")
-    wait = WebDriverWait(driver, 10)
+    alert = wait.until(EC.visibility_of_element_located((By.ID, "wasteAlert")))
+    wait.until(lambda driver: "successfully" in alert.text.lower())
+    request = WastePickupRequest.objects.get(requester=citizen)
+    assert request.waste_type == WastePickupRequest.WasteType.ORGANIC
+    assert request.area == "Dhanmondi"
+    assert request.location == "Road 32, House 10"
+    assert request.preferred_pickup_time == "10 AM"
+    assert request.notes == "Two bags of kitchen waste."
+    assert request.status == WastePickupRequest.Status.REQUESTED
 
-    # Fill pickup request form
-    waste_type_select = wait.until(EC.presence_of_element_located((By.ID, "wasteType")))
-    area_input = driver.find_element(By.ID, "pickupArea")
-    location_input = driver.find_element(By.ID, "pickupLocation")
-    time_input = driver.find_element(By.ID, "preferredTime")
-    notes_input = driver.find_element(By.ID, "notes")
-    submit_btn = driver.find_element(By.ID, "submitWasteBtn")
-
-    from selenium.webdriver.support.ui import Select
-    Select(waste_type_select).select_by_value("Organic")
-
-    area_input.clear()
-    area_input.send_keys("Dhanmondi")
-
-    location_input.clear()
-    location_input.send_keys("Road 32, House 10, Dhanmondi, Dhaka")
-
-    time_input.send_keys("10:00 AM")
-    notes_input.send_keys("2 bags of kitchen waste ready for pickup")
-
-    click_element(driver, submit_btn)
-
-    # Verify success alert
-    wait.until(lambda d: "successfully" in d.find_element(By.ID, "wasteAlert").text.lower())
-    assert "successfully" in driver.find_element(By.ID, "wasteAlert").text.lower()
-
-    # Verify request appears in my requests list
-    wait.until(lambda d: "organic" in d.find_element(By.ID, "requestsList").text.lower() and "dhanmondi" in d.find_element(By.ID, "requestsList").text.lower())
-    req_text_lower = driver.find_element(By.ID, "requestsList").text.lower()
-    assert "organic" in req_text_lower
-    assert "dhanmondi" in req_text_lower
-
-    # Verify collector display in area match section
-    wait.until(lambda d: collector_user.full_name.lower() in d.find_element(By.ID, "collectorsList").text.lower())
-    assert collector_user.full_name.lower() in driver.find_element(By.ID, "collectorsList").text.lower()
+    requests = wait_for(browser, "#requestsList")
+    wait.until(lambda driver: "organic" in requests.text.lower())
+    assert "dhanmondi" in requests.text.lower()
+    collectors = wait_for(browser, "#collectorsList")
+    wait.until(lambda driver: collector.full_name in collectors.text)
+    assert collector.full_name in collectors.text
 
 
-@pytest.mark.django_db(transaction=True)
-def test_waste_pickup_validation_error(driver, live_server, citizen_user):
-    """ST 41 Negative Test: Submit waste pickup without required fields and verify validation error."""
-    perform_login(driver, live_server.url, citizen_user.phone_number, "Password123!")
+def test_waste_pickup_validation_does_not_create_request(
+    browser, live_server, user_factory
+):
+    citizen = user_factory()
+    sign_in(browser, live_server, citizen)
+    browser.get(f"{live_server.url}/waste-pickup/")
+    click_element(browser, browser.find_element(By.ID, "submitWasteBtn"))
 
-    driver.get(f"{live_server.url}/waste-pickup/")
-    wait = WebDriverWait(driver, 10)
-
-    # Submit without filling required fields
-    submit_btn = wait.until(EC.presence_of_element_located((By.ID, "submitWasteBtn")))
-    click_element(driver, submit_btn)
-
-    # Verify field validation error is displayed
-    wait.until(lambda d: d.find_element(By.ID, "wasteTypeError").text.strip() != "")
-    assert driver.find_element(By.ID, "wasteTypeError").text.strip() != ""
-
-    # Verify no request is created in DB
-    assert WastePickupRequest.objects.count() == 0
+    error = wait_for(browser, "#wasteTypeError")
+    WebDriverWait(browser, WAIT).until(lambda driver: error.text.strip())
+    assert "select" in error.text.lower()
+    assert not WastePickupRequest.objects.filter(requester=citizen).exists()
 
 
-# ==============================================================================
-# ST 42 — Collector Rating/Report Tests
-# ==============================================================================
+def test_citizen_can_rate_and_report_a_volunteer_collector(
+    browser, live_server, user_factory
+):
+    citizen = user_factory()
+    collector = user_factory(
+        role=User.Role.VOLUNTEER, location="Mirpur, Dhaka"
+    )
+    sign_in(browser, live_server, citizen)
+    browser.get(f"{live_server.url}/collector-details/?id={collector.user_id}")
+    wait = WebDriverWait(browser, WAIT)
 
-@pytest.mark.django_db(transaction=True)
-def test_collector_rating_and_report(driver, live_server, citizen_user, collector_user):
-    """ST 42: Open collector details, submit rating, verify success, submit report, verify success."""
-    perform_login(driver, live_server.url, citizen_user.phone_number, "Password123!")
+    wait.until(
+        lambda driver: collector.full_name
+        in driver.find_element(By.ID, "collectorName").text
+    )
+    browser.find_element(By.ID, "ratingComment").send_keys(
+        "Reliable and punctual service."
+    )
+    click_element(browser, browser.find_element(By.ID, "submitRatingBtn"))
+    alert = wait.until(
+        EC.visibility_of_element_located((By.ID, "collectorAlert"))
+    )
+    wait.until(lambda driver: "rating has been submitted" in alert.text.lower())
+    rating = Rating.objects.get(rater=citizen, rated_user=collector)
+    assert rating.rating == 5
+    assert rating.comment == "Reliable and punctual service."
 
-    # Navigate to collector details page
-    driver.get(f"{live_server.url}/collector-details/?id={collector_user.user_id}")
-    wait = WebDriverWait(driver, 10)
-
-    # Verify collector info loaded
-    wait.until(lambda d: collector_user.full_name.lower() in d.find_element(By.ID, "collectorName").text.lower())
-
-    # Submit Rating
-    comment_input = driver.find_element(By.ID, "ratingComment")
-    rating_submit_btn = driver.find_element(By.ID, "submitRatingBtn")
-
-    comment_input.send_keys("Very punctual and clean service!")
-    click_element(driver, rating_submit_btn)
-
-    # Verify rating success alert
-    wait.until(lambda d: "submitted" in d.find_element(By.ID, "collectorAlert").text.lower() or "rating" in d.find_element(By.ID, "collectorAlert").text.lower())
-    assert "submitted" in driver.find_element(By.ID, "collectorAlert").text.lower() or "rating" in driver.find_element(By.ID, "collectorAlert").text.lower()
-
-    # Submit Report
-    from selenium.webdriver.support.ui import Select
-    report_cat_select = driver.find_element(By.ID, "reportCategory")
-    report_desc_input = driver.find_element(By.ID, "reportDescription")
-    report_submit_btn = driver.find_element(By.ID, "submitReportBtn")
-
-    Select(report_cat_select).select_by_value("no_show")
-    report_desc_input.clear()
-    report_desc_input.send_keys("Collector did not show up at scheduled pickup time.")
-
-    click_element(driver, report_submit_btn)
-
-    # Verify report success alert
-    wait.until(lambda d: "report submitted" in d.find_element(By.ID, "collectorAlert").text.lower() or "team will review" in d.find_element(By.ID, "collectorAlert").text.lower())
-    assert "report submitted" in driver.find_element(By.ID, "collectorAlert").text.lower() or "team will review" in driver.find_element(By.ID, "collectorAlert").text.lower()
+    Select(browser.find_element(By.ID, "reportCategory")).select_by_value("no_show")
+    browser.find_element(By.ID, "reportDescription").send_keys(
+        "The collector did not arrive at the agreed time."
+    )
+    click_element(browser, browser.find_element(By.ID, "submitReportBtn"))
+    wait.until(lambda driver: "report submitted" in alert.text.lower())
+    report = Report.objects.get(reporter=citizen, reported_user=collector)
+    assert report.category == Report.Category.NO_SHOW
+    assert report.description == "The collector did not arrive at the agreed time."
 
 
-# ==============================================================================
-# ST 43 — Farmer Produce Listing Tests
-# ==============================================================================
+def test_farmer_can_publish_produce_listing(browser, live_server, user_factory):
+    farmer = user_factory(role=User.Role.FARMER, location="Savar, Dhaka")
+    sign_in(browser, live_server, farmer)
+    browser.get(f"{live_server.url}/create-produce/")
+    browser.find_element(By.ID, "produceName").send_keys("Fresh red carrots")
+    browser.find_element(By.ID, "producePrice").send_keys("75")
+    browser.find_element(By.ID, "produceQuantity").send_keys("100 kg")
+    location = browser.find_element(By.ID, "farmLocation")
+    location.clear()
+    location.send_keys("Savar, Dhaka")
+    browser.find_element(By.ID, "produceDescription").send_keys(
+        "Fresh harvest from the farm."
+    )
+    click_element(browser, browser.find_element(By.ID, "submitProduceBtn"))
 
-@pytest.mark.django_db(transaction=True)
-def test_produce_listing_success(driver, live_server, farmer_user):
-    """ST 43: Login as farmer, create produce listing, submit and verify in marketplace."""
-    perform_login(driver, live_server.url, farmer_user.phone_number, "Password123!")
-
-    driver.get(f"{live_server.url}/create-produce/")
-    wait = WebDriverWait(driver, 10)
-
-    name_input = wait.until(EC.presence_of_element_located((By.ID, "produceName")))
-    price_input = driver.find_element(By.ID, "producePrice")
-    quantity_input = driver.find_element(By.ID, "produceQuantity")
-    location_input = driver.find_element(By.ID, "farmLocation")
-    desc_input = driver.find_element(By.ID, "produceDescription")
-    submit_btn = driver.find_element(By.ID, "submitProduceBtn")
-
-    name_input.send_keys("Fresh Organic Carrots")
-    price_input.send_keys("75")
-    quantity_input.send_keys("100 kg")
-    location_input.clear()
-    location_input.send_keys("Savar, Dhaka")
-    desc_input.send_keys("100% chemical free fresh harvest.")
-
-    click_element(driver, submit_btn)
-
-    # Verify redirect to marketplace
-    wait.until(lambda d: "/farmer-market/" in d.current_url)
-
-    # Verify listing appears in marketplace grid
-    wait.until(lambda d: "fresh organic carrots" in d.find_element(By.ID, "produceGrid").text.lower())
-    grid_text = driver.find_element(By.ID, "produceGrid").text.lower()
-    assert "fresh organic carrots" in grid_text
-    assert "75" in grid_text
+    WebDriverWait(browser, WAIT).until(
+        EC.url_contains("/farmer-market/")
+    )
+    grid = wait_for(browser, "#produceGrid")
+    WebDriverWait(browser, WAIT).until(
+        lambda driver: "fresh red carrots" in grid.text.lower()
+    )
+    listing = ProduceListing.objects.get(produce_name="Fresh red carrots")
+    assert listing.farmer == farmer
+    assert listing.price == 75
+    assert listing.quantity == "100 kg"
+    assert listing.location == "Savar, Dhaka"
 
 
-@pytest.mark.django_db(transaction=True)
-def test_produce_listing_validation_error(driver, live_server, farmer_user):
-    """ST 43 Negative Test: Try submitting without required produce info and verify validation error."""
-    perform_login(driver, live_server.url, farmer_user.phone_number, "Password123!")
+def test_produce_form_validation_does_not_create_listing(
+    browser, live_server, user_factory
+):
+    farmer = user_factory(role=User.Role.FARMER)
+    sign_in(browser, live_server, farmer)
+    browser.get(f"{live_server.url}/create-produce/")
+    click_element(browser, browser.find_element(By.ID, "submitProduceBtn"))
 
-    driver.get(f"{live_server.url}/create-produce/")
-    wait = WebDriverWait(driver, 10)
-
-    # Submit form empty
-    submit_btn = wait.until(EC.presence_of_element_located((By.ID, "submitProduceBtn")))
-    click_element(driver, submit_btn)
-
-    # Verify validation error is shown
-    wait.until(lambda d: d.find_element(By.ID, "produceNameError").text.strip() != "")
-    assert driver.find_element(By.ID, "produceNameError").text.strip() != ""
-
-    # Verify listing not created in DB
-    assert ProduceListing.objects.count() == 0
+    error = wait_for(browser, "#produceNameError")
+    WebDriverWait(browser, WAIT).until(lambda driver: error.text.strip())
+    assert "produce name" in error.text.lower()
+    assert not ProduceListing.objects.filter(farmer=farmer).exists()
 
 
-# ==============================================================================
-# ST 44 — Consumer View & Contact Farmer Tests
-# ==============================================================================
-
-@pytest.mark.django_db(transaction=True)
-def test_consumer_contact_farmer(driver, live_server, citizen_user, farmer_user):
-    """ST 44: Login as consumer, view produce details, verify farmer info & direct contact info without payment."""
-    # Pre-create produce listing
-    produce = ProduceListing.objects.create(
-        farmer=farmer_user,
-        produce_name="Fresh Red Tomatoes",
+def test_marketplace_contact_respects_farmer_phone_privacy(
+    browser, live_server, user_factory
+):
+    farmer = user_factory(role=User.Role.FARMER, is_phone_visible=False)
+    listing = ProduceListing.objects.create(
+        farmer=farmer,
+        produce_name="Fresh red tomatoes",
         category="Vegetables",
-        price=50.00,
-        unit="kg",
+        price="50.00",
         quantity="80 kg",
-        availability="Available",
         location="Savar, Dhaka",
-        description="Fresh red tomatoes directly from field.",
+        description="Fresh tomatoes from the farm.",
     )
+    consumer = user_factory()
+    sign_in(browser, live_server, consumer)
+    browser.get(f"{live_server.url}/produce-details/?id={listing.pk}")
 
-    # Login as consumer/citizen
-    perform_login(driver, live_server.url, citizen_user.phone_number, "Password123!")
-
-    # Open produce details page
-    driver.get(f"{live_server.url}/produce-details/?id={produce.id}")
-    wait = WebDriverWait(driver, 10)
-
-    # Verify details
-    wait.until(lambda d: "fresh red tomatoes" in d.find_element(By.ID, "detailTitle").text.lower())
-
-    # Verify farmer info & contact visible
-    wait.until(lambda d: farmer_user.full_name.lower() in d.find_element(By.ID, "farmerName").text.lower())
-    assert farmer_user.full_name.lower() in driver.find_element(By.ID, "farmerName").text.lower()
-    assert farmer_user.phone_number in driver.find_element(By.ID, "farmerPhone").text
-
-
-# ==============================================================================
-# ST 45 — Simple Farmer UI Tests
-# ==============================================================================
-
-@pytest.mark.django_db(transaction=True)
-def test_farmer_ui_layout_and_responsive(driver, live_server, farmer_user):
-    """ST 45: Inspect farmer marketplace & creation UI layout, labels, and mobile responsiveness (390, 844)."""
-    perform_login(driver, live_server.url, farmer_user.phone_number, "Password123!")
-
-    # 1. Desktop View - Check buttons and form controls
-    driver.get(f"{live_server.url}/create-produce/")
-    wait = WebDriverWait(driver, 10)
-
-    submit_btn = wait.until(EC.presence_of_element_located((By.ID, "submitProduceBtn")))
-    assert submit_btn.is_displayed()
-    assert submit_btn.is_enabled()
-
-    # Check clear labels exist
-    labels = driver.find_elements(By.TAG_NAME, "label")
-    assert len(labels) >= 5
-
-    # 2. Viewport Resizing (Mobile - 390x844)
-    driver.set_window_size(390, 844)
-    time.sleep(0.5)
-
-    # Verify important controls remain visible and clickable in mobile viewport
-    assert submit_btn.is_displayed()
-    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", submit_btn)
-
-    # Check marketplace page under mobile viewport
-    driver.get(f"{live_server.url}/farmer-market/")
-    post_link = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#farmerActionSection a")))
-    assert post_link.is_displayed()
-
-
-# ==============================================================================
-# ST 47 — Farmer Marketplace Disclaimer Tests
-# ==============================================================================
-
-@pytest.mark.django_db(transaction=True)
-def test_farmer_disclaimer_displayed(driver, live_server, citizen_user, farmer_user):
-    """ST 47: Verify mandatory disclaimer about HELPNET not handling payment or delivery."""
-    produce = ProduceListing.objects.create(
-        farmer=farmer_user,
-        produce_name="Organic Potatoes",
-        category="Vegetables",
-        price=30.00,
-        unit="kg",
-        quantity="200 kg",
-        availability="Available",
-        location="Bogura",
-        description="Fresh organic potatoes.",
+    title = wait_for(browser, "#detailTitle")
+    WebDriverWait(browser, WAIT).until(
+        lambda driver: "fresh red tomatoes" in title.text.lower()
     )
-
-    perform_login(driver, live_server.url, citizen_user.phone_number, "Password123!")
-
-    # 1. Verify on marketplace page
-    driver.get(f"{live_server.url}/farmer-market/")
-    wait = WebDriverWait(driver, 10)
-
-    wait.until(lambda d: "helpnet does not handle payment or delivery" in d.find_element(By.TAG_NAME, "body").text.lower())
-    body_text = driver.find_element(By.TAG_NAME, "body").text.lower()
-    assert "helpnet does not handle payment or delivery" in body_text
-    assert "between the farmer and consumer" in body_text
-
-    # 2. Verify on produce details page
-    driver.get(f"{live_server.url}/produce-details/?id={produce.id}")
-    wait.until(lambda d: "helpnet does not handle payment or delivery" in d.find_element(By.TAG_NAME, "body").text.lower())
-    detail_body_text = driver.find_element(By.TAG_NAME, "body").text.lower()
-    assert "helpnet does not handle payment or delivery" in detail_body_text
-    assert "between the farmer and consumer" in detail_body_text
+    assert farmer.full_name in browser.find_element(By.ID, "farmerName").text
+    assert "contact through helpnet profile" in browser.find_element(
+        By.ID, "farmerPhone"
+    ).text.lower()
+    assert farmer.phone_number not in browser.find_element(
+        By.ID, "farmerPhone"
+    ).text
+    body = browser.find_element(By.TAG_NAME, "body").text.lower()
+    assert "helpnet does not handle payment or delivery" in body
+    assert "between the farmer and consumer" in body
 
 
-# ==============================================================================
-# Protected-Action Test (Unauthenticated User Access)
-# ==============================================================================
+def test_farmer_pages_remain_usable_on_mobile_and_show_disclaimer(
+    browser, live_server, user_factory
+):
+    farmer = user_factory(role=User.Role.FARMER)
+    sign_in(browser, live_server, farmer)
+    browser.set_window_size(390, 844)
+    browser.get(f"{live_server.url}/create-produce/")
 
-@pytest.mark.django_db(transaction=True)
-def test_protected_action_unauthenticated(driver, live_server):
-    """Protected-action test: Unauthenticated user cannot access protected pages or perform protected actions."""
-    # Ensure driver is unauthenticated / clear session
-    driver.get(f"{live_server.url}/login/")
-    driver.execute_script("localStorage.clear(); sessionStorage.clear();")
+    submit = wait_for(browser, "#submitProduceBtn")
+    assert submit.is_displayed()
+    assert submit.is_enabled()
+    assert len(browser.find_elements(By.TAG_NAME, "label")) >= 5
 
-    # Try opening protected waste pickup page
-    driver.get(f"{live_server.url}/waste-pickup/")
-    time.sleep(1)
-
-    # Expected: Redirected to login page or unauthenticated
-    wait = WebDriverWait(driver, 10)
-    wait.until(lambda d: "/login/" in d.current_url)
-    assert "/login/" in driver.current_url
-
-    # Try opening protected create produce page
-    driver.get(f"{live_server.url}/create-produce/")
-    time.sleep(1)
-
-    # Expected: Redirected to login page
-    wait.until(lambda d: "/login/" in d.current_url)
-    assert "/login/" in driver.current_url
+    browser.get(f"{live_server.url}/farmer-market/")
+    search = wait_for(browser, "#marketSearchInput")
+    assert search.is_displayed()
+    body = browser.find_element(By.TAG_NAME, "body").text.lower()
+    assert "helpnet does not handle payment or delivery" in body
 
 
-# ==============================================================================
-# ST 32 / S4-T29 — Event Messages & Access Control Tests
-# ==============================================================================
+def test_unauthenticated_user_is_redirected_from_protected_pages(
+    browser, live_server
+):
+    browser.get(f"{live_server.url}/")
+    browser.execute_script("localStorage.clear(); sessionStorage.clear();")
 
-@pytest.mark.django_db(transaction=True)
-def test_message_thread_button_availability(driver, live_server, ngo_user, non_signed_up_volunteer):
-    """ST 32 / S4-T29: Message-thread UI/button is hidden for non-signed-up users and appears after signup."""
-    opportunity = VolunteerOpportunity.objects.create(
-        title="Tree Plantation Campaign",
-        description="Planting trees across Dhanmondi lake area.",
-        date="2026-11-20",
-        location="Dhanmondi, Dhaka",
-        required_volunteers=10,
-        coordinator=ngo_user,
+    browser.get(f"{live_server.url}/waste-pickup/")
+    WebDriverWait(browser, WAIT).until(
+        lambda driver: "/login/" in driver.current_url
     )
+    assert "/login/" in browser.current_url
 
-    # Login as volunteer who is not yet signed up
-    perform_login(driver, live_server.url, non_signed_up_volunteer.phone_number, "Password123!")
-
-    # 1. View opportunity details before signup
-    driver.get(f"{live_server.url}/volunteer-opportunity-details/?event_id={opportunity.id}")
-    wait = WebDriverWait(driver, 10)
-
-    wait.until(lambda d: "tree plantation campaign" in d.find_element(By.ID, "opportunityDetail").text.lower())
-
-    # Message-thread button must NOT be shown before signup
-    assert len(driver.find_elements(By.ID, "messageThreadBtn")) == 0
-
-    # 2. Sign up for the opportunity
-    signup_btn = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Sign up')]")))
-    click_element(driver, signup_btn)
-
-    # Wait for signup confirmation
-    wait.until(lambda d: "signed up" in d.find_element(By.ID, "opportunityDetail").text.lower())
-
-    # 3. Message-thread UI/button must now appear and be visible
-    thread_btn = wait.until(EC.visibility_of_element_located((By.ID, "messageThreadBtn")))
-    assert thread_btn.is_displayed()
-    assert f"event_id={opportunity.id}" in thread_btn.get_attribute("href")
-
-    # 4. Clicking the message-thread button navigates to the event message thread
-    click_element(driver, thread_btn)
-    wait.until(lambda d: "/volunteer-message/" in d.current_url)
-    assert f"event_id={opportunity.id}" in driver.current_url
+    browser.get(f"{live_server.url}/create-produce/")
+    WebDriverWait(browser, WAIT).until(
+        lambda driver: "/login/" in driver.current_url
+    )
+    assert "/login/" in browser.current_url
 
 
-@pytest.mark.django_db(transaction=True)
-def test_non_signed_up_user_cannot_read_or_post(driver, live_server, ngo_user, signed_up_volunteer, non_signed_up_volunteer):
-    """ST 32 / S4-T29: Verify that a non-signed-up user cannot read or post messages, while signed-up user can."""
-    opportunity = VolunteerOpportunity.objects.create(
+def test_only_event_participants_can_read_and_post_messages(
+    browser, live_server, user_factory, approved_coordinator
+):
+    volunteer = user_factory(role=User.Role.VOLUNTEER)
+    outsider = user_factory(role=User.Role.VOLUNTEER)
+    event = VolunteerOpportunity.objects.create(
         title="Flood Relief Distribution",
-        description="Distribute relief materials to flood victims.",
-        date="2026-11-25",
+        description="Distribute relief materials.",
+        date=date.today() + timedelta(days=8),
         location="Sylhet",
         required_volunteers=5,
-        coordinator=ngo_user,
+        coordinator=approved_coordinator,
     )
-    VolunteerSignup.objects.create(volunteer=signed_up_volunteer, event=opportunity)
-
-    # Coordinator posts a message to the event thread
+    VolunteerSignup.objects.create(volunteer=volunteer, event=event)
     VolunteerMessage.objects.create(
-        sender=ngo_user,
-        event=opportunity,
-        message="Coordination meeting at the central shelter at 8:00 AM.",
+        sender=approved_coordinator,
+        event=event,
+        message="Meet at the central shelter at 8 AM.",
     )
 
-    wait = WebDriverWait(driver, 10)
+    sign_in(browser, live_server, outsider)
+    browser.get(
+        f"{live_server.url}/volunteer-message/?event_id={event.pk}"
+    )
+    notice = wait_for(browser, "#volunteerMessage")
+    WebDriverWait(browser, WAIT).until(
+        lambda driver: "sign up for this event" in notice.text.lower()
+    )
+    message_list = wait_for(browser, "#messageList")
+    assert "central shelter" not in message_list.text.lower()
 
-    # --------------------------------------------------------------------------
-    # Part 1: Non-signed-up user cannot read messages
-    # --------------------------------------------------------------------------
-    perform_login(driver, live_server.url, non_signed_up_volunteer.phone_number, "Password123!")
+    browser.find_element(By.ID, "eventMessage").send_keys(
+        "Unauthorized event message."
+    )
+    click_element(browser, browser.find_element(By.ID, "sendMessageBtn"))
+    WebDriverWait(browser, WAIT).until(
+        lambda driver: "only event participants" in notice.text.lower()
+        or "sign up" in notice.text.lower()
+    )
+    assert not VolunteerMessage.objects.filter(
+        event=event, message="Unauthorized event message."
+    ).exists()
+    assert "unauthorized event message" not in message_list.text.lower()
 
-    # Directly open the message thread page for this event
-    driver.get(f"{live_server.url}/volunteer-message/?event_id={opportunity.id}")
-
-    # Refusal notice must be displayed
-    wait.until(lambda d: "sign up for this event" in d.find_element(By.ID, "volunteerMessage").text.lower())
-    notice = driver.find_element(By.ID, "volunteerMessage").text.lower()
-    assert "sign up for this event" in notice
-
-    # Message list must NOT disclose the event messages
-    message_content = driver.find_element(By.ID, "messageList").text.lower()
-    assert "coordination meeting at the central shelter" not in message_content
-
-    # --------------------------------------------------------------------------
-    # Part 2: Non-signed-up user cannot post messages
-    # --------------------------------------------------------------------------
-    message_input = wait.until(EC.presence_of_element_located((By.ID, "eventMessage")))
-    message_input.clear()
-    message_input.send_keys("Unauthorized message from non-member!")
-
-    send_btn = wait.until(EC.element_to_be_clickable((By.ID, "sendMessageBtn")))
-    click_element(driver, send_btn)
-
-    # Posting must be rejected with error notice
-    wait.until(lambda d: "only event participants" in d.find_element(By.ID, "volunteerMessage").text.lower() or "sign up" in d.find_element(By.ID, "volunteerMessage").text.lower())
-
-    # Unauthorized message must not be in the DOM or database
-    assert "unauthorized message from non-member!" not in driver.find_element(By.ID, "messageList").text.lower()
-    assert VolunteerMessage.objects.filter(message="Unauthorized message from non-member!").count() == 0
-
-    # --------------------------------------------------------------------------
-    # Part 3: Signed-up volunteer CAN read and post messages
-    # --------------------------------------------------------------------------
-    perform_login(driver, live_server.url, signed_up_volunteer.phone_number, "Password123!")
-
-    # Open details page and access message thread via the newly available button
-    driver.get(f"{live_server.url}/volunteer-opportunity-details/?event_id={opportunity.id}")
-    thread_btn = wait.until(EC.visibility_of_element_located((By.ID, "messageThreadBtn")))
-    click_element(driver, thread_btn)
-
-    wait.until(lambda d: "/volunteer-message/" in d.current_url)
-
-    # Signed-up user can read coordinator message
-    wait.until(lambda d: "coordination meeting at the central shelter" in d.find_element(By.ID, "messageList").text.lower())
-    assert "coordination meeting at the central shelter" in driver.find_element(By.ID, "messageList").text.lower()
-
-    # Signed-up user can post a new message
-    msg_input = wait.until(EC.presence_of_element_located((By.ID, "eventMessage")))
-    msg_input.clear()
-    msg_input.send_keys("I will arrive with 3 emergency kits.")
-
-    send_button = wait.until(EC.element_to_be_clickable((By.ID, "sendMessageBtn")))
-    click_element(driver, send_button)
-
-    # Verify message posted successfully
-    wait.until(lambda d: "emergency kits" in d.find_element(By.ID, "messageList").text.lower())
-    assert "emergency kits" in driver.find_element(By.ID, "messageList").text.lower()
-    assert VolunteerMessage.objects.filter(event=opportunity, sender=signed_up_volunteer).exists()
+    sign_in(browser, live_server, volunteer)
+    browser.get(
+        f"{live_server.url}/volunteer-opportunity-details/?event_id={event.pk}"
+    )
+    thread_button = wait_for(browser, "#messageThreadBtn")
+    click_element(browser, thread_button)
+    WebDriverWait(browser, WAIT).until(
+        EC.url_contains("/volunteer-message/")
+    )
+    message_list = wait_for(browser, "#messageList")
+    WebDriverWait(browser, WAIT).until(
+        lambda driver: "central shelter" in message_list.text.lower()
+    )
+    browser.find_element(By.ID, "eventMessage").send_keys(
+        "I will arrive with emergency supplies."
+    )
+    click_element(browser, browser.find_element(By.ID, "sendMessageBtn"))
+    WebDriverWait(browser, WAIT).until(
+        lambda driver: "emergency supplies" in message_list.text.lower()
+    )
+    assert VolunteerMessage.objects.filter(
+        event=event,
+        sender=volunteer,
+        message="I will arrive with emergency supplies.",
+    ).exists()
