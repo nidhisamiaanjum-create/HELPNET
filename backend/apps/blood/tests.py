@@ -56,7 +56,7 @@ class BloodApiTests(APITestCase):
 		self.assertEqual(response.status_code, 201)
 		return response
 
-	def test_registration_does_not_assign_a_blood_donor_profile(self):
+	def test_registration_creates_citizen_profile_without_blood_donor_profile(self):
 		self.client.credentials()
 		response = self.client.post(
 			"/api/auth/register/",
@@ -74,6 +74,8 @@ class BloodApiTests(APITestCase):
 		self.assertEqual(response.status_code, 201)
 		registered = User.objects.get(email="registered-donor@example.com")
 		# Registration creates a citizen/NGO account profile, not a blood donor profile.
+		self.assertEqual(registered.profiles.count(), 1)
+		self.assertEqual(registered.active_profile.profile_type, "citizen")
 		self.assertFalse(DonorProfile.objects.filter(user=registered).exists())
 		self.assertFalse(
 			registered.profiles.filter(profile_type="blood_donor").exists()
