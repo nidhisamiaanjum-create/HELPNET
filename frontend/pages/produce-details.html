@@ -110,11 +110,60 @@
 
     <!-- Owner Controls (Only visible if the logged-in user owns this listing) -->
     <div id="ownerPanel" class="card" hidden style="border: 2px dashed var(--teal);">
-        <h3 style="color: var(--teal-dark); margin-bottom: 10px;">Farmer Management Controls</h3>
-        <p class="section-help">You are the publisher of this listing. You can change stock status or delete it.</p>
+        <h3 style="color: var(--teal-dark); margin-bottom: 10px;" data-i18n="farmerManagementTitle">Farmer Management Controls</h3>
+        <p class="section-help" data-i18n="farmerManagementHint">You are the publisher of this listing. You can edit it, change availability, or delete it.</p>
         <div class="admin-actions" style="margin-top: 14px;">
-            <button id="toggleAvailBtn" class="btn-sm btn-outline">Toggle Availability</button>
-            <button id="deleteProduceBtn" class="btn-sm btn-danger">Delete Produce</button>
+            <button id="editProduceButton" class="btn-sm btn-outline" type="button" data-i18n="editProduce">Edit product</button>
+            <button id="toggleAvailBtn" class="btn-sm btn-outline" type="button">Toggle Availability</button>
+            <button id="deleteProduceBtn" class="btn-sm btn-danger" type="button" data-i18n="deleteProduce">Delete Produce</button>
+        </div>
+        <div id="editProduceForm" hidden>
+            <h4 data-i18n="farmerEditTitle">Edit product listing</h4>
+            <p class="hint" data-i18n="farmerEditHint">Update the product listing information.</p>
+            <form id="produceEditForm">
+                <div class="field">
+                    <label for="editProduceName" data-i18n="farmerEditProduceName">Product name</label>
+                    <input id="editProduceName" maxlength="150" required>
+                </div>
+                <div class="field">
+                    <label for="editProduceCategory" data-i18n="farmerEditCategory">Category</label>
+                    <input id="editProduceCategory" maxlength="50">
+                </div>
+                <div class="produce-price-unit-grid">
+                    <div class="field">
+                        <label for="editProducePrice" data-i18n="farmerEditPrice">Price</label>
+                        <input id="editProducePrice" type="number" min="0" step="0.01" required>
+                    </div>
+                    <div class="field">
+                        <label for="editProduceUnit" data-i18n="farmerEditUnit">Unit</label>
+                        <input id="editProduceUnit" maxlength="30" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="editProduceQuantity" data-i18n="farmerEditQuantity">Quantity</label>
+                    <input id="editProduceQuantity" maxlength="100" required>
+                </div>
+                <div class="field">
+                    <label for="editProduceLocation" data-i18n="farmerEditLocation">Location</label>
+                    <input id="editProduceLocation" maxlength="255" required>
+                </div>
+                <div class="field">
+                    <label for="editProduceDescription" data-i18n="farmerEditDescription">Description</label>
+                    <textarea id="editProduceDescription"></textarea>
+                </div>
+                <div class="field">
+                    <label for="editProduceAvailability" data-i18n="farmerEditAvailability">Availability</label>
+                    <select id="editProduceAvailability">
+                        <option value="Available" data-i18n="statusAvailable">Available</option>
+                        <option value="Unavailable" data-i18n="statusUnavailable">Unavailable</option>
+                    </select>
+                </div>
+                <p id="produceEditMessage" class="form-message" aria-live="polite"></p>
+                <div class="admin-actions">
+                    <button class="btn" type="submit" data-i18n="farmerSaveChanges">Save changes</button>
+                    <button class="btn-sm btn-outline" id="cancelProduceEdit" type="button" data-i18n="farmerCancelEdit">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -123,7 +172,7 @@
 <script src="{% static 'js/api.js' %}"></script>
 <script src="{% static 'js/i18n.js' %}"></script>
 <script src="{% static 'js/auth.js' %}"></script>
-<script src="{% static 'js/farmer.js' %}"></script>
+<script src="{% static 'js/farmer.js' %}?v=product-edit-2"></script>
 
 <script src="{% static 'js/navigation.js' %}"></script></body>
 </html>

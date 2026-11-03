@@ -1,13 +1,19 @@
 from pathlib import Path
 from datetime import timedelta
+import sys
+
 import environ
+from django.core.exceptions import ImproperlyConfigured
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
-    DEBUG=(bool, True),
+    DEBUG=(bool, False),
     DB_PASSWORD=(str, ''),
 )
+
+IS_TESTING = any('pytest' in arg or 'test' in arg for arg in sys.argv)
 
 if (BASE_DIR / '.env').exists():
     environ.Env.read_env(BASE_DIR / '.env')
@@ -19,11 +25,31 @@ if (BASE_DIR.parent / '.env').exists():
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-SECRET_KEY = 'django-insecure-(g@0cnvgjnwj9@mgstx031%dv!)awp+sb#w2i7+)6sn=v5-v!l'
+DEBUG = env.bool('DEBUG', default=False)
+if IS_TESTING:
+    SECRET_KEY = 'test-only-secret-key-for-automated-tests-and-local-checks-2026'
+else:
+    SECRET_KEY = env('SECRET_KEY', default='')
+    if not SECRET_KEY:
+        raise ImproperlyConfigured('Set SECRET_KEY in the environment.')
+    if not DEBUG and len(SECRET_KEY) < 50:
+        raise ImproperlyConfigured(
+            'SECRET_KEY must be at least 50 characters when DEBUG is disabled.'
+        )
 
-DEBUG = True
+ALLOWED_HOSTS = env.list(
+    'ALLOWED_HOSTS',
+    default=['localhost', '127.0.0.1'] if DEBUG else [],
+)
+if not DEBUG and not ALLOWED_HOSTS:
+    raise ImproperlyConfigured(
+        'Set ALLOWED_HOSTS to the deployed hostnames when DEBUG is disabled.'
+    )
 
-ALLOWED_HOSTS = []
+SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=not DEBUG)
+SESSION_COOKIE_SECURE = env.bool('SESSION_COOKIE_SECURE', default=not DEBUG)
+CSRF_COOKIE_SECURE = env.bool('CSRF_COOKIE_SECURE', default=not DEBUG)
+SECURE_HSTS_SECONDS = env.int('SECURE_HSTS_SECONDS', default=0)
 
 
 # Application definition
@@ -94,9 +120,6 @@ WSGI_APPLICATION = 'helpnet.wsgi.application'
 
 # Database
 
-import sys
-
-IS_TESTING = any('pytest' in arg or 'test' in arg for arg in sys.argv)
 if IS_TESTING:
     DATABASES = {
         'default': {
@@ -178,7 +201,8 @@ AUTH_USER_MODEL = 'users.User'
 
 # CORS
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = env.bool('CORS_ALLOW_ALL_ORIGINS', default=False)
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
 
 
 # Django REST Framework

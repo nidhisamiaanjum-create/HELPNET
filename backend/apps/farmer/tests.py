@@ -184,13 +184,46 @@ class FarmerMarketTests(APITestCase):
         )
         self.client.force_authenticate(user=self.farmer)
         detail_url = reverse("farmer-produce-detail", kwargs={"id": produce.id})
+        detail = self.client.get(detail_url)
+        self.assertEqual(detail.status_code, status.HTTP_200_OK)
+        self.assertTrue(detail.data["is_owner"])
 
         # Update status
-        patch_res = self.client.patch(detail_url, {"availability": "Unavailable", "price": "75.00"})
+        patch_res = self.client.patch(
+            detail_url,
+            {
+                "produce_name": "Updated Green Chili",
+                "category": "Farm Produce",
+                "price": "75.00",
+                "unit": "kg",
+                "quantity": "45 kg",
+                "location": "Updated Savar",
+                "description": "Updated harvest details.",
+                "availability": "Unavailable",
+            },
+            format="json",
+        )
         self.assertEqual(patch_res.status_code, status.HTTP_200_OK)
         produce.refresh_from_db()
         self.assertEqual(produce.availability, "Unavailable")
         self.assertEqual(float(produce.price), 75.00)
+        self.assertEqual(produce.produce_name, "Updated Green Chili")
+        self.assertEqual(produce.category, "Farm Produce")
+        self.assertEqual(produce.quantity, "45 kg")
+        self.assertEqual(produce.location, "Updated Savar")
+        self.assertEqual(produce.description, "Updated harvest details.")
+
+        restored = self.client.patch(
+            detail_url,
+            {"availability": "Available"},
+            format="json",
+        )
+        self.assertEqual(restored.status_code, status.HTTP_200_OK)
+        produce.refresh_from_db()
+        self.assertEqual(
+            produce.availability,
+            ProduceListing.Availability.AVAILABLE,
+        )
 
         # Delete
         del_res = self.client.delete(detail_url)

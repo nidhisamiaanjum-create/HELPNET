@@ -23,3 +23,7 @@ backend/env.txt
 .postman
 # User uploaded media
 backend/media/
+backend/private_media/
+backend/profile_pictures/
+backend/test_db.sqlite3
+backend/test_db.sqlite3-*

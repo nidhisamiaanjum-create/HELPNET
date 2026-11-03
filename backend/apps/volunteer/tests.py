@@ -24,12 +24,15 @@ class VolunteerMessageAndCertificateTests(TestCase):
             password="test-password-123",
             role="NGO",
         )
-        UserProfile.objects.create(
+        profile = UserProfile.objects.create(
             user=self.coordinator,
             profile_type=UserProfile.Type.NGO,
             status=UserProfile.Status.ACTIVE,
             ngo_approval_status=UserProfile.NGOApprovalStatus.APPROVED,
+            ngo_verification_status=UserProfile.NGOVerificationStatus.APPROVED,
         )
+        self.coordinator.active_profile = profile
+        self.coordinator.save(update_fields=["active_profile"])
         self.volunteer = User.objects.create_user(
             phone_number="01000000002",
             email="volunteer@example.test",
@@ -99,6 +102,38 @@ class VolunteerMessageAndCertificateTests(TestCase):
         self.assertEqual(pdf["Content-Type"], "application/pdf")
         self.assertIn("attachment", pdf["Content-Disposition"])
         self.assertTrue(pdf.content.startswith(b"%PDF"))
+
+    def test_certificate_collection_post_requires_and_accepts_event_id(self):
+        VolunteerAttendance.objects.create(
+            volunteer=self.volunteer,
+            event=self.event,
+            check_in_time=timezone.now(),
+            check_out_time=timezone.now(),
+        )
+        self.client.force_authenticate(self.coordinator)
+        url = "/api/volunteer/certificates/"
+
+        missing_event = self.client.post(
+            url,
+            {"volunteer_id": str(self.volunteer.user_id)},
+            format="json",
+        )
+        self.assertEqual(missing_event.status_code, 400)
+        self.assertEqual(
+            missing_event.data["message"],
+            "A valid event_id is required.",
+        )
+
+        issued = self.client.post(
+            url,
+            {
+                "event_id": self.event.pk,
+                "volunteer_id": str(self.volunteer.user_id),
+            },
+            format="json",
+        )
+        self.assertEqual(issued.status_code, 201)
+        self.assertEqual(issued.data["data"]["event"], self.event.pk)
 
     def test_certificate_requires_completed_attendance_and_download_is_private(self):
         self.client.force_authenticate(self.coordinator)
@@ -193,12 +228,15 @@ class VolunteerMessageAndCertificateTests(TestCase):
 class SprintFourCompletionTests(TestCase):
     def setUp(self):
         self.ngo = User.objects.create_user(phone_number="01000000101", email="ngo2@example.test", full_name="NGO Two", password="test-password-123", role="NGO")
-        UserProfile.objects.create(
+        ngo_profile = UserProfile.objects.create(
             user=self.ngo,
             profile_type=UserProfile.Type.NGO,
             status=UserProfile.Status.ACTIVE,
             ngo_approval_status=UserProfile.NGOApprovalStatus.APPROVED,
+            ngo_verification_status=UserProfile.NGOVerificationStatus.APPROVED,
         )
+        self.ngo.active_profile = ngo_profile
+        self.ngo.save(update_fields=["active_profile"])
         self.citizen = User.objects.create_user(phone_number="01000000102", email="citizen2@example.test", full_name="Citizen Two", password="test-password-123", role="Citizen")
         self.volunteer = User.objects.create_user(phone_number="01000000103", email="private-volunteer@example.test", full_name="Volunteer One", password="test-password-123", role="Volunteer")
         self.other_volunteer = User.objects.create_user(phone_number="01000000104", email="private-other@example.test", full_name="Volunteer Two", password="test-password-123", role="Volunteer")
@@ -311,12 +349,15 @@ class SprintFourCompletionTests(TestCase):
             password="test-password-123",
             role="NGO",
         )
-        UserProfile.objects.create(
+        pending_profile = UserProfile.objects.create(
             user=pending_user,
             profile_type=UserProfile.Type.NGO,
             status=UserProfile.Status.ACTIVE,
             ngo_approval_status=UserProfile.NGOApprovalStatus.PENDING,
+            ngo_verification_status=UserProfile.NGOVerificationStatus.PENDING,
         )
+        pending_user.active_profile = pending_profile
+        pending_user.save(update_fields=["active_profile"])
 
         self.client.force_authenticate(pending_user)
         response = self.client.post(

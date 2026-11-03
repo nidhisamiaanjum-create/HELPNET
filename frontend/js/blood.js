@@ -284,7 +284,7 @@ function renderDonorSearchResults(donors) {
         if (donor.is_verified) addText(name, "span", ` ✓ ${t("verified")}`, "donor-verified");
         card.appendChild(name);
         addText(card, "p", `${donor.blood_group} · ${donor.area}`);
-        addText(card, "p", `★ ${donor.average_rating === null ? "0.0" : Number(donor.average_rating).toFixed(1)} · ${t("ratingsCount").replace("{count}", donor.rating_count)}`);
+        addText(card, "p", `★ ${donor.average_rating == null ? "—" : Number(donor.average_rating).toFixed(1)} · ${t("ratingsCount").replace("{count}", donor.rating_count)}`);
         if (donor.user_id === bloodState.currentUserId) {
             addText(card, "span", t("yourDonorProfile"), "hint");
         } else {

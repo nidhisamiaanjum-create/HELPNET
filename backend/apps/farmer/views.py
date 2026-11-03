@@ -72,7 +72,7 @@ class ProduceListingDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.farmer != request.user and not not request.user.is_superuser:
+        if instance.farmer != request.user and not request.user.is_superuser:
             return Response(
                 {"success": False, "message": "You can only edit your own produce listings."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -81,7 +81,7 @@ class ProduceListingDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.farmer != request.user and not not request.user.is_superuser:
+        if instance.farmer != request.user and not request.user.is_superuser:
             return Response(
                 {"success": False, "message": "You can only delete your own produce listings."},
                 status=status.HTTP_403_FORBIDDEN,

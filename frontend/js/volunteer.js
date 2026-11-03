@@ -243,14 +243,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("opportunityList")) {
         const opportunityList = document.getElementById("opportunityList");
 
-        // Create a separate navigation container.
         const navContainer = document.createElement("div");
         navContainer.className = "volunteer-navigation";
-        navContainer.style.display = "flex";
-        navContainer.style.flexWrap = "wrap";
-        navContainer.style.alignItems = "center";
-        navContainer.style.gap = "12px";
-        navContainer.style.marginBottom = "20px";
 
         // Event Messages button.
         const messageNavBtn = document.createElement("a");
@@ -258,7 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
         messageNavBtn.className = "small-btn";
         messageNavBtn.style.textDecoration = "none";
         messageNavBtn.id = "eventMessagesLink";
-        messageNavBtn.textContent = "Event Messages";
+        messageNavBtn.textContent = t("eventMessages");
 
         navContainer.appendChild(messageNavBtn);
 
@@ -267,13 +261,18 @@ document.addEventListener("DOMContentLoaded", () => {
             const createLink = document.createElement("a");
             createLink.href = "/create-opportunity/";
             createLink.className = "btn";
-            createLink.textContent = "Create opportunity";
+            createLink.textContent = t("createOpportunityButton");
+            createLink.dataset.i18n = "createOpportunityButton";
 
             navContainer.appendChild(createLink);
         }
 
         // Insert navigation above the opportunity list.
         opportunityList.before(navContainer);
+
+        document.addEventListener("helpnet:languagechange", function () {
+            messageNavBtn.textContent = t("eventMessages");
+        });
 
         loadOpportunities();
     }

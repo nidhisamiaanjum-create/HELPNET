@@ -184,37 +184,37 @@
 
         <!--======profile info=======-->
         <section class="profile-card">
-            <h2>Personal Information</h2>
+            <h2 data-i18n="personalInformation">ব্যক্তিগত তথ্য</h2>
 
             <div class="profile-info-list">
 
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Full Name</span>
+                    <span class="profile-info-label" data-i18n="fullName">পুরো নাম</span>
                     <span class="profile-info-value" id="infoFullName">—</span>
                 </div>
 
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Email</span>
+                    <span class="profile-info-label" data-i18n="email">ইমেইল</span>
                     <span class="profile-info-value" id="infoEmail">—</span>
                 </div>
 
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Phone</span>
+                    <span class="profile-info-label" data-i18n="phone">মোবাইল নম্বর</span>
                     <span class="profile-info-value" id="infoPhone">—</span>
                 </div>
 
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Location</span>
+                    <span class="profile-info-label" data-i18n="location">অবস্থান</span>
                     <span class="profile-info-value" id="infoLocation">—</span>
                 </div>
 
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Date of Birth</span>
+                    <span class="profile-info-label" data-i18n="dateOfBirth">জন্মতারিখ</span>
                     <span class="profile-info-value" id="infoDob">—</span>
                 </div>
 
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Gender</span>
+                    <span class="profile-info-label" data-i18n="gender">লিঙ্গ</span>
                     <span class="profile-info-value" id="infoGender">—</span>
                 </div>
 
@@ -338,7 +338,7 @@
 
             <div id="existingRatings" class="existing-ratings"></div>
             <div id="rateUserSection" class="rate-user-section" hidden>
-                <h3>Rate this user</h3>
+                <h3 data-i18n="rateThisUser">এই ব্যবহারকারীকে রেটিং দিন</h3>
 
                 <div class="star-picker" id="profileStarPicker">
                     <button type="button" data-rating="1">★</button>
@@ -348,10 +348,11 @@
                     <button type="button" data-rating="5">★</button>
                 </div>
 
-                <textarea id="profileRatingComment" placeholder="Write a comment..." rows="3"></textarea>
+                <textarea id="profileRatingComment" data-i18n-placeholder="writeComment"
+                    placeholder="মন্তব্য লিখুন..." rows="3"></textarea>
 
                 <button type="button" class="btn" id="submitProfileRating">
-                    Submit Rating
+                    <span data-i18n="submitRating">রেটিং জমা দিন</span>
                 </button>
 
                 <p id="ratingMessage"></p>
@@ -432,7 +433,7 @@
                     <input type="file" id="profilePictureInputEdit" name="profile_picture"
                         accept="image/jpeg,image/png,image/webp">
 
-                    <p class="hint">
+                    <p class="hint" data-i18n="profilePictureHint">
                         JPG, PNG অথবা WebP। সর্বোচ্চ 5 MB।
                     </p>
 
@@ -539,7 +540,11 @@
 
                 </div>
 
-
+                <div class="profile-form-actions">
+                    <button type="submit" class="btn" data-i18n="saveProfile">
+                        প্রোফাইল সংরক্ষণ করুন
+                    </button>
+                </div>
 
                 <p id="profileFormMessage" class="form-message" aria-live="polite">
                 </p>
@@ -611,9 +616,8 @@
             if (listingsItem && listingsTitle) {
 
                 if (role === "farmer") {
-
-                    listingsTitle.textContent =
-                        "আমার কৃষি পণ্য";
+                    listingsTitle.dataset.i18n = "myFarmerProducts";
+                    listingsTitle.textContent = t("myFarmerProducts");
 
                     listingsItem.style.cursor = "pointer";
 
@@ -622,9 +626,8 @@
                     });
 
                 } else if (role === "citizen") {
-
-                    listingsTitle.textContent =
-                        "আমার পণ্য";
+                    listingsTitle.dataset.i18n = "myProducts";
+                    listingsTitle.textContent = t("myProducts");
 
                     listingsItem.style.cursor = "pointer";
 
@@ -664,12 +667,12 @@
                 }
 
                 if (!file.type.startsWith("image/")) {
-                    alert("Please select an image file.");
+                    alert(t("profileImageTypeError"));
                     return;
                 }
 
                 if (file.size > 5 * 1024 * 1024) {
-                    alert("Profile picture must be smaller than 5 MB.");
+                    alert(t("profileImageSizeError"));
                     return;
                 }
 

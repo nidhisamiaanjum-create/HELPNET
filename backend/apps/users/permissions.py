@@ -32,11 +32,15 @@ class IsNGOUser(BasePermission):
         if user.role != "NGO":
             return False
 
-        return user.profiles.filter(
-            profile_type=UserProfile.Type.NGO,
-            ngo_approval_status=UserProfile.NGOApprovalStatus.APPROVED,
-            status=UserProfile.Status.ACTIVE,
-        ).exists()
+        profile = user.active_profile
+        return bool(
+            profile
+            and profile.user_id == user.user_id
+            and profile.profile_type == UserProfile.Type.NGO
+            and profile.status == UserProfile.Status.ACTIVE
+            and profile.ngo_verification_status
+            == UserProfile.NGOVerificationStatus.APPROVED
+        )
 
 
 class IsVolunteerUser(BasePermission):
