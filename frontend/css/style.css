@@ -3003,6 +3003,109 @@ box-shadow:
         inset -4px -4px 8px #ffffff;
 }
 
+.volunteer-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    margin: 0 0 20px;
+}
+
+.volunteer-navigation .btn,
+.volunteer-navigation .small-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-width: 180px;
+    min-height: 46px;
+    height: auto;
+    padding: 10px 20px;
+    border-radius: 12px;
+    text-align: center;
+    text-decoration: none;
+    line-height: 1.35;
+    transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.volunteer-navigation .btn:hover,
+.volunteer-navigation .small-btn:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+}
+
+.volunteer-navigation .btn:focus-visible,
+.volunteer-navigation .small-btn:focus-visible {
+    outline: 3px solid #117f81;
+    outline-offset: 3px;
+}
+
+.profile-role-details {
+    min-width: 0;
+    margin: 8px 0 16px;
+    padding: 16px;
+    border: 1px solid var(--shadow-dark);
+    border-radius: 14px;
+}
+
+.profile-role-details legend {
+    padding: 0 8px;
+    font-weight: 700;
+    color: var(--teal-dark);
+}
+
+body.ngo-approval-pending #roleActivityList,
+body.ngo-approval-pending .role-service[data-roles~="ngo"] {
+    display: none !important;
+}
+
+#ngoVerificationForm .ngo-form-group {
+    margin-top: 28px;
+}
+
+#ngoVerificationForm .ngo-form-group h3 {
+    margin: 0 0 18px;
+}
+
+#ngoVerificationForm .ngo-form-field {
+    margin-bottom: 20px;
+}
+
+#ngoVerificationForm .ngo-form-field label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+#ngoVerificationForm .ngo-form-field input,
+#ngoVerificationForm .ngo-form-field textarea {
+    display: block;
+    width: 100%;
+}
+
+#ngoVerificationForm .ngo-form-field input[type="file"] {
+    height: auto;
+    min-height: 52px;
+    padding: 12px 16px;
+}
+
+#ngoVerificationDocuments {
+    margin: 14px 0 22px;
+    padding-left: 24px;
+}
+
+@media (max-width: 560px) {
+    .volunteer-navigation {
+        align-items: stretch;
+    }
+
+    .volunteer-navigation .btn,
+    .volunteer-navigation .small-btn {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+}
+
 /* Signup button */
 #opportunityDetail .btn {
     margin-top: 15px;

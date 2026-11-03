@@ -8,6 +8,9 @@ from .views import (
     PasswordResetRequestView,
     PasswordResetConfirmView,
     UserProfilesView, UserProfileDetailView, ActiveProfileView,
+    ReactivateUserProfileView,
+    NGOVerificationSubmissionView,
+    NGOVerificationDocumentDownloadView,
     NGOApprovalView,    PendingNGOApprovalListView,
 )
 
@@ -29,6 +32,17 @@ urlpatterns = [
      path("me/", MeView.as_view(), name="me"),
     path("profiles/", UserProfilesView.as_view(), name="profiles"),
     path("profiles/<int:id>/", UserProfileDetailView.as_view(), name="profile-detail"),
+    path("profiles/<int:profile_id>/reactivate/", ReactivateUserProfileView.as_view(), name="profile-reactivate"),
+    path(
+        "profiles/<int:profile_id>/ngo-verification/",
+        NGOVerificationSubmissionView.as_view(),
+        name="ngo-verification-submission",
+    ),
+    path(
+        "ngo-verification-documents/<uuid:document_id>/",
+        NGOVerificationDocumentDownloadView.as_view(),
+        name="ngo-verification-document",
+    ),
     path("active-profile/", ActiveProfileView.as_view(), name="active-profile"),
     path(
         "ngo-profiles/<int:profile_id>/approval/",

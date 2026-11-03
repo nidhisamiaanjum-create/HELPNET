@@ -167,7 +167,7 @@ class UserRatingSummaryView(APIView):
                 "full_name": target_user.full_name,
                 "role": target_user.role,
                 "location": getattr(target_user, "location", ""),
-                "average_rating": round(avg_score, 1) if avg_score is not None else 5.0,
+                "average_rating": round(avg_score, 1) if avg_score is not None else None,
                 "total_ratings": count,
                 "user_has_rated": user_rating is not None,
                 "user_rating_score": user_rating.rating if user_rating else None,

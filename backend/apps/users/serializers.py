@@ -97,10 +97,74 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class RoleProfileSerializer(serializers.ModelSerializer):
+    details = serializers.SerializerMethodField()
+
     class Meta:
         model = UserProfile
-        fields = ("id", "profile_type", "display_name", "status", "created_at", "updated_at")
-        read_only_fields = ("id", "status", "created_at", "updated_at")
+        fields = (
+            "id",
+            "profile_type",
+            "display_name",
+            "details",
+            "status",
+            "ngo_approval_status",
+            "ngo_registration_number",
+            "ngo_address",
+            "ngo_contact_email",
+            "ngo_contact_phone",
+            "ngo_representative_name",
+            "ngo_verification_status",
+            "ngo_verification_reason",
+            "ngo_submitted_at",
+            "ngo_reviewed_at",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = (
+            "id",
+            "status",
+            "ngo_approval_status",
+            "ngo_registration_number",
+            "ngo_address",
+            "ngo_contact_email",
+            "ngo_contact_phone",
+            "ngo_representative_name",
+            "ngo_verification_status",
+            "ngo_verification_reason",
+            "ngo_submitted_at",
+            "ngo_reviewed_at",
+            "created_at",
+            "updated_at",
+        )
+
+    def get_details(self, profile):
+        if profile.profile_type == UserProfile.Type.VOLUNTEER:
+            from apps.volunteer.models import VolunteerProfile
+
+            volunteer_profile = VolunteerProfile.objects.filter(
+                user_id=profile.user_id
+            ).first()
+            if volunteer_profile:
+                return {
+                    "skills": volunteer_profile.skills,
+                    "availability": volunteer_profile.availability,
+                    "location": volunteer_profile.location,
+                    "blood_group": volunteer_profile.blood_group,
+                    "supporting_certificates": volunteer_profile.supporting_certificates,
+                }
+        elif profile.profile_type == UserProfile.Type.BLOOD_DONOR:
+            from apps.blood.models import DonorProfile
+
+            donor_profile = DonorProfile.objects.filter(
+                user_id=profile.user_id
+            ).first()
+            if donor_profile:
+                return {
+                    "blood_group": donor_profile.blood_group,
+                    "area": donor_profile.area,
+                    "availability": donor_profile.availability,
+                }
+        return {}
 
     def validate_profile_type(self, value):
         if value not in UserProfile.Type.values:

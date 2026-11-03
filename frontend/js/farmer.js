@@ -26,20 +26,17 @@ document.addEventListener("DOMContentLoaded", function () {
    1. MARKETPLACE OVERVIEW PAGE (farmer-market.html)
    ============================================================ */
 function initMarketPage(user) {
-    const isFarmer = user && (user.role === "Farmer" || user.role === "Volunteer" || user.role === "Admin" || user.role === "Citizen");
     const farmerActionSection = document.getElementById("farmerActionSection");
     const myProduceSection = document.getElementById("myProduceSection");
 
-    // Show farmer-specific creation buttons
-    if (user && user.role === "Farmer") {
-        if (farmerActionSection) farmerActionSection.hidden = false;
-        if (myProduceSection) {
-            myProduceSection.hidden = false;
+    if (farmerActionSection) {
+        farmerActionSection.hidden = !user;
+    }
+    if (myProduceSection) {
+        myProduceSection.hidden = !user;
+        if (user) {
             loadMyProduceListings();
         }
-    } else if (farmerActionSection) {
-        // Even if role is not strictly Farmer, let user easily access post produce if needed
-        farmerActionSection.hidden = false;
     }
 
     const searchInput = document.getElementById("marketSearchInput");
@@ -164,7 +161,7 @@ async function loadMyProduceListings() {
                     <button class="btn-xs btn-outline" onclick="toggleProduceAvailability('${p.id}', '${isAvail ? "Unavailable" : "Available"}')">
                         ${escapeHtml(isAvail ? t("statusUnavailable") : t("statusAvailable"))}
                     </button>
-                    <a href="/produce-details/?id=${encodeURIComponent(p.id)}" class="btn-xs btn-outline" style="text-decoration:none; padding:8px 12px; display:inline-block;">${escapeHtml(t("editProduce"))}</a>
+                    <a href="/produce-details/?id=${encodeURIComponent(p.id)}&edit=1" class="btn-xs btn-outline" style="text-decoration:none; padding:8px 12px; display:inline-block;">${escapeHtml(t("editProduct"))}</a>
                     <button class="btn-xs btn-danger" onclick="deleteProduceListing('${p.id}')">${escapeHtml(t("deleteProduce"))}</button>
                 </div>
             `;
@@ -328,11 +325,22 @@ async function initProduceDetailPage(user) {
             }
 
             // Owner management panel
-            if (p.is_owner || (user && user.user_id === p.farmer)) {
+            if (
+                p.is_owner ||
+                (
+                    user &&
+                    String(user.user_id || user.id || "") ===
+                        String(p.farmer || "")
+                ) ||
+                (user && user.is_superuser === true)
+            ) {
                 const ownerPanel = document.getElementById("ownerPanel");
                 if (ownerPanel) {
                     ownerPanel.hidden = false;
                     setupOwnerControls(p);
+                    if (params.get("edit") === "1") {
+                        document.getElementById("editProduceButton")?.click();
+                    }
                 }
             }
         }
@@ -399,19 +407,150 @@ document.addEventListener("helpnet:languagechange", renderProducePriceRange);
 function setupOwnerControls(produce) {
     const toggleBtn = document.getElementById("toggleAvailBtn");
     const editForm = document.getElementById("editProduceForm");
+    const editButton = document.getElementById("editProduceButton");
+    const form = document.getElementById("produceEditForm");
     const deleteBtn = document.getElementById("deleteProduceBtn");
+    const message = document.getElementById("produceEditMessage");
+
+    function renderAvailability() {
+        const available = produce.availability === "Available";
+        const badge = document.getElementById("detailAvailability");
+        if (badge) {
+            badge.textContent = t(
+                available ? "statusAvailable" : "statusUnavailable"
+            );
+            badge.className = `status ${
+                available ? "status-approved" : "status-rejected"
+            }`;
+        }
+        if (toggleBtn) {
+            toggleBtn.textContent = t(
+                available ? "statusUnavailable" : "statusAvailable"
+            );
+        }
+        const availability = document.getElementById(
+            "editProduceAvailability"
+        );
+        if (availability) availability.value = produce.availability;
+    }
+
+    function fillEditForm() {
+        document.getElementById("editProduceName").value =
+            produce.produce_name || "";
+        document.getElementById("editProduceCategory").value =
+            produce.category || "";
+        document.getElementById("editProducePrice").value =
+            produce.price || "";
+        document.getElementById("editProduceUnit").value =
+            produce.unit || "kg";
+        document.getElementById("editProduceQuantity").value =
+            produce.quantity || "";
+        document.getElementById("editProduceLocation").value =
+            produce.location || "";
+        document.getElementById("editProduceDescription").value =
+            produce.description || "";
+        renderAvailability();
+    }
+
+    editButton?.addEventListener("click", function () {
+        fillEditForm();
+        editForm.hidden = false;
+        editForm.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    document.getElementById("cancelProduceEdit")?.addEventListener(
+        "click",
+        function () {
+            editForm.hidden = true;
+            form.reset();
+            if (message) message.textContent = "";
+        }
+    );
+
+    form?.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        const submit = form.querySelector('button[type="submit"]');
+        submit.disabled = true;
+        if (message) message.textContent = "";
+        const payload = {
+            produce_name: document.getElementById("editProduceName").value.trim(),
+            category: document.getElementById("editProduceCategory").value.trim(),
+            price: document.getElementById("editProducePrice").value,
+            unit: document.getElementById("editProduceUnit").value.trim(),
+            quantity: document.getElementById("editProduceQuantity").value.trim(),
+            location: document.getElementById("editProduceLocation").value.trim(),
+            description: document.getElementById("editProduceDescription").value.trim(),
+            availability: document.getElementById("editProduceAvailability").value
+        };
+        try {
+            const response = await apiRequest(
+                `/api/farmer/produce/${encodeURIComponent(produce.id)}/`,
+                "PATCH",
+                payload
+            );
+            Object.assign(produce, response);
+            document.getElementById("detailTitle").textContent =
+                produce.produce_name;
+            document.getElementById("detailCategory").textContent =
+                produce.category || "General";
+            document.getElementById("detailPrice").textContent =
+                `৳${produce.price} / ${produce.unit || "kg"}`;
+            document.getElementById("detailQuantity").textContent =
+                produce.quantity;
+            document.getElementById("detailLocation").textContent =
+                produce.location;
+            document.getElementById("detailDesc").textContent =
+                produce.description || t("noProduceDescription");
+            renderAvailability();
+            editForm.hidden = true;
+            if (message) {
+                message.textContent = t("farmerEditSaved");
+                message.style.color = "var(--teal-dark)";
+            }
+        } catch (error) {
+            if (message) {
+                message.textContent =
+                    error.message || t("farmerEditFailed");
+                message.style.color = "#c62828";
+            }
+        } finally {
+            submit.disabled = false;
+        }
+    });
 
     if (toggleBtn) {
-        const nextStatus = produce.availability === "Available" ? "Unavailable" : "Available";
-        toggleBtn.textContent = `Set as ${nextStatus}`;
         toggleBtn.onclick = async function () {
+            const nextStatus = produce.availability === "Available"
+                ? "Unavailable"
+                : "Available";
+            toggleBtn.disabled = true;
             try {
-                await apiRequest(`/api/farmer/produce/${produce.id}/`, "PATCH", { availability: nextStatus });
-                window.location.reload();
+                const response = await apiRequest(
+                    `/api/farmer/produce/${encodeURIComponent(produce.id)}/`,
+                    "PATCH",
+                    { availability: nextStatus }
+                );
+                Object.assign(produce, response);
+                renderAvailability();
+                if (message) {
+                    message.textContent = t(
+                        nextStatus === "Available"
+                            ? "farmerStatusSetAvailable"
+                            : "farmerStatusSetUnavailable"
+                    );
+                    message.style.color = "var(--teal-dark)";
+                }
             } catch (e) {
-                alert(e.message);
+                if (message) {
+                    message.textContent = e.message || t("farmerEditFailed");
+                    message.style.color = "#c62828";
+                }
+            } finally {
+                toggleBtn.disabled = false;
             }
         };
+        renderAvailability();
     }
 
     if (deleteBtn) {

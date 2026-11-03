@@ -69,7 +69,7 @@
 
         <div>
             <h2 data-i18n="myprofile"> My Profiles</h2>
-            <p>Manage your different profiles in one place.</p><br><br>
+            <p data-i18n="manageProfilesHint">Manage your different profiles in one place.</p><br><br>
         </div>
     </div>
 
@@ -84,29 +84,34 @@
         aria-expanded="false">
 
         <span class="create-profile-icon">+</span>
-        <span>Create New Profile</span>
+        <span data-i18n="createNewProfile">Create New Profile</span>
 
     </button>
 
     <!-- Keep the existing profile form functionality -->
     <form id="newProfileForm" hidden class="card">
 
-        <label for="newProfileType">Profile type</label>
+        <label for="newProfileType" data-i18n="profileType">Profile type</label>
 
         <select id="newProfileType" required>
-            <option value="">Choose a profile</option>
-            <option value="citizen">Citizen</option>
-            <option value="volunteer">Volunteer</option>
-            <option value="farmer">Farmer</option>
-            <option value="ngo">NGO</option>
-            <option value="blood_donor">Blood Donor</option>
+            <option value="" data-i18n="chooseProfile">Choose a profile</option>
+            <option value="citizen" data-i18n="profileCitizen">Citizen</option>
+            <option value="volunteer" data-i18n="profileVolunteer">Volunteer</option>
+            <option value="farmer" data-i18n="profileFarmer">Farmer</option>
+            <option value="ngo" data-i18n="profileNGO">NGO</option>
+            <option value="blood_donor" data-i18n="profileBloodDonor">Blood Donor</option>
         </select>
 
+        <div id="ngoFields" hidden>
+            <label for="ngoDisplayName" data-i18n="organizationName">Organization / profile name</label>
+            <input id="ngoDisplayName" maxlength="150">
+        </div>
+
         <div id="donorFields" hidden>
-            <label for="donorGroup">Blood group</label>
+            <label for="donorGroup" data-i18n="bloodGroup">Blood group</label>
             <input id="donorGroup" maxlength="3">
 
-            <label for="donorArea">Area</label>
+            <label for="donorArea" data-i18n="area">Area</label>
             <input id="donorArea">
         </div>
 
@@ -115,9 +120,27 @@
            aria-live="polite"></p>
 
         <button class="btn" type="submit">
-            Create profile
+            <span data-i18n="createProfile">Create profile</span>
         </button>
 
+    </form>
+
+    <form id="profileEditForm" hidden class="card">
+        <h3 data-i18n="editProfile">Edit profile</h3>
+        <input id="editProfileId" type="hidden">
+        <div class="field">
+            <label for="editProfileDisplayName" data-i18n="profileDisplayName">Profile display name</label>
+            <input id="editProfileDisplayName" maxlength="150">
+        </div>
+        <fieldset id="profileRoleDetails" class="profile-role-details" hidden>
+            <legend data-i18n="roleSpecificDetails">Role-specific details</legend>
+            <div id="profileRoleFields"></div>
+        </fieldset>
+        <p id="profileEditError" class="field-error" aria-live="polite"></p>
+        <div class="admin-actions">
+            <button class="btn" type="submit" data-i18n="saveChanges">Save changes</button>
+            <button class="btn btn-outline" type="button" id="cancelProfileEdit" data-i18n="cancel">Cancel</button>
+        </div>
     </form>
 
 </section>
@@ -155,6 +178,73 @@
 
 </section>
 
+<section id="ngoApprovalNotice" class="alert-card" role="status" aria-live="polite" hidden></section>
+
+<section id="ngoVerificationSection" class="dashboard-section" hidden>
+    <div class="card">
+        <h2 data-i18n="ngoVerificationTitle">NGO verification</h2>
+        <p id="ngoVerificationStatus" role="status" aria-live="polite"></p>
+        <p id="ngoVerificationReason" class="field-error" hidden></p>
+        <ul id="ngoVerificationDocuments"></ul>
+
+        <form id="ngoVerificationForm" enctype="multipart/form-data" hidden>
+            <section class="ngo-form-group">
+                <h3 data-i18n="ngoInformation">NGO Information</h3>
+                <div class="ngo-form-field">
+                    <label for="ngoOrganizationName" data-i18n="ngoOrganizationName">NGO/Organization name</label>
+                    <input id="ngoOrganizationName" name="organization_name" maxlength="150" required>
+                </div>
+                <div class="ngo-form-field">
+                    <label for="ngoRegistrationNumber" data-i18n="ngoRegistrationNumber">Registration number</label>
+                    <input id="ngoRegistrationNumber" name="registration_number" maxlength="100" required>
+                </div>
+                <div class="ngo-form-field">
+                    <label for="ngoOrganizationAddress" data-i18n="ngoOrganizationAddress">Organization address</label>
+                    <textarea id="ngoOrganizationAddress" name="organization_address" rows="3" required></textarea>
+                </div>
+                <div class="ngo-form-field">
+                    <label for="ngoContactEmail" data-i18n="ngoContactEmail">Official contact email</label>
+                    <input id="ngoContactEmail" name="official_contact_email" type="email" maxlength="254" required>
+                </div>
+                <div class="ngo-form-field">
+                    <label for="ngoContactPhone" data-i18n="ngoContactPhone">Contact phone number</label>
+                    <input id="ngoContactPhone" name="contact_phone" type="tel" maxlength="30" required>
+                </div>
+                <div class="ngo-form-field">
+                    <label for="ngoRepresentativeName" data-i18n="ngoRepresentativeName">Authorized representative name</label>
+                    <input id="ngoRepresentativeName" name="representative_name" maxlength="150" required>
+                </div>
+            </section>
+
+            <section class="ngo-form-group">
+                <h3 data-i18n="ngoRequiredDocuments">Required NGO Documents</h3>
+                <div class="ngo-form-field">
+                    <label for="ngoRegistrationCertificate" data-i18n="ngoRegistrationCertificate">NGO registration certificate (PDF, JPG, PNG)</label>
+                    <input id="ngoRegistrationCertificate" name="registration_certificate" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+                </div>
+            </section>
+
+            <section class="ngo-form-group">
+                <h3 data-i18n="ngoOptionalDocuments">Optional Documents</h3>
+                <div class="ngo-form-field">
+                    <label for="ngoOfficialDocuments" data-i18n="ngoOtherOfficialDocuments">Other official registration documents</label>
+                    <input id="ngoOfficialDocuments" name="official_documents" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" multiple>
+                </div>
+                <div class="ngo-form-field">
+                    <label for="ngoAuthorizationLetters" data-i18n="ngoAuthorizationLetter">Supporting authorization letter</label>
+                    <input id="ngoAuthorizationLetters" name="authorization_letters" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" multiple>
+                </div>
+                <div class="ngo-form-field">
+                    <label for="ngoSupportingDocuments" data-i18n="ngoAdditionalDocuments">Additional supporting documents</label>
+                    <input id="ngoSupportingDocuments" name="supporting_documents" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" multiple>
+                </div>
+            </section>
+
+            <p id="ngoVerificationFormMessage" class="field-error" role="alert" aria-live="polite"></p>
+            <button type="submit" class="btn" data-i18n="ngoRequestVerification">Request Verification</button>
+        </form>
+    </div>
+</section>
 
 <!-- =====================================================
      NID VERIFICATION
@@ -705,11 +795,11 @@
 
 <script src="{% static 'js/api.js' %}"></script>
 
-<script src="{% static 'js/i18n.js' %}"></script>
+<script src="{% static 'js/i18n.js' %}?v=ngo-verification-1"></script>
 
 <script src="{% static 'js/auth.js' %}"></script>
 
-<script src="{% static 'js/dashboard.js' %}?v=multi-profile-1"></script>
+<script src="{% static 'js/dashboard.js' %}?v=ngo-verification-1"></script>
 <script src="{% static 'js/navigation.js' %}"></script>
 
 </body>

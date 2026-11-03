@@ -27,11 +27,15 @@ def coordinator(user):
     if user.role != "NGO":
         return False
 
-    return user.profiles.filter(
-        profile_type=UserProfile.Type.NGO,
-        ngo_approval_status=UserProfile.NGOApprovalStatus.APPROVED,
-        status=UserProfile.Status.ACTIVE,
-    ).exists()
+    profile = user.active_profile
+    return bool(
+        profile
+        and profile.user_id == user.user_id
+        and profile.profile_type == UserProfile.Type.NGO
+        and profile.status == UserProfile.Status.ACTIVE
+        and profile.ngo_verification_status
+        == UserProfile.NGOVerificationStatus.APPROVED
+    )
 
 
 def event_or_404(event_id):
@@ -257,7 +261,15 @@ class CertificateListIssueView(APIView):
         else:
             qs = qs.filter(coordinator=request.user)
         return Response({"success": True, "data": VolunteerCertificateSerializer(qs, many=True).data})
-    def post(self, request, event_id):
+    def post(self, request, event_id=None):
+        if event_id is None:
+            try:
+                event_id = int(request.data.get("event_id"))
+            except (TypeError, ValueError):
+                return Response(
+                    {"success": False, "message": "A valid event_id is required."},
+                    status=400,
+                )
         event = event_or_404(event_id)
         if not coordinator(request.user) or event.coordinator_id != request.user.user_id:
             return Response({"success": False, "message": "Only this event's coordinator can issue certificates."}, status=403)

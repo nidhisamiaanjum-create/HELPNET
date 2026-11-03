@@ -1,6 +1,17 @@
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 import uuid
+from pathlib import Path
+
+from .storage import NGOVerificationPrivateStorage
+
+
+def ngo_verification_document_path(instance, filename):
+    extension = Path(filename).suffix.lower()
+    return (
+        f"ngo_verification/{instance.profile.user_id}/"
+        f"{uuid.uuid4().hex}{extension}"
+    )
 
 
 class CustomUserManager(UserManager):
@@ -165,6 +176,17 @@ class UserProfile(models.Model):
         APPROVED = "approved", "Approved"
         REJECTED = "rejected", "Rejected"
 
+    class NGOVerificationStatus(models.TextChoices):
+        NOT_SUBMITTED = "not_submitted", "Not Submitted"
+        PENDING = "pending", "Pending"
+        UNDER_REVIEW = "under_review", "Under Review"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+        ADDITIONAL_DOCUMENTS_REQUIRED = (
+            "additional_documents_required",
+            "Additional Documents Required",
+        )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="profiles")
     profile_type = models.CharField(max_length=20, choices=Type.choices)
     display_name = models.CharField(max_length=150, blank=True)
@@ -174,6 +196,19 @@ class UserProfile(models.Model):
         choices=NGOApprovalStatus.choices,
         default=NGOApprovalStatus.NOT_REQUIRED,
     )
+    ngo_registration_number = models.CharField(max_length=100, blank=True)
+    ngo_address = models.TextField(blank=True)
+    ngo_contact_email = models.EmailField(blank=True)
+    ngo_contact_phone = models.CharField(max_length=30, blank=True)
+    ngo_representative_name = models.CharField(max_length=150, blank=True)
+    ngo_verification_status = models.CharField(
+        max_length=32,
+        choices=NGOVerificationStatus.choices,
+        default=NGOVerificationStatus.NOT_SUBMITTED,
+    )
+    ngo_verification_reason = models.TextField(blank=True)
+    ngo_submitted_at = models.DateTimeField(blank=True, null=True)
+    ngo_reviewed_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -182,3 +217,34 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.get_profile_type_display()} profile for {self.user}"
+
+
+class NGOVerificationDocument(models.Model):
+    class DocumentType(models.TextChoices):
+        REGISTRATION_CERTIFICATE = (
+            "registration_certificate",
+            "NGO registration certificate",
+        )
+        OFFICIAL_DOCUMENT = "official_document", "Other official document"
+        AUTHORIZATION_LETTER = "authorization_letter", "Authorization letter"
+        SUPPORTING_DOCUMENT = "supporting_document", "Supporting document"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    profile = models.ForeignKey(
+        UserProfile,
+        on_delete=models.CASCADE,
+        related_name="ngo_verification_documents",
+    )
+    document_type = models.CharField(max_length=32, choices=DocumentType.choices)
+    file = models.FileField(
+        storage=NGOVerificationPrivateStorage(),
+        upload_to=ngo_verification_document_path,
+    )
+    original_name = models.CharField(max_length=255)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["uploaded_at", "id"]
+
+    def __str__(self):
+        return f"{self.get_document_type_display()} for {self.profile.display_name}"

@@ -1,3 +1,13 @@
+Latest validation update (2026-11-03)
+=====================================
+The Selenium/WebDriver limitation recorded later in this historical triage
+was resolved for the current test environment. The final run passed 51 browser
+cases with 51 screenshots; 47 HTTP-only page-route checks also passed. The
+backend suite passed 128 tests. See
+project_documentation/selenium_evidence/selenium_execution_report.md for the
+run history and limitations. Production MySQL, deployment storage, and
+standalone JavaScript lint/build remain untested.
+
 some pages don't have back button
 some ui need fixing(css not working)
 2nd-hand good interest option not working — fixed: interest persists in the

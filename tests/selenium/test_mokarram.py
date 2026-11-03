@@ -72,12 +72,15 @@ def user_factory(db):
 @pytest.fixture
 def approved_coordinator(user_factory):
     user = user_factory(role=User.Role.NGO)
-    UserProfile.objects.create(
+    profile = UserProfile.objects.create(
         user=user,
         profile_type=UserProfile.Type.NGO,
         status=UserProfile.Status.ACTIVE,
         ngo_approval_status=UserProfile.NGOApprovalStatus.APPROVED,
+        ngo_verification_status=UserProfile.NGOVerificationStatus.APPROVED,
     )
+    user.active_profile = profile
+    user.save(update_fields=["active_profile"])
     return user
 
 

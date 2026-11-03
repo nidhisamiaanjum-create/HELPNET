@@ -1,6 +1,15 @@
+import importlib
+import tempfile
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.apps import apps
+from types import SimpleNamespace
 from rest_framework.test import APITestCase
+from unittest.mock import patch
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.ratings.models import Rating
@@ -206,6 +215,112 @@ class BloodApiTests(APITestCase):
 		self.client.credentials()
 		response = self.client.get("/api/blood/requests/")
 		self.assertEqual(response.status_code, 401)
+
+	def test_supporting_document_is_private_to_requester_and_admin(self):
+		upload = SimpleUploadedFile(
+			"supporting-document.pdf",
+			b"%PDF-1.7\nprivate supporting document",
+			content_type="application/pdf",
+		)
+		self.authenticate(self.requester)
+		created = self.client.post(
+			"/api/blood/requests/",
+			{
+				"blood_group": "O+",
+				"area": "Dhaka",
+				"hospital": "Dhaka Medical College",
+				"supporting_document": upload,
+			},
+			format="multipart",
+		)
+		self.assertEqual(created.status_code, 201, created.data)
+		request_id = created.data["data"]["id"]
+		document_url = created.data["data"]["supporting_document"]
+		self.assertEqual(
+			document_url,
+			f"/api/blood/requests/{request_id}/document/",
+		)
+
+		blood_request = BloodRequest.objects.get(pk=request_id)
+		self.addCleanup(blood_request.supporting_document.delete, save=False)
+		self.assertTrue(
+			blood_request.supporting_document.path.startswith(
+				str(settings.PRIVATE_MEDIA_ROOT)
+			)
+		)
+
+		self.authenticate(self.other_donor)
+		listed = self.client.get("/api/blood/requests/")
+		self.assertEqual(listed.status_code, 200)
+		self.assertIsNone(listed.data["data"][0]["supporting_document"])
+		self.assertEqual(self.client.get(document_url).status_code, 403)
+
+		self.authenticate(self.requester)
+		downloaded = self.client.get(document_url)
+		self.assertEqual(downloaded.status_code, 200)
+		self.assertEqual(
+			b"".join(downloaded.streaming_content),
+			b"%PDF-1.7\nprivate supporting document",
+		)
+
+		admin = self.make_user("01720000007", "admin@example.com", "Admin")
+		admin.is_superuser = True
+		admin.is_staff = True
+		admin.save()
+		self.authenticate(admin)
+		admin_download = self.client.get(document_url)
+		self.assertEqual(admin_download.status_code, 200)
+		b"".join(admin_download.streaming_content)
+
+	def test_supporting_document_rejects_mismatched_file_content(self):
+		self.authenticate(self.requester)
+		response = self.client.post(
+			"/api/blood/requests/",
+			{
+				"blood_group": "O+",
+				"area": "Dhaka",
+				"hospital": "Dhaka Medical College",
+				"supporting_document": SimpleUploadedFile(
+					"not-a-pdf.pdf",
+					b"not a PDF",
+					content_type="application/pdf",
+				),
+			},
+			format="multipart",
+		)
+		self.assertEqual(response.status_code, 400)
+		self.assertFalse(BloodRequest.objects.exists())
+
+	def test_migration_moves_existing_documents_to_private_storage(self):
+		migration = importlib.import_module(
+			"apps.blood.migrations.0004_private_blood_request_documents"
+		)
+		with tempfile.TemporaryDirectory() as public_root, tempfile.TemporaryDirectory() as private_root:
+			public_storage = FileSystemStorage(location=public_root)
+			source_name = "blood/supporting_documents/legacy-proof.pdf"
+			public_storage.save(source_name, SimpleUploadedFile("legacy-proof.pdf", b"%PDF-1.7\nlegacy"))
+			blood_request = BloodRequest.objects.create(
+				requester=self.requester,
+				blood_group="O+",
+				area="Dhaka",
+				hospital="Dhaka Medical College",
+				supporting_document=source_name,
+			)
+
+			with patch("django.conf.settings.MEDIA_ROOT", public_root), patch(
+				"django.conf.settings.PRIVATE_MEDIA_ROOT", private_root
+			):
+				migration.move_documents_to_private_storage(
+					apps,
+					SimpleNamespace(connection=SimpleNamespace(alias="default")),
+				)
+
+			blood_request.refresh_from_db()
+			private_storage = FileSystemStorage(location=private_root)
+			self.assertTrue(private_storage.exists(blood_request.supporting_document.name))
+			self.assertFalse(public_storage.exists(source_name))
+			with private_storage.open(blood_request.supporting_document.name, "rb") as document:
+				self.assertEqual(document.read(), b"%PDF-1.7\nlegacy")
 
 	def test_authenticated_user_can_report_blood_request(self):
 		created = self.create_request()

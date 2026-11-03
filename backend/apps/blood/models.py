@@ -1,6 +1,9 @@
+import uuid
+
 from django.conf import settings
 from django.db import models
-import uuid
+
+from .storage import BloodRequestPrivateStorage
 
 
 class BloodGroup(models.TextChoices):
@@ -80,7 +83,8 @@ class BloodRequest(models.Model):
 	hospital = models.CharField(max_length=200, blank=True)
 	details = models.TextField(blank=True)
 	supporting_document = models.FileField(
-    	upload_to="blood/supporting_documents/",
+		storage=BloodRequestPrivateStorage(),
+		upload_to="blood/supporting_documents/",
     	blank=True,
     	null=True,
 	)

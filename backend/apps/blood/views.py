@@ -1,6 +1,11 @@
+import mimetypes
+from pathlib import Path
+
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, transaction
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -31,7 +36,11 @@ def profile_data(profile):
 	}
 
 
-def request_data(blood_request):
+def request_data(blood_request, user):
+	can_view_document = (
+		blood_request.requester_id == user.pk
+		or user.is_superuser
+	)
 	return {
 		"id": str(blood_request.id),
 		"requester_id": str(blood_request.requester.user_id),
@@ -41,8 +50,8 @@ def request_data(blood_request):
 		"hospital": blood_request.hospital,
 		"details": blood_request.details,
 		"supporting_document": (
-			blood_request.supporting_document.url
-			if blood_request.supporting_document
+			reverse("blood-request-document", kwargs={"request_id": blood_request.pk})
+			if blood_request.supporting_document and can_view_document
 			else None
 		),
 		"status": blood_request.status,
@@ -133,7 +142,7 @@ class BloodRequestListCreateView(APIView):
 
 	def get(self, request):
 		requests = BloodRequest.objects.filter(status=BloodRequest.Status.OPEN).select_related("requester")
-		return Response({"success": True, "data": [request_data(item) for item in requests], "message": "Open requests loaded."})
+		return Response({"success": True, "data": [request_data(item, request.user) for item in requests], "message": "Open requests loaded."})
 
 	def post(self, request):
 		blood_group = request.data.get("blood_group")
@@ -186,18 +195,28 @@ class BloodRequestListCreateView(APIView):
 					status=status.HTTP_400_BAD_REQUEST,
 				)
 
-			allowed_types = {
-				"application/pdf",
-				"image/jpeg",
-				"image/png",
-			}
+			allowed_extensions = {".pdf", ".jpg", ".jpeg", ".png"}
+			allowed_types = {"application/pdf", "image/jpeg", "image/png"}
+			extension = Path(supporting_document.name).suffix.lower()
+			supporting_document.seek(0)
+			signature = supporting_document.read(8)
+			supporting_document.seek(0)
+			valid_signature = (
+				(extension == ".pdf" and signature.startswith(b"%PDF-"))
+				or (extension in {".jpg", ".jpeg"} and signature.startswith(b"\xff\xd8\xff"))
+				or (extension == ".png" and signature.startswith(b"\x89PNG\r\n\x1a\n"))
+			)
 
-			if supporting_document.content_type not in allowed_types:
+			if (
+				extension not in allowed_extensions
+				or supporting_document.content_type not in allowed_types
+				or not valid_signature
+			):
 				return Response(
 					{
 						"success": False,
 						"data": None,
-						"message": "Only PDF, JPG, and PNG files are allowed.",
+						"message": "Only valid PDF, JPG, and PNG files are allowed.",
 					},
 					status=status.HTTP_400_BAD_REQUEST,
 				)
@@ -232,10 +251,39 @@ class BloodRequestListCreateView(APIView):
 		return Response(
 			{
 				"success": True,
-				"data": request_data(blood_request),
+				"data": request_data(blood_request, request.user),
 				"message": "Blood request created.",
 			},
 			status=status.HTTP_201_CREATED,
+		)
+
+
+class BloodRequestDocumentView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	def get(self, request, request_id):
+		blood_request = get_object_or_404(
+			BloodRequest,
+			pk=request_id,
+			supporting_document__gt="",
+		)
+		if (
+			blood_request.requester_id != request.user.pk
+			and not request.user.is_superuser
+		):
+			return Response(
+				{"success": False, "data": None, "message": "You cannot access this document."},
+				status=status.HTTP_403_FORBIDDEN,
+			)
+		content_type = (
+			mimetypes.guess_type(blood_request.supporting_document.name)[0]
+			or "application/octet-stream"
+		)
+		return FileResponse(
+			blood_request.supporting_document.open("rb"),
+			as_attachment=True,
+			filename=Path(blood_request.supporting_document.name).name,
+			content_type=content_type,
 		)
 
 
@@ -338,7 +386,7 @@ class BloodRequestCompleteView(APIView):
 				status=status.HTTP_400_BAD_REQUEST,
 			)
 
-		return Response({"success": True, "data": request_data(blood_request), "message": "Request fulfilled."})
+		return Response({"success": True, "data": request_data(blood_request, request.user), "message": "Request fulfilled."})
 
 
 class BloodRequestCloseView(APIView):
@@ -358,7 +406,7 @@ class BloodRequestCloseView(APIView):
 			)
 		blood_request.status = BloodRequest.Status.CLOSED
 		blood_request.save(update_fields=["status", "updated_at"])
-		return Response({"success": True, "data": request_data(blood_request), "message": "Request closed."})
+		return Response({"success": True, "data": request_data(blood_request, request.user), "message": "Request closed."})
 
 
 class BloodRequestReportView(APIView):

@@ -1,5 +1,8 @@
 console.log("🔥 NEW PROFILE.JS LOADED 🔥");
 let selectedRating = 0;
+let profileRatings = [];
+let currentProfileRole = "";
+let currentProfileGender = "";
 
 /* ---------- RENDER HELPERS ---------- */
 
@@ -11,6 +14,28 @@ function setText(id, value) {
 function setValue(id, value) {
     const el = document.getElementById(id);
     if (el) el.value = value || "";
+}
+
+function translateProfileValue(value) {
+    const normalized = String(value || "").trim().toLowerCase().replace(/[\s-]+/g, "_");
+    const key = {
+        male: "male",
+        female: "female",
+        other: "other",
+        citizen: "profileRoleCitizen",
+        ngo: "profileRoleNGO",
+        donor: "profileRoleDonor",
+        farmer: "profileRoleFarmer",
+        volunteer: "profileRoleVolunteer",
+        blood_donor: "profileRoleBloodDonor",
+        admin: "profileRoleAdmin",
+    }[normalized];
+    return key ? t(key) : value;
+}
+
+function renderTranslatedProfileValues() {
+    setText("profileRole", translateProfileValue(currentProfileRole));
+    setText("infoGender", translateProfileValue(currentProfileGender));
 }
 
 function renderVerificationBadge(isVerified) {
@@ -26,23 +51,24 @@ function renderVerificationBadge(isVerified) {
 function renderExistingRatings(ratings) {
     const container = document.getElementById("existingRatings");
     if (!container) return;
+    profileRatings = Array.isArray(ratings) ? ratings : [];
     container.replaceChildren();
     const heading = document.createElement("h3");
-    heading.textContent = "Existing ratings";
+    heading.textContent = t("existingRatings");
     container.appendChild(heading);
-    if (!ratings.length) {
+    if (!profileRatings.length) {
         const empty = document.createElement("p");
-        empty.textContent = "No ratings yet.";
+        empty.textContent = t("noRatingsYet");
         container.appendChild(empty);
         return;
     }
-    ratings.forEach((item) => {
+    profileRatings.forEach((item) => {
         const article = document.createElement("article");
         article.className = "rating-item";
         const title = document.createElement("strong");
         title.textContent = `${item.rater_name} · ${"★".repeat(item.rating)}`;
         const comment = document.createElement("p");
-        comment.textContent = item.comment || "No comment";
+        comment.textContent = item.comment || t("noComment");
         article.append(title, comment);
         container.appendChild(article);
     });
@@ -152,12 +178,12 @@ function setupRatingForm(isPublicProfile, targetUserId) {
     // Submit rating
     submitButton.addEventListener("click", async () => {
         if (!selectedRating) {
-            message.textContent = "Please select a rating.";
+            message.textContent = t("ratingSelectRequired");
             return;
         }
 
         submitButton.disabled = true;
-        message.textContent = "Submitting...";
+        message.textContent = t("ratingSubmitting");
 
         try {
             const response = await fetch("/api/ratings/create/", {
@@ -177,11 +203,11 @@ function setupRatingForm(isPublicProfile, targetUserId) {
 
             if (!response.ok) {
                 message.textContent =
-                    payload.message || "Failed to submit rating.";
+                    payload.message || t("ratingSubmitFailed");
                 return;
             }
 
-            message.textContent = "Rating submitted successfully.";
+            message.textContent = t("ratingSubmitSuccess");
 
             // Reset form
             selectedRating = 0;
@@ -200,7 +226,7 @@ function setupRatingForm(isPublicProfile, targetUserId) {
 
         } catch (error) {
             console.error("Rating error:", error);
-            message.textContent = "Connection failed.";
+            message.textContent = t("connectionFailed");
         } finally {
             submitButton.disabled = false;
         }
@@ -240,19 +266,20 @@ async function loadProfile() {
         setText("profileEmail", user.email);
         setText("profilePhone", user.phone_number);
         setText("profileLocation", user.location);
-        setText("profileRole", user.role);
+        currentProfileRole = user.role;
         setText("profileBio", user.bio || "");
         setText("infoFullName", user.full_name);
 setText("infoEmail", user.email);
 setText("infoPhone", user.phone_number);
 setText("infoLocation", user.location);
 setText("infoDob", user.date_of_birth);
-setText("infoGender", user.gender);
+currentProfileGender = user.gender;
+renderTranslatedProfileValues();
 
         renderVerificationBadge(user.is_verified);
         setText(
             "ratingSummary",
-            `★ ${user.average_rating === null ? "0.0" : Number(user.average_rating).toFixed(1)} · ${user.rating_count || 0}`
+            `★ ${user.average_rating == null ? "—" : Number(user.average_rating).toFixed(1)} · ${user.rating_count || 0}`
         );
         const ratingsResponse = await apiRequest(`/api/ratings/users/${user.user_id}/`);
         renderExistingRatings(ratingsResponse.data || []);
@@ -267,10 +294,16 @@ setText("infoGender", user.gender);
         setValue("profileLocationInput", user.location);
         setValue("profileDobInput", user.date_of_birth);
         setValue("profileGenderInput", user.gender);
-        document.getElementById("showPhone").checked = !!user.is_phone_visible;
-        document.getElementById("showEmail").checked = !!user.is_email_visible;
-        document.getElementById("showLocation").checked = !!user.is_location_visible;
-        document.getElementById("showDob").checked = !!user.is_date_of_birth_visible;
+        const visibilityFields = {
+            showPhone: "is_phone_visible",
+            showEmail: "is_email_visible",
+            showLocation: "is_location_visible",
+            showDob: "is_date_of_birth_visible",
+        };
+        Object.entries(visibilityFields).forEach(([id, field]) => {
+            const input = document.getElementById(id);
+            if (input) input.checked = !!user[field];
+        });
 
         /* --- profile picture, if set --- */
         if (user.profile_picture) {
@@ -298,25 +331,16 @@ async function saveProfile(event) {
     const form = event.target;
     const formData = new FormData(form);
     const msg = document.getElementById("profileFormMessage");
-    formData.set(
-    "is_phone_visible",
-    document.getElementById("showPhone").checked
-    );
-
-    formData.set(
-       "is_email_visible",
-      document.getElementById("showEmail").checked
-    );
-
-    formData.set(
-      "is_location_visible",
-       document.getElementById("showLocation").checked
-    );
-
-    formData.set(
-      "is_date_of_birth_visible",
-      document.getElementById("showDob").checked
-    );
+    const visibilityFields = {
+        showPhone: "is_phone_visible",
+        showEmail: "is_email_visible",
+        showLocation: "is_location_visible",
+        showDob: "is_date_of_birth_visible",
+    };
+    Object.entries(visibilityFields).forEach(([id, field]) => {
+        const input = document.getElementById(id);
+        if (input) formData.set(field, input.checked);
+    });
 
     try {
         const res = await fetch("/api/auth/me/", {
@@ -329,7 +353,7 @@ async function saveProfile(event) {
 
         if (res.ok) {
             if (msg) {
-                msg.textContent = "প্রোফাইল সংরক্ষণ করা হয়েছে।";
+                msg.textContent = t("profileSaved");
                 msg.style.color = "green";
             }
             loadProfile();
@@ -345,7 +369,7 @@ async function saveProfile(event) {
     } catch (err) {
         console.error(err);
         if (msg) {
-            msg.textContent = "সংযোগ ব্যর্থ হয়েছে।";
+            msg.textContent = t("connectionFailed");
             msg.style.color = "red";
         }
     }
@@ -358,4 +382,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("profileForm")
         ?.addEventListener("submit", saveProfile);
+});
+
+document.addEventListener("helpnet:languagechange", () => {
+    renderExistingRatings(profileRatings);
+    renderTranslatedProfileValues();
 });

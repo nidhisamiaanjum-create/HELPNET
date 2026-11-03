@@ -80,7 +80,7 @@ async function loadRatings() {
         verification.hidden = !profile.data.is_verified;
         const averageValue = average.data.average_rating;
         document.getElementById("averageRating").textContent =
-            `Average: ${averageValue === null ? "0.0" : Number(averageValue).toFixed(1)} / 5 · ${average.data.rating_count} ratings`;
+            `Average: ${averageValue == null ? "—" : Number(averageValue).toFixed(1)} / 5 · ${average.data.rating_count} ratings`;
         renderExistingRatings(ratings.data);
         if (ratedUserId === getStoredUser()?.user_id) {
             setRatingFormDisabled(true);

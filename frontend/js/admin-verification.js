@@ -26,10 +26,23 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const token = localStorage.getItem("helpnet_token");
 
+    function showListMessage(message, className = "") {
+        const paragraph = document.createElement("p");
+        paragraph.className = className;
+        paragraph.textContent = message;
+        list.replaceChildren(paragraph);
+    }
+
+    function appendDetail(card, label, value) {
+        const paragraph = document.createElement("p");
+        const strong = document.createElement("strong");
+        strong.textContent = `${label}: `;
+        paragraph.append(strong, document.createTextNode(value || ""));
+        card.appendChild(paragraph);
+    }
+
     async function loadRequests() {
-        list.innerHTML = `
-            <p>Loading verification requests...</p>
-        `;
+        showListMessage("Loading verification requests...");
 
         try {
             const response = await fetch(
@@ -54,104 +67,73 @@ document.addEventListener("DOMContentLoaded", async function () {
             const requests = data.data || [];
 
             if (requests.length === 0) {
-                list.innerHTML = `
-                    <p>
-                        No pending verification requests.
-                    </p>
-                `;
+                showListMessage("No pending verification requests.");
                 return;
             }
 
-            list.innerHTML = "";
+            list.replaceChildren();
 
             requests.forEach(function (item) {
                 const card = document.createElement("div");
 
                 card.className = "card";
 
-                card.innerHTML = `
-                    <h3>${item.full_name}</h3>
+                const heading = document.createElement("h3");
+                heading.textContent = item.full_name || "";
+                card.appendChild(heading);
+                appendDetail(card, "Email", item.email);
+                appendDetail(card, "Phone", item.phone_number);
+                appendDetail(card, "Document", item.document_type);
+                appendDetail(card, "Status", item.status);
 
-                    <p>
-                        <strong>Email:</strong>
-                        ${item.email}
-                    </p>
+                const submittedAt = item.submitted_at
+                    ? new Date(item.submitted_at).toLocaleString()
+                    : "";
+                appendDetail(card, "Submitted", submittedAt);
 
-                    <p>
-                        <strong>Phone:</strong>
-                        ${item.phone_number}
-                    </p>
+                if (item.document_url) {
+                    const documentLink = document.createElement("a");
+                    documentLink.href =
+                        `/api/verification/admin/${encodeURIComponent(item.id)}/document/`;
+                    documentLink.target = "_blank";
+                    documentLink.rel = "noopener";
+                    documentLink.textContent = "View Document";
+                    card.appendChild(documentLink);
+                }
 
-                    <p>
-                        <strong>Document:</strong>
-                        ${item.document_type}
-                    </p>
+                const actions = document.createElement("div");
+                actions.className = "verification-actions";
+                for (const [label, className] of [
+                    ["Approve", "approve-btn"],
+                    ["Reject", "reject-btn"],
+                ]) {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = `btn ${className}`;
+                    button.dataset.id = item.id;
+                    button.textContent = label;
+                    actions.appendChild(button);
+                }
+                card.appendChild(actions);
 
-                    <p>
-                        <strong>Status:</strong>
-                        ${item.status}
-                    </p>
+                const rejectBox = document.createElement("div");
+                rejectBox.className = "reject-box";
+                rejectBox.id = `reject-box-${item.id}`;
+                rejectBox.hidden = true;
 
-                    <p>
-                        <strong>Submitted:</strong>
-                        ${new Date(
-                    item.submitted_at
-                ).toLocaleString()}
-                    </p>
+                const reason = document.createElement("textarea");
+                reason.id = `reject-reason-${item.id}`;
+                reason.placeholder = "Enter rejection reason";
+                reason.rows = 3;
+                rejectBox.appendChild(reason);
 
-                    ${item.document_url
-                        ? `
-                                <p>
-                                    <a
-                                        href="${item.document_url}"
-                                        target="_blank"
-                                        rel="noopener"
-                                    >
-                                        View Document
-                                    </a>
-                                </p>
-                            `
-                        : ""
-                    }
-
-                    <div class="verification-actions">
-                        <button
-                            type="button"
-                            class="btn approve-btn"
-                            data-id="${item.id}"
-                        >
-                            Approve
-                        </button>
-
-                        <button
-                            type="button"
-                            class="btn reject-btn"
-                            data-id="${item.id}"
-                        >
-                            Reject
-                        </button>
-                    </div>
-
-                    <div
-                        class="reject-box"
-                        id="reject-box-${item.id}"
-                        hidden
-                    >
-                        <textarea
-                            id="reject-reason-${item.id}"
-                            placeholder="Enter rejection reason"
-                            rows="3"
-                        ></textarea>
-
-                        <button
-                            type="button"
-                            class="btn confirm-reject-btn"
-                            data-id="${item.id}"
-                        >
-                            Confirm Reject
-                        </button>
-                    </div>
-                `;
+                const confirmReject = document.createElement("button");
+                confirmReject.type = "button";
+                confirmReject.className = "btn confirm-reject-btn";
+                confirmReject.dataset.id = item.id;
+                confirmReject.textContent = "Confirm Reject";
+                rejectBox.appendChild(confirmReject);
+                card.appendChild(rejectBox);
 
                 list.appendChild(card);
             });
@@ -160,12 +142,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         } catch (error) {
             console.error(error);
-
-            list.innerHTML = `
-                <p class="form-error">
-                    ${error.message || "Failed to load requests."}
-                </p>
-            `;
+            showListMessage(
+                error.message || "Failed to load requests.",
+                "form-error"
+            );
         }
     }
 
@@ -237,7 +217,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     ) {
         try {
             const response = await fetch(
-                `/api/verification/admin/${verificationId}/action/`,
+                `/api/verification/admin/${encodeURIComponent(verificationId)}/action/`,
                 {
                     method: "POST",
                     headers: {

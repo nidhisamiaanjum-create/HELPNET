@@ -90,6 +90,20 @@ class RatingApiTests(APITestCase):
         self.assertEqual(ratings_response.status_code, 200)
         self.assertEqual(len(ratings_response.data["data"]), 2)
 
+    def test_unrated_user_has_no_average_in_summary_or_average_endpoint(self):
+        self.authenticate()
+        summary_response = self.client.get(
+            reverse("user-rating-summary", kwargs={"user_id": self.rated_user.user_id})
+        )
+        average_response = self.client.get(self.average_url)
+
+        self.assertEqual(summary_response.status_code, 200)
+        self.assertIsNone(summary_response.data["data"]["average_rating"])
+        self.assertEqual(summary_response.data["data"]["total_ratings"], 0)
+        self.assertEqual(average_response.status_code, 200)
+        self.assertIsNone(average_response.data["data"]["average_rating"])
+        self.assertEqual(average_response.data["data"]["rating_count"], 0)
+
     def test_rating_endpoints_require_authentication(self):
         response = self.client.post(
             self.ratings_url,
